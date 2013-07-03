@@ -35,3 +35,9 @@ class Text:
         self._text = (self._text[:max(0, start - 1)]
                       + string
                       + self._text[min(len(self._text), end + 1):])
+
+    def find_char(self, start, char):
+        """Find position of char at or after start"""
+        while self._text[start] != char:
+            start += 1
+        return start

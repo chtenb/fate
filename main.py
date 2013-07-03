@@ -1,5 +1,6 @@
 import sys
 import text
+from selections import *
 
 with text.Text(sys.argv[1]) as t:
     while 1:
