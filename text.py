@@ -1,18 +1,16 @@
 class Text:
     """Class representing instance of a text file"""
 
-    def __init__(self, file_name):
+    def __init__(self, file_name, eol_char='\n'):
         self._file_name = file_name
-
-    def __enter__(self):
+        self.eol_char = eol_char
         self.read()
-        return self
-
-    def __exit__(self, type, value, traceback):
-        pass
 
     def __str__(self):
         return self._text
+
+    def __len__(self):
+        return len(self._text)
 
     def read(self):
         """Read text from file"""
@@ -26,18 +24,24 @@ class Text:
         file_descriptor.write(str(self))
         file_descriptor.close()
 
-    def get_interval(self, start, end):
-        """Get the interval specified by arguments"""
-        return self._text[max(0, start):min(len(self._text), end)]
+    def get_interval(self, beg, end):
+        """Get the interval between beg and end"""
+        return self._text[max(0, beg):min(len(self), end)]
 
-    def set_interval(self, start, end, string):
-        """Set the interval specified by arguments"""
-        self._text = (self._text[:max(0, start - 1)]
+    def set_interval(self, beg, end, string):
+        """Replace the interval between beg and end with string"""
+        self._text = (self._text[:max(0, beg)]
                       + string
-                      + self._text[min(len(self._text), end + 1):])
+                      + self._text[min(len(self), end):])
 
-    def find_char(self, start, char):
-        """Find position of char at or after start"""
-        while self._text[start] != char:
-            start += 1
-        return start
+    def find(self, string, beg=0, end=None):
+        """Find first ocurrence of string from beg"""
+        if end == None:
+            end = len(self)
+        return self._text.find(string, beg, end)
+
+    def rfind(self, string, beg=0, end=None):
+        """Backwards find first ocurrence of string from beg"""
+        if end == None:
+            end = len(self)
+        return self._text.rfind(string, beg, end)
