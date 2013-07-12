@@ -26,13 +26,13 @@ class Text:
 
     def get_interval(self, beg, end):
         """Get the interval between beg and end"""
-        return self._text[max(0, beg):min(len(self), end)]
+        return self._text[beg:end]
 
     def set_interval(self, beg, end, string):
         """Replace the interval between beg and end with string"""
-        self._text = (self._text[:max(0, beg)]
+        self._text = (self._text[:beg]
                       + string
-                      + self._text[min(len(self), end):])
+                      + self._text[end:])
 
     def find(self, string, beg=0, end=None):
         """Find first ocurrence of string from beg"""
