@@ -1,30 +1,31 @@
+"""A selector takes a selection and returns another derived selection"""
 from selection import Selection
 
 # Maybe the fundamental selections from the doc should be here
 
 def move_to_next_line(t, selection):
     """Move all intervals one line forwards"""
-    result = []
+    result = Selection()
     for (beg, end) in selection:
         eol = t.find(t.eol_char, beg)
         if eol == -1:
-            result.append((beg, end))
+            result.add((beg, end))
         else:
             bol = t.rfind(t.eol_char, 0, beg)
-            result.append((eol + beg - bol, eol + end - bol))
+            result.add((eol + beg - bol, eol + end - bol))
     return result
 
 
 def move_to_previous_line(t, selection):
     """Move all intervals one line backwards"""
-    result = []
+    result = Selection()
     for (beg, end) in selection:
         bol = t.rfind(t.eol_char, 0, beg)
         if bol == -1:
-            result.append((beg, end))
+            result.add((beg, end))
         else:
             bol2 = t.rfind(t.eol_char, 0, bol)
-            result.append((bol2 + beg - bol, bol2 + end - bol))
+            result.add((bol2 + beg - bol, bol2 + end - bol))
     return result
 
 

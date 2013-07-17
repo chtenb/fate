@@ -24,15 +24,50 @@ class Text:
         file_descriptor.write(str(self))
         file_descriptor.close()
 
-    def get_interval(self, beg, end):
-        """Get the interval between beg and end"""
-        return self._text[beg:end]
+    def iterate(self, selection):
+        """Iterate over the text yielding pairs (interval, complement),
+        where complement is the string that comes after interval
+        and does not intersect with selection"""
+        selection_len = len(selection)
+        text_len = len(self)
 
-    def set_interval(self, beg, end, string):
-        """Replace the interval between beg and end with string"""
-        self._text = (self._text[:beg]
-                      + string
-                      + self._text[end:])
+        if not selection or selection[0][0] > 0:
+            if not selection:
+                complement_end = text_len - 1
+            else:
+                complement_end = selection[0][0]
+            yield ("", self._text[:complement_end])
+
+        for i, (beg, end) in enumerate(selection):
+            if i + 1 < selection_len:
+                complement_end = selection[i + 1][0]
+            else:
+                complement_end = text_len - 1
+            yield (self._text[beg:end], self._text[end:complement_end])
+
+    def get_selection_content(self, selection):
+        return [self._text[beg:end] for (beg, end) in selection]
+
+    #def get_interval(self, beg, end):
+        #"""Get the interval between beg and end"""
+        #return self._text[beg:end]
+
+    #def set_interval(self, beg, end, string):
+        #"""Replace the interval between beg and end with string"""
+        #self._text = (self._text[:beg]
+                      #+ string
+                      #+ self._text[end:])
+
+    def apply_operation(self, operation):
+        result = []
+        end = 0
+        for interval, i in enumerate(operation.old_selection):
+            new_string = operation.new_content[i]
+            beg = interval[0]
+            result.append(self._text[end:beg] + new_string)
+            end = interval[1]
+        result.append(self._text[end:])
+        self._text = "".join(result)
 
     def find(self, string, beg=0, end=None):
         """Find first ocurrence of string from beg"""

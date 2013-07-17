@@ -1,6 +1,4 @@
-import text
-
-
+#!/bin/env python3.0
 class Selection:
     """Sorted list of disjoint intervals"""
     _intervals = []
