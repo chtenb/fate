@@ -24,49 +24,25 @@ class Text:
         file_descriptor.write(str(self))
         file_descriptor.close()
 
-    def iterate(self, selection):
-        """Iterate over the text yielding pairs (interval, complement),
-        where complement is the string that comes after interval
-        and does not intersect with selection"""
-        selection_len = len(selection)
-        text_len = len(self)
+    def partition_content(self, partition):
+        """Return the content of the intervals contained in the partition,
+        tupled with a boolean indicating wether the interval is in the original selection"""
+        return [(self._text[beg:end], in_selection) for (beg, end), in_selection in partition]
 
-        if not selection or selection[0][0] > 0:
-            if not selection:
-                complement_end = text_len - 1
-            else:
-                complement_end = selection[0][0]
-            yield ("", self._text[:complement_end])
-
-        for i, (beg, end) in enumerate(selection):
-            if i + 1 < selection_len:
-                complement_end = selection[i + 1][0]
-            else:
-                complement_end = text_len - 1
-            yield (self._text[beg:end], self._text[end:complement_end])
-
-    def get_selection_content(self, selection):
+    def selection_content(self, selection):
+        """Return the content of the intervals contained in the selection"""
         return [self._text[beg:end] for (beg, end) in selection]
 
-    #def get_interval(self, beg, end):
-        #"""Get the interval between beg and end"""
-        #return self._text[beg:end]
-
-    #def set_interval(self, beg, end, string):
-        #"""Replace the interval between beg and end with string"""
-        #self._text = (self._text[:beg]
-                      #+ string
-                      #+ self._text[end:])
-
     def apply_operation(self, operation):
+        """Apply the operation to the text"""
         result = []
-        end = 0
-        for interval, i in enumerate(operation.old_selection):
-            new_string = operation.new_content[i]
-            beg = interval[0]
-            result.append(self._text[end:beg] + new_string)
-            end = interval[1]
-        result.append(self._text[end:])
+        count = 0
+        for interval_content, in_selection in self.partition_content(operation.old_selection.partition(self)):
+            if in_selection:
+                result.append(operation.new_content[count])
+                count += 1
+            else:
+                result.append(interval_content)
         self._text = "".join(result)
 
     def find(self, string, beg=0, end=None):
