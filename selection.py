@@ -56,33 +56,3 @@ class Selection:
     def remove(self, interval):
         """Remove interval from selection"""
         self._intervals.remove(interval)
-
-    # Maybe should be in operators
-    def partition(self, text):
-        """Return a selection containing all intervals in the selection
-        together with all complementary intervals"""
-        selection_len = len(self)
-        text_len = len(text)
-        result = Selection()
-
-        if not self or self[0][0] > 0:
-            if not self:
-                complement_end = text_len
-            else:
-                complement_end = self[0][0]
-            result.add((0, complement_end))
-
-        for i, (beg, end) in enumerate(self):
-            if i + 1 == selection_len:
-                complement_end = text_len
-            else:
-                complement_end = self[i + 1][0]
-            result.add((beg, end))
-            result.add((end, complement_end))
-        return result
-
-    # Maybe should be in operators
-    def bound(self, lower_bound, upper_bound):
-        return Selection([(max(beg, lower_bound), min(end, upper_bound))
-                          for beg, end in self
-                          if beg < upper_bound or end > lower_bound])
