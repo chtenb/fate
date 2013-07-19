@@ -5,24 +5,15 @@ from selection import Selection
 def partition(selection, text):
     """Return a selection containing all intervals in the selection
     together with all complementary intervals"""
-    selection_len = len(selection)
-    text_len = len(text)
+    points = [point for interval in selection for point in interval]
+    if not points or points[0] > 0:
+        points.insert(0, 0)
+    if not points or points[-1] < len(text):
+        points.append(len(text))
+
     result = Selection()
-
-    if not selection or selection[0][0] > 0:
-        if not selection:
-            complement_end = text_len
-        else:
-            complement_end = selection[0][0]
-        result.add((0, complement_end))
-
-    for i, (beg, end) in enumerate(selection):
-        if i + 1 == selection_len:
-            complement_end = text_len
-        else:
-            complement_end = selection[i + 1][0]
-        result.add((beg, end))
-        result.add((end, complement_end))
+    for i in range(1, len(points)):
+        result.add((points[i - 1], points[i]))
     return result
 
 

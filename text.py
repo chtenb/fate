@@ -1,3 +1,5 @@
+from selectors import partition
+
 class Text:
     """Class representing instance of a text file"""
 
@@ -24,26 +26,25 @@ class Text:
         file_descriptor.write(str(self))
         file_descriptor.close()
 
-    # Is this one really needed and useful?
-    # If so, it maybe shouldn't be in this class
     def selection_content(self, selection):
         """Return the bounded content of the intervals contained in the selection"""
-        return [self.interval_content(beg, end) for beg, end in selection]
+        return [self.interval_content(interval) for interval in selection]
 
-    def interval_content(self, beg, end):
+    def interval_content(self, interval):
         """Return the content of the interval"""
+        beg, end = interval
         return self._text[beg:end]
 
     def apply_operation(self, operation):
         """Apply the operation to the text"""
         result = []
         count = 0
-        for interval in operation.old_selection.partition(self):
+        for interval in partition(operation.old_selection, self):
             if interval in operation.old_selection:
                 result.append(operation.new_content[count])
                 count += 1
             else:
-                result.append(self.interval_content(*interval))
+                result.append(self.interval_content(interval))
         self._text = "".join(result)
 
     def find(self, string, beg=0, end=None):
