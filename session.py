@@ -11,25 +11,24 @@ class Session():
     # E.g. text, selection, undo tree, jump history
     _text = Text()
     selection = Selection()
-    file_name = ""
 
-    def __init__(self, file_name):
+    def __init__(self, file_name=""):
         self.file_name = file_name
-        self.read()
         global sessions
-        session.append(self)
+        sessions.append(self)
+        self.read()
 
     def read(self):
         """Read text from file"""
-        file_descriptor = open(self._file_name, 'r')
-        self._text.set((0, len(self._text)), file_descriptor.read())
-        file_descriptor.close()
+        if self.file_name:
+            with open(self.file_name, 'r') as fd:
+                self._text.set((0, len(self._text)), fd.read())
 
     def write(self):
         """Write current text to file"""
-        file_descriptor = open(self._file_name, 'w')
-        file_descriptor.write(str(self))
-        file_descriptor.close()
+        if self.file_name:
+            with open(self.file_name, 'w') as fd:
+                fd.write(str(self._text))
 
     def selection_content(self, selection):
         """Return the content of the intervals contained in the selection"""
