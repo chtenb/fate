@@ -9,8 +9,8 @@ def partition(selection):
     points = [point for interval in selection for point in interval]
     if not points or points[0] > 0:
         points.insert(0, 0)
-    if not points or points[-1] < len(session.text):
-        points.append(len(session.text))
+    if not points or points[-1] < len(session.current.text):
+        points.append(len(session.current.text))
 
     result = Selection()
     for i in range(1, len(points)):
@@ -48,11 +48,11 @@ def move_to_next_line(selection):
     """Move all intervals one line forwards"""
     result = Selection()
     for (beg, end) in selection:
-        eol = session.text.find(session.text.eol_char, beg)
+        eol = session.current.text.find('\n', beg)
         if eol == -1:
             result.add((beg, end))
         else:
-            bol = session.text.rfind(session.text.eol_char, 0, beg)
+            bol = session.current.text.rfind('\n', 0, beg)
             result.add((eol + beg - bol, eol + end - bol))
     return result
 
@@ -61,11 +61,11 @@ def move_to_previous_line(selection):
     """Move all intervals one line backwards"""
     result = Selection()
     for (beg, end) in selection:
-        bol = session.text.rfind(session.text.eol_char, 0, beg)
+        bol = session.current.text.rfind('\n', 0, beg)
         if bol == -1:
             result.add((beg, end))
         else:
-            bol2 = session.text.rfind(session.text.eol_char, 0, bol)
+            bol2 = session.current.text.rfind('\n', 0, bol)
             result.add((bol2 + beg - bol, bol2 + end - bol))
     return result
 
@@ -86,7 +86,7 @@ def move_to_next_char(selection):
     result = Selection()
     for (beg, end) in selection:
         # If further movement is impossible, do nothing
-        if end >= len(session.text):
+        if end >= len(session.current.text):
             return selection
         result.add((beg + 1, end + 1))
     return result
