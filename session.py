@@ -6,31 +6,24 @@ import logging
 sessions = []
 current = None
 
-plugin_names = ['select_system']
-plugins = {}
-for name in plugin_names:
-    plugins[name] = import_module("protexted." + name + ".main")
-
 class Session():
     """Class containing all objects of one file editing session"""
     # E.g. text, selection, undo tree, jump history
+    OnInit = []
 
     def __init__(self, filename=""):
         self.text = Text()
         self.filename = filename
-        self.logger = logging.getLogger(repr(self))
+
         global sessions
         sessions.append(self)
 
-
-        for plugin in plugins.values():
+        for f in self.OnInit:
             try:
-                if hasattr(plugin, 'init'):
-                    plugin.init(self)
+                f(self)
             except Exception as e:
-                self.logger.error(e, exc_info=True)
+                logging.error(e, exc_info=True)
 
-        self.read()
 
     def read(self):
         """Read text from file"""
@@ -43,3 +36,13 @@ class Session():
         if self.filename:
             with open(self.filename, 'w') as fd:
                 fd.write(str(self.text))
+
+
+# Import all plugins
+plugin_names = ['select_system']
+plugins = {}
+for name in plugin_names:
+    try:
+        plugins[name] = import_module("protexted." + name)
+    except Exception as e:
+        logging.error(e, exc_info=True)
