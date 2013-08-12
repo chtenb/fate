@@ -1,5 +1,6 @@
 """A session represents the state of an editing session"""
 from protexted.text import Text
+from protexted.event import Event
 from importlib import import_module
 import logging
 
@@ -9,7 +10,7 @@ current = None
 class Session():
     """Class containing all objects of one file editing session"""
     # E.g. text, selection, undo tree, jump history
-    OnInit = []
+    OnInit = Event()
 
     def __init__(self, filename=""):
         self.text = Text()
@@ -18,12 +19,7 @@ class Session():
         global sessions
         sessions.append(self)
 
-        for f in self.OnInit:
-            try:
-                f(self)
-            except Exception as e:
-                logging.error(e, exc_info=True)
-
+        self.OnInit.fire(self)
 
     def read(self):
         """Read text from file"""

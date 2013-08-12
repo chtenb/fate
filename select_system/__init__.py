@@ -4,4 +4,4 @@ from protexted.session import Session
 def init(session):
     session.selection = Selection(session)
 
-Session.OnInit.append(init)
+Session.OnInit.add(init)
