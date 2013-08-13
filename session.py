@@ -1,7 +1,6 @@
 """A session represents the state of an editing session"""
 from .text import Text
 from .event import Event
-from importlib import import_module
 import logging
 
 sessions = []
@@ -16,10 +15,10 @@ class Session():
         self.text = Text()
         self.filename = filename
 
+        self.OnInit.fire(self)
+
         global sessions
         sessions.append(self)
-
-        self.OnInit.fire(self)
 
     def read(self):
         """Read text from file"""
@@ -33,12 +32,5 @@ class Session():
             with open(self.filename, 'w') as fd:
                 fd.write(str(self.text))
 
-
-# Import all plugins
-plugin_names = ['select_system']
-plugins = {}
-for name in plugin_names:
-    try:
-        plugins[name] = import_module("protexted." + name)
-    except Exception as e:
-        logging.error(e, exc_info=True)
+# Load the plugins, after defining Session
+from . import plugin_dependencies

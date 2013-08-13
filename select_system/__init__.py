@@ -1,7 +1,10 @@
-from protexted.select_system.selection import Selection
-from protexted.session import Session
+from .selection import Selection
+from ..session import Session
+
+__dependencies__ = ['filetype_system']
 
 def init(session):
     session.selection = Selection(session)
 
-Session.OnInit.add(init)
+def main():
+    Session.OnInit.add(init)
