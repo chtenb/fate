@@ -33,4 +33,4 @@ class Session():
                 fd.write(str(self.text))
 
 # Load the plugins, after defining Session
-from . import plugin_dependencies
+from . import load_plugins
