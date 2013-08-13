@@ -1,6 +1,6 @@
 """A session represents the state of an editing session"""
-from protexted.text import Text
-from protexted.event import Event
+from .text import Text
+from .event import Event
 from importlib import import_module
 import logging
 

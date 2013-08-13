@@ -1,4 +1,4 @@
-from protexted.select_system.selection import Selection
+from .selection import Selection
 
 
 class Operation:

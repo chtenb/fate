@@ -1,5 +1,5 @@
 """An operator takes a selection (and optional additional arguments) and returns an operation"""
-from protexted.select_system.operation import Operation
+from .operation import Operation
 
 def insert_after(session, selection, string):
     old_content = selection.content()

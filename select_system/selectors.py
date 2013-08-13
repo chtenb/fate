@@ -1,6 +1,6 @@
 """A selector takes a selection and returns another derived selection"""
-from protexted.select_system.selection import Selection
-from protexted import session
+from .selection import Selection
+from .. import session
 
 
 def partition(selection):
