@@ -1,4 +1,4 @@
-__dependencies__ = []
+__dependencies__ = ['select_system']
 
 def main():
     pass
