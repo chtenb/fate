@@ -1,4 +1,12 @@
-__dependencies__ = ['select_system']
+__dependencies__ = []
+
+from ..session import Session
+from ..event import Event
 
 def main():
-    pass
+    Session.OnFileTypeLoaded = Event()
+    Session.OnSessionInit.add(detect_filetype)
+
+def detect_filetype(session):
+    session.filetype = None
+    session.OnFileTypeLoaded.fire()

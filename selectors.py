@@ -1,6 +1,6 @@
 """A selector takes a selection and returns another derived selection"""
 from .selection import Selection
-from .. import session
+from . import session
 
 
 def partition(selection):
@@ -12,14 +12,14 @@ def partition(selection):
     if not points or points[-1] < len(session.current.text):
         points.append(len(session.current.text))
 
-    result = Selection(selection.session)
+    result = Selection()
     for i in range(1, len(points)):
         result.add((points[i - 1], points[i]))
     return result
 
 
 def bound(selection, lower_bound, upper_bound):
-    return Selection(selection.session, [(max(beg, lower_bound), min(end, upper_bound))
+    return Selection([(max(beg, lower_bound), min(end, upper_bound))
                       for beg, end in selection
                       if beg < upper_bound or end > lower_bound])
 
@@ -46,7 +46,7 @@ def move_i_chars(selection, i):
 
 def move_to_next_line(selection):
     """Move all intervals one line forwards"""
-    result = Selection(selection.session)
+    result = Selection()
     for (beg, end) in selection:
         eol = session.current.text.find('\n', beg)
         if eol == -1:
@@ -59,7 +59,7 @@ def move_to_next_line(selection):
 
 def move_to_previous_line(selection):
     """Move all intervals one line backwards"""
-    result = Selection(selection.session)
+    result = Selection()
     for (beg, end) in selection:
         bol = session.current.text.rfind('\n', 0, beg)
         if bol == -1:
@@ -72,7 +72,7 @@ def move_to_previous_line(selection):
 
 def move_to_previous_char(selection):
     """Move all intervals one char backwards"""
-    result = Selection(selection.session)
+    result = Selection()
     for (beg, end) in selection:
         # If further movement is impossible, do nothing
         if beg <= 0:
@@ -83,7 +83,7 @@ def move_to_previous_char(selection):
 
 def move_to_next_char(selection):
     """Move all intervals one char forwards"""
-    result = Selection(selection.session)
+    result = Selection()
     for (beg, end) in selection:
         # If further movement is impossible, do nothing
         if end >= len(session.current.text):

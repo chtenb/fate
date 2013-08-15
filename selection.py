@@ -1,9 +1,6 @@
 class Selection:
     """Sorted list of disjoint intervals"""
-    def __init__(self, session, intervals=None):
-        self.session = session
-        session.selection = self
-
+    def __init__(self, intervals=None):
         if intervals != None:
             self._intervals = intervals
         else:
@@ -58,8 +55,3 @@ class Selection:
     def remove(self, interval):
         """Remove interval from selection"""
         self._intervals.remove(interval)
-
-    def content(self):
-        """Return the content of the intervals contained in the selection"""
-        return [self.session.text.get(interval) for interval in self]
-

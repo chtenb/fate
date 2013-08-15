@@ -1,4 +1,13 @@
-__dependencies__ = ['filetype_system', 'select_system']
+__dependencies__ = ['filetype_system']
+
+from ..session import Session
 
 def main():
-    pass
+    Session.OnSessionInit.add(session_init)
+
+def session_init(session):
+    session.OnFileTypeLoaded.add(custom_filetypes)
+
+def custom_filetypes(session):
+    if session.filename == "TODO":
+        session.filetype = "todo"

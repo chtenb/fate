@@ -56,8 +56,7 @@ def solve_plugin_dependencies(plugin, parents = []):
             else:
                 children.append(child)
 
-    parents += [plugin]
-    return merge([solve_plugin_dependencies(child, parents) for child in children]) + [plugin]
+    return merge([solve_plugin_dependencies(child, parents + [plugin]) for child in children]) + [plugin]
 
 # Import user plugin
 from . import user
