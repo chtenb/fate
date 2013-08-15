@@ -35,18 +35,18 @@ class Session():
                 fd.write(str(self.text))
         self.OnWrite.fire()
 
-    def apply(operation):
+    def apply(self, operation):
         """Apply the operation to the text"""
         for i, interval in enumerate(operation.old_selection):
-            self.text.set(interval, self.new_content[i])
+            self.text.set(interval, operation.new_content[i])
         self.OnApplyOperation.fire(operation)
 
-    def undo(operation):
+    def undo(self, operation):
         """Reverse the operation"""
         for i, interval in enumerate(operation.new_selection):
-            self.text.set(interval, self.old_content[i])
+            self.text.set(interval, operation.old_content[i])
 
-    def content(selection):
+    def content(self, selection):
         """Return the content of the selection"""
         return [self.text.get(interval) for interval in selection]
 

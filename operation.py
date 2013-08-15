@@ -5,7 +5,7 @@ class Operation:
     """Container of modified content of a selection"""
     def __init__(self, session, selection, new_content):
         self.old_selection = selection
-        self.old_content = session.selection.content()
+        self.old_content = session.content(selection)
         self.new_content = new_content
 
         self.new_selection = Selection()
