@@ -1,10 +1,10 @@
 class Selection:
     """Sorted list of disjoint intervals"""
     def __init__(self, intervals=None):
+        self._intervals = []
         if intervals != None:
-            self._intervals = intervals
-        else:
-            self._intervals = []
+            for interval in intervals:
+                self.add(interval)
 
     def __getitem__(self, index):
         return self._intervals[index]
@@ -20,8 +20,7 @@ class Selection:
         with some existing interval, they are merged."""
         (nbeg, nend) = interval
         if nbeg > nend:
-            raise Exception(
-                "Invalid interval: end cannot be smaller than begin")
+            raise Exception("Invalid interval " + str(interval) + ": end cannot be smaller than begin")
 
         result = []
         added = False
@@ -55,3 +54,22 @@ class Selection:
     def remove(self, interval):
         """Remove interval from selection"""
         self._intervals.remove(interval)
+
+    def partition(selection, text):
+        """Return a selection containing all intervals in the selection
+        together with all complementary intervals"""
+        points = [point for interval in selection for point in interval]
+        if not points or points[0] > 0:
+            points.insert(0, 0)
+        if not points or points[-1] < len(text):
+            points.append(len(text))
+
+        result = Selection()
+        for i in range(1, len(points)):
+            result.add((points[i - 1], points[i]))
+        return result
+
+    def bound(selection, lower_bound, upper_bound):
+        return Selection([(max(beg, lower_bound), min(end, upper_bound))
+                          for beg, end in selection
+                          if beg < upper_bound or end > lower_bound])

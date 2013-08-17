@@ -1,4 +1,5 @@
 from .selection import Selection
+import copy
 
 
 class Operation:
@@ -16,3 +17,9 @@ class Operation:
             beg = end + selection[i][0] - selection[i - 1][1]
             end = beg + len(self.new_content[i])
             self.new_selection.add((beg, end))
+
+    def inverse(self):
+        result = copy.deepcopy(self)
+        result.old_selection, result.new_selection = result.new_selection, result.old_selection
+        result.old_content, result.new_content = result.new_content, result.old_content
+        return result

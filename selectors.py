@@ -1,92 +1,83 @@
 """A selector takes a selection and returns another derived selection"""
 from .selection import Selection
-from . import session
+from . import current
 
 
-def partition(selection):
-    """Return a selection containing all intervals in the selection
-    together with all complementary intervals"""
-    points = [point for interval in selection for point in interval]
-    if not points or points[0] > 0:
-        points.insert(0, 0)
-    if not points or points[-1] < len(session.current.text):
-        points.append(len(session.current.text))
-
-    result = Selection()
-    for i in range(1, len(points)):
-        result.add((points[i - 1], points[i]))
-    return result
+def selector(function):
+    def wrapper(selection, text=None):
+        if not text:
+            text = current.session.text
+        return function(selection, text)
+    return wrapper
 
 
-def bound(selection, lower_bound, upper_bound):
-    return Selection([(max(beg, lower_bound), min(end, upper_bound))
-                      for beg, end in selection
-                      if beg < upper_bound or end > lower_bound])
+def interval_selector(function):
+    @selector
+    def wrapper(selection, text):
+        result = Selection()
+        for interval in selection:
+            result.add(function(interval, text))
+        return result
+    return wrapper
 
 
-def move_i_lines(selection, i):
-    if i > 0:
-        for i in range(i):
-            selection = move_to_next_line(selection)
-    if i < 0:
-        for i in range(abs(i)):
-            selection = move_to_previous_line(selection)
-    return selection
-
-
-def move_i_chars(selection, i):
-    if i > 0:
-        for i in range(i):
-            selection = move_to_next_char(selection)
-    if i < 0:
-        for i in range(abs(i)):
-            selection = move_to_previous_char(selection)
-    return selection
-
-
-def move_to_next_line(selection):
+@interval_selector
+def move_to_next_line(interval, text):
     """Move all intervals one line forwards"""
-    result = Selection()
-    for (beg, end) in selection:
-        eol = session.current.text.find('\n', beg)
-        if eol == -1:
-            result.add((beg, end))
-        else:
-            bol = session.current.text.rfind('\n', 0, beg)
-            result.add((eol + beg - bol, eol + end - bol))
-    return result
+    beg, end = interval
+    eol = text.find('\n', beg)
+    if eol == -1:
+        return interval
+    bol = text.rfind('\n', 0, beg)
+    return (eol + beg - bol, eol + end - bol)
 
 
-def move_to_previous_line(selection):
+@interval_selector
+def move_to_previous_line(interval, text):
     """Move all intervals one line backwards"""
-    result = Selection()
-    for (beg, end) in selection:
-        bol = session.current.text.rfind('\n', 0, beg)
-        if bol == -1:
-            result.add((beg, end))
-        else:
-            bol2 = session.current.text.rfind('\n', 0, bol)
-            result.add((bol2 + beg - bol, bol2 + end - bol))
-    return result
+    beg, end = interval
+    bol = text.rfind('\n', 0, beg)
+    if bol == -1:
+        return interval
+    bol2 = text.rfind('\n', 0, bol)
+    return (bol2 + beg - bol, bol2 + end - bol)
 
 
-def move_to_previous_char(selection):
+@interval_selector
+def move_to_previous_char(interval, text):
     """Move all intervals one char backwards"""
-    result = Selection()
-    for (beg, end) in selection:
-        # If further movement is impossible, do nothing
-        if beg <= 0:
-            return selection
-        result.add((beg - 1, end - 1))
-    return result
+    beg, end = interval
+    # If further movement is impossible, do nothing
+    if beg <= 0:
+        return interval
+    return (beg - 1, end - 1)
 
 
-def move_to_next_char(selection):
+@interval_selector
+def move_to_next_char(interval, text):
     """Move all intervals one char forwards"""
-    result = Selection()
-    for (beg, end) in selection:
-        # If further movement is impossible, do nothing
-        if end >= len(session.current.text):
-            return selection
-        result.add((beg + 1, end + 1))
-    return result
+    beg, end = interval
+    # If further movement is impossible, do nothing
+    if end >= len(text):
+        return interval
+    return (beg + 1, end + 1)
+
+
+@interval_selector
+def select_next_word(interval, text):
+    beg, end = interval
+    next_space = text.find(' ', end + 1)
+    if next_space == -1:
+        next_space = len(text)
+    prev_space = text.rfind(' ', 0, next_space - 1)
+    return (prev_space + 1, next_space)
+
+
+@interval_selector
+def select_previous_word(interval, text):
+    beg, end = interval
+    prev_space = text.rfind(' ', 0, max(beg - 1, 0))
+    next_space = text.find(' ', prev_space + 1)
+    if next_space == -1:
+        next_space = len(text)
+    return (prev_space + 1, next_space)
