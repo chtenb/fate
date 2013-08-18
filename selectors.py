@@ -11,6 +11,11 @@ def selector(function):
     return wrapper
 
 
+@selector
+def single_character(selection, text):
+    return Selection(intervals=[(selection[0][0], selection[0][0])])
+
+
 def interval_selector(function):
     @selector
     def wrapper(selection, text):

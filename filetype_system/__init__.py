@@ -1,5 +1,3 @@
-__dependencies__ = []
-
 from ..session import Session
 from ..event import Event
 
