@@ -18,7 +18,7 @@ class Selection:
     def add(self, interval):
         """Add interval to the selection. If interval is overlapping
         with some existing interval, they are merged."""
-        (nbeg, nend) = interval
+        nbeg, nend = interval
         if nbeg > nend:
             raise Exception("Invalid interval " + str(interval) + ": end cannot be smaller than begin")
 
@@ -53,7 +53,24 @@ class Selection:
 
     def remove(self, interval):
         """Remove interval from selection"""
-        self._intervals.remove(interval)
+        nbeg, nend = interval
+        for i, (beg, end) in enumerate(self):
+            # [  ]
+            #  (
+            if beg < nbeg < end - 1:
+                self._intervals[i] = (beg, nbeg)
+            # [  ]
+            #   )
+            if beg < nend - 1 < end:
+                self._intervals[i] = (nend, end)
+
+    def extend(self, selection):
+        for interval in selection:
+            self.add(interval)
+
+    def reduce(self, selection):
+        for interval in selection:
+            self.remove(interval)
 
     def partition(selection, text):
         """Return a selection containing all intervals in the selection
