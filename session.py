@@ -59,6 +59,5 @@ class Session():
         return [self.text[beg:end] for beg, end in selection]
 
 
-from . import user
 # Load the plugins, after defining Session
-#from . import load_plugins
+from . import user

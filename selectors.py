@@ -3,7 +3,6 @@ from .selection import Selection
 from . import current
 
 
-
 def selector(function):
     def wrapper(selection, text=None):
         if not text:
@@ -16,12 +15,10 @@ def selector(function):
 def single_character(selection, text):
     return Selection(intervals=[(selection[0][0], selection[0][0])])
 
+
 @selector
 def invert(selection, text):
     return selection.complement(text)
-@selector
-def partition(selection, text):
-    return selection.partition(text)
 
 
 def interval_selector(function):
@@ -113,18 +110,3 @@ def previous_word(interval, text):
     if next_space == -1:
         next_space = len(text)
     return (prev_space + 1, next_space)
-
-
-# TODO implement select method, which applies position_selectors on selections
-def reduce(selection, position_selector, text):
-    pass
-
-def position_selector(function):
-    def constructor(outer):
-        @interval_selector
-        def wrapper(interval, text):
-            if outer:
-                return function(interval[0], text)
-            return function(interval[1], text)
-        return wrapper
-    return constructor
