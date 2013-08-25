@@ -25,6 +25,13 @@ def insert_in_place(session, selection, string):
 def insert_around(session, selection, string):
     old_content = session.content(selection)
     new_content = []
+    character_pairs = [('{', '}'), ('[', ']'), ('(', ')')]
+    first_string = string[::-1]
+    second_string = string
+    for first, second in character_pairs:
+        first_string = first_string.replace(second, first)
+        second_string = second_string.replace(first, second)
+
     for s in old_content:
-        new_content.append(s + string + s)
+        new_content.append(first_string + s + second_string)
     return Operation(session, selection, new_content)

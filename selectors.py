@@ -57,26 +57,6 @@ def move_to_previous_line(interval, text):
 
 
 @interval_selector
-def move_to_previous_char(interval, text):
-    """Move all intervals one char backwards"""
-    beg, end = interval
-    # If further movement is impossible, do nothing
-    if beg <= 0:
-        return interval
-    return (beg - 1, end - 1)
-
-
-@interval_selector
-def move_to_next_char(interval, text):
-    """Move all intervals one char forwards"""
-    beg, end = interval
-    # If further movement is impossible, do nothing
-    if end >= len(text):
-        return interval
-    return (beg + 1, end + 1)
-
-
-@interval_selector
 def previous_char(interval, text):
     """Return previous char"""
     beg, end = interval
