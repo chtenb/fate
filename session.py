@@ -48,11 +48,7 @@ class Session():
                 result.append(string)
 
         self.text = ''.join(result)
-        self.OnApplyOperation.fire(operation)
-
-    def undo(self, operation):
-        """Apply the operation reversely"""
-        self.apply(operation.inverse())
+        self.OnApplyOperation.fire(self, operation)
 
     def content(self, selection):
         """Return the content of the selection"""
