@@ -17,76 +17,78 @@ class Selection:
 
     def add(self, interval):
         """Add interval to the selection. If interval is overlapping
-        with some existing interval, they are merged."""
+        with or adjacent to some existing interval, they are merged."""
         nbeg, nend = interval
         if nbeg > nend:
             raise Exception("Invalid interval " + str(interval) + ": end cannot be smaller than begin")
 
+        # First merge overlapping or adjacent existing intervals into the new interval
+        for (beg, end) in self._intervals:
+            # [  ]
+            #  (
+            if beg < nbeg <= end:
+                nbeg = beg
+            # [  ]
+            #   )
+            if beg <= nend < end:
+                nend = end
+
+        # Then insert the new interval at the right index
         result = []
         added = False
         for (beg, end) in self._intervals:
-            # [ ]       existing interval
-            #     ( )   new interval
-            if end <= nbeg:
-                result.append((beg, end))
-            #     [ ]
-            # ( )
-            elif end <= nbeg:
-                if not added:
-                    result.append(interval)
-                    added = True
-                result.append((beg, end))
-            else:
-                # [  ]
-                #  (
-                if beg < nbeg < end - 1:
-                    interval = (beg, nend)
-                # [  ]
-                #   )
-                if beg < nend - 1 < end:
-                    interval = (nbeg, end)
+            #  []    existing interval
+            # (  )   new interval
+            if not (nbeg <= beg and end <= nend):
+                # [ ]
+                #     ( )
+                if end <= nbeg:
+                    result.append((beg, end))
+                #     [ ]
+                # ( )
+                elif nend <= beg:
+                    if not added:
+                        result.append((nbeg, nend))
+                        added = True
+                    result.append((beg, end))
 
         if not added:
-            result.append(interval)
+            result.append((nbeg, nend))
 
         self._intervals = result
 
-    def remove(self, interval):
-        """Remove interval from selection"""
-        nbeg, nend = interval
-        for i, (beg, end) in enumerate(self):
-            # [  ]
-            #  (
-            if beg < nbeg < end - 1:
-                self._intervals[i] = (beg, nbeg)
-            # [  ]
-            #   )
-            if beg < nend - 1 < end:
-                self._intervals[i] = (nend, end)
-
-    def extend(self, selection):
+    def extend(self, selector, text):
+        result = Selection(self)
+        selection = selector(self)
         for interval in selection:
-            self.add(interval)
+            result.add(interval)
+        return result
 
-    def reduce(self, selection):
-        for interval in selection:
-            self.remove(interval)
+    def reduce(self, selector, text):
+        """Reducing is defined by extending the complement"""
+        compl = self.complement(text)
+        compl = compl.extend(selector, text)
+        return compl.complement(text)
 
-    def partition(selection, text):
-        """Return a selection containing all intervals in the selection
+    def complement(self, text):
+        return Selection([interval for in_selection, interval in self.partition(text)
+                          if not in_selection])
+
+    def partition(self, text, lower_bound=0, upper_bound=float('infinity')):
+        """Return a sorted list containing all intervals in self
         together with all complementary intervals"""
-        points = [point for interval in selection for point in interval]
+        points = [point for interval in self for point in interval]
+        in_selection = True
         if not points or points[0] > 0:
             points.insert(0, 0)
+            in_selection = False
         if not points or points[-1] < len(text):
             points.append(len(text))
 
-        result = Selection()
+        result = []
         for i in range(1, len(points)):
-            result.add((points[i - 1], points[i]))
+            beg, end = points[i - 1], points[i]
+            if beg < upper_bound or end > lower_bound:
+                result.append((in_selection, (max(beg, lower_bound), min(end, upper_bound))))
+            in_selection = not in_selection
         return result
-
-    def bound(selection, lower_bound, upper_bound):
-        return Selection([(max(beg, lower_bound), min(end, upper_bound))
-                          for beg, end in selection
-                          if beg < upper_bound or end > lower_bound])

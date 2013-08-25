@@ -3,6 +3,7 @@ from .selection import Selection
 from . import current
 
 
+
 def selector(function):
     def wrapper(selection, text=None):
         if not text:
@@ -15,8 +16,18 @@ def selector(function):
 def single_character(selection, text):
     return Selection(intervals=[(selection[0][0], selection[0][0])])
 
+@selector
+def invert(selection, text):
+    return selection.complement(text)
+@selector
+def partition(selection, text):
+    return selection.partition(text)
+
 
 def interval_selector(function):
+    """An interval selector takes an interval to another interval.
+    This induces a selection, by applying the interval
+    selector to all intervals contained in a selection"""
     @selector
     def wrapper(selection, text):
         result = Selection()
@@ -69,7 +80,23 @@ def move_to_next_char(interval, text):
 
 
 @interval_selector
-def select_next_word(interval, text):
+def previous_char(interval, text):
+    """Return previous char"""
+    beg, end = interval
+    nbeg = max(0, beg - 1)
+    return (nbeg, nbeg + 1)
+
+
+@interval_selector
+def next_char(interval, text):
+    """Return next char"""
+    beg, end = interval
+    nend = min(len(text), end + 1)
+    return (nend - 1, nend)
+
+
+@interval_selector
+def next_word(interval, text):
     beg, end = interval
     next_space = text.find(' ', end + 1)
     if next_space == -1:
@@ -79,10 +106,25 @@ def select_next_word(interval, text):
 
 
 @interval_selector
-def select_previous_word(interval, text):
+def previous_word(interval, text):
     beg, end = interval
     prev_space = text.rfind(' ', 0, max(beg - 1, 0))
     next_space = text.find(' ', prev_space + 1)
     if next_space == -1:
         next_space = len(text)
     return (prev_space + 1, next_space)
+
+
+# TODO implement select method, which applies position_selectors on selections
+def reduce(selection, position_selector, text):
+    pass
+
+def position_selector(function):
+    def constructor(outer):
+        @interval_selector
+        def wrapper(interval, text):
+            if outer:
+                return function(interval[0], text)
+            return function(interval[1], text)
+        return wrapper
+    return constructor

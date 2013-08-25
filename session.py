@@ -36,15 +36,18 @@ class Session():
 
     def apply(self, operation):
         """Apply the operation to the text"""
-        partitioned = operation.old_selection.partition(self.text)
-        content = self.content(partitioned)
+        partition = operation.old_selection.partition(self.text)
+        partition_content = [(in_selection, self.text[beg:end]) for in_selection, (beg, end) in partition]
         count = 0
-        for i, interval in enumerate(partitioned):
-            if interval in operation.old_selection:
-                content[i] = operation.new_content[count]
+        result = []
+        for in_selection, string in partition_content:
+            if in_selection:
+                result.append(operation.new_content[count])
                 count += 1
+            else:
+                result.append(string)
 
-        self.text = ''.join(content)
+        self.text = ''.join(result)
         self.OnApplyOperation.fire(operation)
 
     def undo(self, operation):
