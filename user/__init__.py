@@ -1,6 +1,7 @@
 from ..session import Session
 from .. import filetype_system
 from .. import undo_system
+from .. import labeling_system
 
 
 def session_init(session):

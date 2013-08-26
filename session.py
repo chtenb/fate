@@ -25,14 +25,14 @@ class Session():
         if self.filename:
             with open(self.filename, 'r') as fd:
                 self.text = fd.read()
-        self.OnRead.fire()
+            self.OnRead.fire(self)
 
     def write(self):
         """Write current text to file"""
         if self.filename:
             with open(self.filename, 'w') as fd:
                 fd.write(self.text)
-        self.OnWrite.fire()
+            self.OnWrite.fire(self)
 
     def apply(self, operation):
         """Apply the operation to the text"""

@@ -1,9 +1,11 @@
 """A selector takes a selection and returns another derived selection"""
 from .selection import Selection
 from . import current
+import re
 
 
 def selector(function):
+    """Makes the text parameter optional by defaulting to current.session.text"""
     def wrapper(selection, text=None):
         if not text:
             text = current.session.text
@@ -37,6 +39,7 @@ def interval_selector(function):
 @interval_selector
 def move_to_next_line(interval, text):
     """Move all intervals one line forwards"""
+    # TODO: change behaviour
     beg, end = interval
     eol = text.find('\n', beg)
     if eol == -1:
@@ -48,6 +51,7 @@ def move_to_next_line(interval, text):
 @interval_selector
 def move_to_previous_line(interval, text):
     """Move all intervals one line backwards"""
+    # TODO: change behaviour
     beg, end = interval
     bol = text.rfind('\n', 0, beg)
     if bol == -1:
@@ -74,6 +78,7 @@ def next_char(interval, text):
 
 @interval_selector
 def next_word(interval, text):
+    """Return next word"""
     beg, end = interval
     next_space = text.find(' ', end + 1)
     if next_space == -1:
@@ -84,9 +89,18 @@ def next_word(interval, text):
 
 @interval_selector
 def previous_word(interval, text):
+    """Returns previous word"""
     beg, end = interval
     prev_space = text.rfind(' ', 0, max(beg - 1, 0))
     next_space = text.find(' ', prev_space + 1)
     if next_space == -1:
         next_space = len(text)
     return (prev_space + 1, next_space)
+
+
+@interval_selector
+def next_group(interval, text):
+    """Return next group"""
+    regex = re.compile(r'\w+|\s+|[^\w\s]+')
+    match = regex.search(text, interval[1])
+    return (match.start(), match.end())

@@ -1,5 +1,5 @@
 class Selection:
-    """Sorted list of disjoint intervals"""
+    """Sorted list of disjoint non-adjacent intervals"""
     def __init__(self, intervals=None):
         self._intervals = []
         if intervals != None:
@@ -14,6 +14,12 @@ class Selection:
 
     def __str__(self):
         return str(self._intervals)
+
+    def contains(self, position):
+        for beg, end in self:
+            if beg <= position < end:
+                return True
+        return False
 
     def add(self, interval):
         """Add interval to the selection. If interval is overlapping
@@ -58,6 +64,7 @@ class Selection:
         self._intervals = result
 
     def extend(self, selector, text):
+        """Return the selection obtained by extending self with the selector's return"""
         result = Selection(self)
         selection = selector(self)
         for interval in selection:
@@ -65,12 +72,14 @@ class Selection:
         return result
 
     def reduce(self, selector, text):
-        """Reducing is defined by extending the complement"""
+        """Return the selection obtained by reducing self with the selector's return.
+        Reducing is defined by extending the complement of self"""
         compl = self.complement(text)
         compl = compl.extend(selector, text)
         return compl.complement(text)
 
     def complement(self, text):
+        """Return the complementary selection of self"""
         return Selection([interval for in_selection, interval in self.partition(text)
                           if not in_selection])
 
