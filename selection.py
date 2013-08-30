@@ -15,11 +15,13 @@ class Selection:
     def __str__(self):
         return str(self._intervals)
 
+    def index(self, interval):
+        return self._intervals.index(interval)
+
     def contains(self, position):
         for beg, end in self:
             if beg <= position < end:
-                return True
-        return False
+                return (beg, end)
 
     def add(self, interval):
         """Add interval to the selection. If interval is overlapping
