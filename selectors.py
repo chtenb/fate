@@ -9,6 +9,8 @@ def selector(function):
     def wrapper(selection, text=None):
         if not text:
             text = current.session.text
+        if not selection:
+            selection.add((0,0))
         return function(selection, text)
     return wrapper
 
@@ -40,7 +42,7 @@ def interval_selector(function):
 def next_line(interval, text):
     """Return line beneath interval"""
     beg, end = interval
-    eol = text.find('\n', end + 1)
+    eol = text.find('\n', end)
     if eol == -1:
         eol = len(text) - 1
     bol = text.rfind('\n', 0, eol) + 1
@@ -77,29 +79,19 @@ def next_char(interval, text):
 @interval_selector
 def next_word(interval, text):
     """Return next word"""
-    beg, end = interval
-    next_space = text.find(' ', end + 1)
-    if next_space == -1:
-        next_space = len(text)
-    prev_space = text.rfind(' ', 0, next_space - 1)
-    return (prev_space + 1, next_space)
+    regex = re.compile(r'\b\w+\b')
+    match = regex.search(text, interval[1])
+    if match:
+        return (match.start(), match.end())
+    return interval
 
 
 @interval_selector
 def previous_word(interval, text):
-    """Returns previous word"""
-    beg, end = interval
-    prev_space = text.rfind(' ', 0, max(beg - 1, 0))
-    next_space = text.find(' ', prev_space + 1)
-    if next_space == -1:
-        next_space = len(text)
-    return (prev_space + 1, next_space)
-
-
-@interval_selector
-def next_group(interval, text):
-    """Return next group"""
-    # regex = re.compile(r'\w+|\s+|[^\w\s]+')
+    """Return previous word"""
     regex = re.compile(r'\b\w+\b')
-    match = regex.search(text, interval[1])
-    return (match.start(), match.end())
+    matches = list(regex.finditer(text, 0, interval[0]))
+    if matches:
+        match = next(reversed(matches))
+        return (match.start(), match.end())
+    return interval

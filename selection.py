@@ -27,8 +27,8 @@ class Selection:
         """Add interval to the selection. If interval is overlapping
         with or adjacent to some existing interval, they are merged."""
         nbeg, nend = interval
-        if nbeg > nend:
-            raise Exception("Invalid interval " + str(interval) + ": end cannot be smaller than begin")
+        if nbeg > nend or nend < 0:
+            raise Exception("Invalid interval " + str(interval))
 
         # First merge overlapping or adjacent existing intervals into the new interval
         for (beg, end) in self._intervals:
