@@ -1,7 +1,7 @@
 from ..session import Session
 from ..event import Event
 
-extension_filetype = {'txt': 'txt', 'py': 'python'}
+extension_filetype = {'txt': 'txt', 'py': 'python', 'js': 'javascript'}
 
 
 def detect_filetype(session):

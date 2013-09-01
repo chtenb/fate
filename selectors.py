@@ -19,7 +19,7 @@ def single_character(selection, text):
 
 
 @selector
-def invert(selection, text):
+def complement(selection, text):
     return selection.complement(text)
 
 
@@ -37,27 +37,25 @@ def interval_selector(function):
 
 
 @interval_selector
-def move_to_next_line(interval, text):
-    """Move all intervals one line forwards"""
-    # TODO: change behaviour
+def next_line(interval, text):
+    """Return line beneath interval"""
     beg, end = interval
-    eol = text.find('\n', beg)
+    eol = text.find('\n', end + 1)
     if eol == -1:
-        return interval
-    bol = text.rfind('\n', 0, beg)
-    return (eol + beg - bol, eol + end - bol)
+        eol = len(text) - 1
+    bol = text.rfind('\n', 0, eol) + 1
+    return (bol, eol + 1)
 
 
 @interval_selector
-def move_to_previous_line(interval, text):
-    """Move all intervals one line backwards"""
-    # TODO: change behaviour
+def previous_line(interval, text):
+    """Return line above interval"""
     beg, end = interval
-    bol = text.rfind('\n', 0, beg)
-    if bol == -1:
-        return interval
-    bol2 = text.rfind('\n', 0, bol)
-    return (bol2 + beg - bol, bol2 + end - bol)
+    bol = text.rfind('\n', 0, max(0, beg - 1)) + 1
+    eol = text.find('\n', bol)
+    if eol == -1:
+        eol = len(text) - 1
+    return (bol, eol + 1)
 
 
 @interval_selector
@@ -101,6 +99,7 @@ def previous_word(interval, text):
 @interval_selector
 def next_group(interval, text):
     """Return next group"""
-    regex = re.compile(r'\w+|\s+|[^\w\s]+')
+    # regex = re.compile(r'\w+|\s+|[^\w\s]+')
+    regex = re.compile(r'\b\w+\b')
     match = regex.search(text, interval[1])
     return (match.start(), match.end())
