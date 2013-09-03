@@ -10,8 +10,9 @@ def selector(function):
         if not text:
             text = current.session.text
         if not selection:
-            selection.add((0,0))
-        return function(selection, text)
+            selection.add((0, 0))
+        result = function(selection, text)
+        return result if result else selection
     return wrapper
 
 
@@ -27,13 +28,15 @@ def complement(selection, text):
 
 def interval_selector(function):
     """An interval selector takes an interval to another interval.
-    This induces a selection, by applying the interval
+    This induces a selector, by applying the interval
     selector to all intervals contained in a selection"""
     @selector
     def wrapper(selection, text):
         result = Selection()
         for interval in selection:
-            result.add(function(interval, text))
+            interval_result = function(interval, text)
+            if interval_result:
+                result.add(interval_result)
         return result
     return wrapper
 
@@ -76,22 +79,41 @@ def next_char(interval, text):
     return (nend - 1, nend)
 
 
+def find_next(interval, text, pattern, reverse=False, *flags):
+    beg, end = interval
+    regex = re.compile(pattern, *flags)
+    matches = regex.finditer(text)
+    if matches:
+        if reverse:
+            matches = reversed(list(matches))
+            for match in matches:
+                if match.start() < beg:
+                    return match.start(), match.end()
+        else:
+            for match in matches:
+                if end < match.end():
+                    return match.start(), match.end()
+
+
 @interval_selector
 def next_word(interval, text):
     """Return next word"""
-    regex = re.compile(r'\b\w+\b')
-    match = regex.search(text, interval[1])
-    if match:
-        return (match.start(), match.end())
-    return interval
+    return find_next(interval, text, r'\b\w+\b')
 
 
 @interval_selector
 def previous_word(interval, text):
     """Return previous word"""
-    regex = re.compile(r'\b\w+\b')
-    matches = list(regex.finditer(text, 0, interval[0]))
-    if matches:
-        match = next(reversed(matches))
-        return (match.start(), match.end())
-    return interval
+    return find_next(interval, text, r'\b\w+\b', reverse=True)
+
+
+@interval_selector
+def next_paragraph(interval, text):
+    """Return next paragraph"""
+    return find_next(interval, text, r'(?s)((?:[^\n][\n]?)+)')
+
+
+@interval_selector
+def previous_paragraph(interval, text):
+    """Return previous paragraph"""
+    return find_next(interval, text, r'(?s)((?:[^\n][\n]?)+)', reverse=True)

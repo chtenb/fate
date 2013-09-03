@@ -1,8 +1,14 @@
+from . import current
+
 class Selection:
     """Sorted list of disjoint non-adjacent intervals"""
-    def __init__(self, intervals=None):
+    def __init__(self, session=None, intervals=None):
+        if not session:
+            session = current.session
+        self.session = session
+
         self._intervals = []
-        if intervals != None:
+        if intervals:
             for interval in intervals:
                 self.add(interval)
 
@@ -27,7 +33,7 @@ class Selection:
         """Add interval to the selection. If interval is overlapping
         with or adjacent to some existing interval, they are merged."""
         nbeg, nend = interval
-        if nbeg > nend or nend < 0:
+        if not 0 <= nbeg <= nend < len(self.session.text):
             raise Exception("Invalid interval " + str(interval))
 
         # First merge overlapping or adjacent existing intervals into the new interval
@@ -65,7 +71,7 @@ class Selection:
 
         self._intervals = result
 
-    def extend(self, selector, text):
+    def extend(self, selector):
         """Return the selection obtained by extending self with the selector's return"""
         result = Selection(self)
         selection = selector(self)
@@ -73,21 +79,23 @@ class Selection:
             result.add(interval)
         return result
 
-    def reduce(self, selector, text):
+    def reduce(self, selector):
         """Return the selection obtained by reducing self with the selector's return.
         Reducing is defined by extending the complement of self"""
+        text = self.session.text
         compl = self.complement(text)
         compl = compl.extend(selector, text)
         return compl.complement(text)
 
-    def complement(self, text):
+    def complement(self):
         """Return the complementary selection of self"""
-        return Selection([interval for in_selection, interval in self.partition(text)
+        return Selection([interval for in_selection, interval in self.partition()
                           if not in_selection])
 
-    def partition(self, text, lower_bound=0, upper_bound=float('infinity')):
+    def partition(self, lower_bound=0, upper_bound=float('infinity')):
         """Return a sorted list containing all intervals in self
         together with all complementary intervals"""
+        text = self.session.text
         points = [point for interval in self for point in interval]
         in_selection = True
         if not points or points[0] > 0:
