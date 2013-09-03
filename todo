@@ -1,0 +1,8 @@
+allow backspacing as insert operations
+implement dynamic (parametrized) selectors, such as 'find character'
+implement 'extend till interval' in addition to 'extend (with selection)'
+better (persistent) undo system
+more filedetection
+some general labelings such as bracket pairs
+implement simple clipboard system
+add support for plugins in home directory
