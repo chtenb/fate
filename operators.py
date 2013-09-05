@@ -1,12 +1,34 @@
 """An operator takes a selection (and optional additional arguments) and returns an operation"""
 from .operation import Operation
 
+
+def operator(function):
+    def wrapper(selection, session):
+        old_content = session.content(selection)
+        new_content = []
+        return function(selection, old_content, session)
+    return wrapper
+
+
+@operator
+def delete(selection, old_content, session):
+    new_content = []
+    for s in old_content:
+        new_content.append('')
+    return Operation(session, selection, new_content)
+
+
+#@operator
+#def insert_operator
+
+
 def insert_after(session, selection, string):
     old_content = session.content(selection)
     new_content = []
     for s in old_content:
         new_content.append(s + string)
     return Operation(session, selection, new_content)
+
 
 def insert_before(session, selection, string):
     old_content = session.content(selection)
@@ -15,12 +37,14 @@ def insert_before(session, selection, string):
         new_content.append(string + s)
     return Operation(session, selection, new_content)
 
+
 def insert_in_place(session, selection, string):
     old_content = session.content(selection)
     new_content = []
     for s in old_content:
         new_content.append(string)
     return Operation(session, selection, new_content)
+
 
 def insert_around(session, selection, string):
     old_content = session.content(selection)

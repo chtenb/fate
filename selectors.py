@@ -1,14 +1,12 @@
 """A selector takes a selection and returns another derived selection"""
 from .selection import Selection
-from . import current
 import re
 
 
 def selector(function):
-    """Makes the text parameter optional by defaulting to current.session.text"""
-    def wrapper(selection, text=None):
-        if not text:
-            text = current.session.text
+    """Defaults to (0,0) when selection passed is empty.
+    Returns original selection when result is empty."""
+    def wrapper(selection, text):
         if not selection:
             selection.add((0, 0))
         result = function(selection, text)
@@ -18,12 +16,12 @@ def selector(function):
 
 @selector
 def single_character(selection, text):
-    return Selection(intervals=[(selection[0][0], selection[0][0])])
+    return Selection(selection.session, intervals=[(selection[0][0], selection[0][0])])
 
 
 @selector
 def complement(selection, text):
-    return selection.complement(text)
+    return selection.complement()
 
 
 def interval_selector(function):
@@ -32,7 +30,7 @@ def interval_selector(function):
     selector to all intervals contained in a selection"""
     @selector
     def wrapper(selection, text):
-        result = Selection()
+        result = Selection(selection.session)
         for interval in selection:
             interval_result = function(interval, text)
             if interval_result:
@@ -79,41 +77,26 @@ def next_char(interval, text):
     return (nend - 1, nend)
 
 
-def find_next(interval, text, pattern, reverse=False, *flags):
-    beg, end = interval
-    regex = re.compile(pattern, *flags)
-    matches = regex.finditer(text)
-    if matches:
-        if reverse:
-            matches = reversed(list(matches))
-            for match in matches:
-                if match.start() < beg:
-                    return match.start(), match.end()
-        else:
-            for match in matches:
-                if end < match.end():
-                    return match.start(), match.end()
+def pattern_selector(pattern, reverse=False):
+    @interval_selector
+    def wrapper(interval, text):
+        beg, end = interval
+        regex = re.compile(pattern)
+        matches = regex.finditer(text)
+        if matches:
+            if reverse:
+                matches = reversed(list(matches))
+                for match in matches:
+                    if match.start() < beg:
+                        return match.start(), match.end()
+            else:
+                for match in matches:
+                    if end < match.end():
+                        return match.start(), match.end()
+    return wrapper
 
-
-@interval_selector
-def next_word(interval, text):
-    """Return next word"""
-    return find_next(interval, text, r'\b\w+\b')
-
-
-@interval_selector
-def previous_word(interval, text):
-    """Return previous word"""
-    return find_next(interval, text, r'\b\w+\b', reverse=True)
-
-
-@interval_selector
-def next_paragraph(interval, text):
-    """Return next paragraph"""
-    return find_next(interval, text, r'(?s)((?:[^\n][\n]?)+)')
-
-
-@interval_selector
-def previous_paragraph(interval, text):
-    """Return previous paragraph"""
-    return find_next(interval, text, r'(?s)((?:[^\n][\n]?)+)', reverse=True)
+# Predefined pattern selectors
+next_word = pattern_selector(r'\b\w+\b')
+previous_word = pattern_selector(r'\b\w+\b', reverse=True)
+next_paragraph = pattern_selector(r'(?s)((?:[^\n][\n]?)+)')
+previous_paragraph = pattern_selector(r'(?s)((?:[^\n][\n]?)+)', reverse=True)

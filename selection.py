@@ -1,10 +1,6 @@
-from . import current
-
 class Selection:
     """Sorted list of disjoint non-adjacent intervals"""
-    def __init__(self, session=None, intervals=None):
-        if not session:
-            session = current.session
+    def __init__(self, session, intervals=None):
         self.session = session
 
         self._intervals = []
@@ -33,7 +29,7 @@ class Selection:
         """Add interval to the selection. If interval is overlapping
         with or adjacent to some existing interval, they are merged."""
         nbeg, nend = interval
-        if not 0 <= nbeg <= nend < len(self.session.text):
+        if not 0 <= nbeg <= nend <= len(self.session.text):
             raise Exception("Invalid interval " + str(interval))
 
         # First merge overlapping or adjacent existing intervals into the new interval
@@ -71,26 +67,22 @@ class Selection:
 
         self._intervals = result
 
-    def extend(self, selector):
+    def extend(self, selection):
         """Return the selection obtained by extending self with the selector's return"""
-        result = Selection(self)
-        selection = selector(self)
+        result = Selection(self.session, intervals=self._intervals)
         for interval in selection:
             result.add(interval)
         return result
 
-    def reduce(self, selector):
+    def reduce(self, selection):
         """Return the selection obtained by reducing self with the selector's return.
         Reducing is defined by extending the complement of self"""
-        text = self.session.text
-        compl = self.complement(text)
-        compl = compl.extend(selector, text)
-        return compl.complement(text)
+        return self.complement().extend(selection).complement()
 
     def complement(self):
         """Return the complementary selection of self"""
-        return Selection([interval for in_selection, interval in self.partition()
-                          if not in_selection])
+        return Selection(self.session, intervals=[interval for in_selection, interval in self.partition()
+                                                  if not in_selection])
 
     def partition(self, lower_bound=0, upper_bound=float('infinity')):
         """Return a sorted list containing all intervals in self

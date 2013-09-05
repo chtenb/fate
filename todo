@@ -1,3 +1,5 @@
+refactor operator and selector architecture
+implement 'next/previous word under cursor' with shortcut n/N
 allow backspacing as insert operations
 implement dynamic (parametrized) selectors, such as 'find character'
 implement 'extend till interval' in addition to 'extend (with selection)'

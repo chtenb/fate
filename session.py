@@ -1,8 +1,9 @@
 """A session represents the state of an editing session"""
 from .event import Event
-from . import current
+from .selection import Selection
 import logging
 
+session_list = []
 
 class Session():
     """Class containing all objects of one file editing session"""
@@ -12,12 +13,18 @@ class Session():
     OnRead = Event()
     OnWrite = Event()
 
+    reduce_mode = False
+    extend_mode = False
+
     def __init__(self, filename=""):
         self.text = ""
         self.filename = filename
+        self.selection = Selection(self)
+        self.selection.add((0, 0))
         if filename:
             self.read()
-        current.sessions.append(self)
+        global session_list
+        session_list.append(self)
         self.OnSessionInit.fire(self)
 
     def read(self):
@@ -34,9 +41,20 @@ class Session():
                 fd.write(self.text)
             self.OnWrite.fire(self)
 
+    def select(self, selector):
+        """Apply the selector to the selection"""
+        selection = selector(self.selection, self.text)
+        if self.reduce_mode or self.extend_mode:
+            if self.reduce_mode:
+                self.selection = self.selection.reduce(selection)
+            if self.extend_mode:
+                self.selection = self.selection.extend(selection)
+        else:
+            self.selection = selection
+
     def apply(self, operation):
         """Apply the operation to the text"""
-        partition = operation.old_selection.partition(self.text)
+        partition = operation.old_selection.partition()
         partition_content = [(in_selection, self.text[beg:end]) for in_selection, (beg, end) in partition]
         count = 0
         result = []
@@ -48,6 +66,7 @@ class Session():
                 result.append(string)
 
         self.text = ''.join(result)
+        self.selection = operation.new_selection
         self.OnApplyOperation.fire(self, operation)
 
     def content(self, selection):
