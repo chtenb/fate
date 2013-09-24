@@ -89,6 +89,28 @@ def next_char(interval, text):
     return (nend - 1, nend)
 
 
+@interval_selector
+def move_to_previous_line(interval, text):
+    """Move all intervals one line backwards"""
+    beg, end = interval
+    bol = text.rfind('\n', 0, beg)
+    if bol == -1:
+        return interval
+    bol2 = text.rfind('\n', 0, bol)
+    return (bol2 + beg - bol, bol2 + end - bol)
+
+
+@interval_selector
+def move_to_next_line(interval, text):
+    """Move all intervals one line forwards"""
+    beg, end = interval
+    eol = text.find('\n', beg)
+    if eol == -1:
+        return interval
+    bol = text.rfind('\n', 0, beg)
+    return (eol + beg - bol, eol + end - bol)
+
+
 def pattern_selector(pattern, reverse=False):
     """Factory method for creating selectors based on a regular expression"""
     @interval_selector
