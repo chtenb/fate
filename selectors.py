@@ -4,19 +4,22 @@ import re
 
 
 def selector(function):
-    """Defaults to (0,0) when selection passed is empty.
-    Returns original selection when result is empty."""
+    """Defaults to (0,0) when text or selection passed is empty.
+    Returns original selection when result is empty or invalid."""
     def wrapper(selection, text):
-        if not selection:
-            selection.add((0, 0))
         result = function(selection, text)
+        # If the result isn't valid, we return the old selection
+        for beg, end in result:
+            if not (0 <= beg < len(text) and 0 <= end <= len(text)):
+                return selection
+        # If the result is empty, we return the old selection
         return result if result else selection
     return wrapper
 
 
 @selector
 def single_character(selection, text):
-    return Selection(selection.session, intervals=[(selection[0][0], selection[0][0])])
+    return Selection(selection.session, intervals=[(selection[0][0], selection[0][0] + 1)])
 
 
 @selector
