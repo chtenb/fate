@@ -1,16 +1,14 @@
 from ..session import Session
 import re
+from .common import regex_labels, re_number, re_string
 
 import keyword
-re_keywords = re.compile(r'\b({})\b'.format('|'.join(keyword.kwlist)))
-re_numbers = re.compile('\d')
-re_strings = re.compile('".*"')
+re_keyword = re.compile(r'\b({})\b'.format('|'.join(keyword.kwlist)))
+re_comment = re.compile('#.*\n')
 
 
 def main(session):
-    for regex, label in [(re_keywords, 'keyword'), (re_numbers, 'number'), (re_strings, 'string')]:
-        matches = regex.finditer(session.text)
-        for match in matches:
-            session.labeling.add((match.start(), match.end()), label)
+    regex_list = [(re_keyword, 'keyword'), (re_number, 'number'), (re_string, 'string'), (re_comment, 'comment')]
+    regex_labels(session, regex_list)
 
 Session.OnGenerateLabeling.add(main)

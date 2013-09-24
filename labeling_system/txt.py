@@ -1,15 +1,13 @@
 from ..session import Session
 import re
+from .common import regex_labels, re_number, re_string
 
 keywords = ['TODO']
 
 re_keyword = re.compile(r'\b({})\b'.format('|'.join(keywords)))
-re_number = re.compile('\d')
 
 def main(session):
-    for regex, label in [(re_keyword, 'keyword'), (re_number, 'number')]:
-        matches = regex.finditer(session.text)
-        for match in matches:
-            session.labeling.add((match.start(), match.end()), label)
+    regex_list = [(re_keyword, 'keyword'), (re_number, 'number'), (re_string, 'string')]
+    regex_labels(session, regex_list)
 
 Session.OnGenerateLabeling.add(main)
