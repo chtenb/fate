@@ -9,10 +9,9 @@ class Operation:
         self.old_content = session.content(selection)
         self.new_content = new_content
 
-        self.new_selection = Selection(session)
         beg = selection[0][0]
         end = beg + len(self.new_content[0])
-        self.new_selection.add((beg, end))
+        self.new_selection = Selection(session, [(beg,end)])
         for i in range(1, len(selection)):
             beg = end + selection[i][0] - selection[i - 1][1]
             end = beg + len(self.new_content[i])

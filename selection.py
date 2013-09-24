@@ -7,6 +7,8 @@ class Selection:
         if intervals:
             for interval in intervals:
                 self.add(interval)
+        else:
+            self.add((0, 0))
 
     def __getitem__(self, index):
         return self._intervals[index]
@@ -69,7 +71,7 @@ class Selection:
 
     def extend(self, selection):
         """Return the selection obtained by extending self with the selector's return"""
-        result = Selection(self.session, intervals=self._intervals)
+        result = Selection(self.session, self._intervals)
         for interval in selection:
             result.add(interval)
         return result
@@ -81,8 +83,8 @@ class Selection:
 
     def complement(self):
         """Return the complementary selection of self"""
-        return Selection(self.session, intervals=[interval for in_selection, interval in self.partition()
-                                                  if not in_selection])
+        return Selection(self.session, [interval for in_selection, interval in self.partition()
+                                        if not in_selection])
 
     def partition(self, lower_bound=0, upper_bound=float('infinity')):
         """Return a sorted list containing all intervals in self

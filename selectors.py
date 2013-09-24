@@ -1,4 +1,4 @@
-"""A selector takes a selection and returns another derived selection"""
+"""A selector takes a selection and returns a second, derived selection"""
 from .selection import Selection
 import re
 
@@ -8,7 +8,7 @@ def selector(function):
     Returns original selection when result is empty or invalid."""
     def wrapper(selection, text):
         result = function(selection, text)
-        # If the result isn't valid, we return the old selection
+        # If the result isn't valid, we return the original selection
         for beg, end in result:
             if not (0 <= beg < len(text) and 0 <= end <= len(text)):
                 return selection
@@ -30,14 +30,23 @@ def complement(selection, text):
 def interval_selector(function):
     """An interval selector takes an interval to another interval.
     This induces a selector, by applying the interval
-    selector to all intervals contained in a selection"""
+    selector to all intervals contained in a selection
+    Keeps original interval when result is empty or invalid."""
     @selector
     def wrapper(selection, text):
-        result = Selection(selection.session)
+        result = []
         for interval in selection:
             interval_result = function(interval, text)
-            if interval_result:
-                result.add(interval_result)
+            # If the result isn't valid, we take the original interval
+            if not interval_result:
+                interval_result = interval
+            else:
+                beg, end = interval_result
+                if not (0 <= beg < len(text) and 0 <= end <= len(text)):
+                    interval_result = interval
+
+            result.append(interval_result)
+        return Selection(selection.session, result)
         return result
     return wrapper
 
@@ -81,6 +90,7 @@ def next_char(interval, text):
 
 
 def pattern_selector(pattern, reverse=False):
+    """Factory method for creating selectors based on a regular expression"""
     @interval_selector
     def wrapper(interval, text):
         beg, end = interval

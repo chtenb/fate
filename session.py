@@ -27,15 +27,19 @@ class Session():
         session_list.append(self)
         self.OnSessionInit.fire(self)
 
-    def read(self):
+    def read(self, filename=None):
         """Read text from file"""
+        if filename:
+            self.filename = filename
         if self.filename:
             with open(self.filename, 'r') as fd:
                 self.text = fd.read()
             self.OnRead.fire(self)
 
-    def write(self):
+    def write(self, filename=None):
         """Write current text to file"""
+        if filename:
+            self.filename = filename
         if self.filename:
             with open(self.filename, 'w') as fd:
                 fd.write(self.text)
@@ -43,13 +47,14 @@ class Session():
 
     def select(self, selector):
         """Apply the selector to the selection"""
-        selection = selector(self.selection, self.text)
-        if self.reduce_mode or self.extend_mode:
-            if self.reduce_mode:
-                self.selection = self.selection.reduce(selection)
-            if self.extend_mode:
-                self.selection = self.selection.extend(selection)
+        if self.reduce_mode:
+            selection = selector(self.selection.complement(), self.text)
+            self.selection = self.selection.reduce(selection)
+        elif self.extend_mode:
+            selection = selector(self.selection, self.text)
+            self.selection = self.selection.extend(selection)
         else:
+            selection = selector(self.selection, self.text)
             self.selection = selection
 
     def apply(self, operation):
