@@ -5,7 +5,6 @@ from .operation import Operation
 def operator(function):
     def wrapper(selection, session):
         old_content = session.content(selection)
-        new_content = []
         return function(selection, old_content, session)
     return wrapper
 
@@ -16,10 +15,6 @@ def delete(selection, old_content, session):
     for s in old_content:
         new_content.append('')
     return Operation(session, selection, new_content)
-
-
-#@operator
-#def insert_operator
 
 
 def insert_after(session, selection, string):
