@@ -80,4 +80,4 @@ class Session():
 
 
 # Load the plugins, after defining Session
-from . import user
+from . import plugins

@@ -1,10 +1,9 @@
 refactor operator and selector architecture
-implement 'next/previous word under cursor' with shortcut n/N
 allow backspacing as insert operations
-implement dynamic (parametrized) selectors, such as 'find character'
 implement 'extend till interval' in addition to 'extend (with selection)'
+    idea: maybe use join n split system for this
 better (persistent) undo system
-more filedetection
 some general labelings such as bracket pairs
 implement simple clipboard system
 add support for plugins in home directory
+rename to PythonicTextEditor
