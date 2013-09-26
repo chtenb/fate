@@ -2,6 +2,10 @@
 from .event import Event
 from .selection import Selection
 import logging
+import tempfile
+
+logfilename = tempfile.gettempdir() + '/protexted.log'
+logging.basicConfig(filename=logfilename, level=logging.DEBUG)
 
 session_list = []
 

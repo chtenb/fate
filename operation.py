@@ -18,7 +18,7 @@ class Operation:
             self.new_selection.add((beg, end))
 
     def inverse(self):
-        result = copy.deepcopy(self)
+        result = copy.copy(self)
         result.old_selection, result.new_selection = result.new_selection, result.old_selection
         result.old_content, result.new_content = result.new_content, result.old_content
         return result

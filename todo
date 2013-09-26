@@ -1,9 +1,8 @@
 refactor operator and selector architecture
 allow backspacing as insert operations
 implement 'extend till interval' in addition to 'extend (with selection)'
-    idea: maybe use join n split system for this
+    question: maybe this should be decided by the selector itself
+idea: join n split system
 better (persistent) undo system
 some general labelings such as bracket pairs
-implement simple clipboard system
 add support for plugins in home directory
-rename to PythonicTextEditor
