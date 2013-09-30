@@ -31,7 +31,8 @@ class Selection:
         """Add interval to the selection. If interval is overlapping
         with or adjacent to some existing interval, they are merged."""
         nbeg, nend = interval
-        if nbeg > nend:
+        #TODO
+        if nbeg != None and nend != None and nbeg > nend:
             raise Exception("Invalid interval " + str(interval))
 
         # First merge overlapping or adjacent existing intervals into the new interval
@@ -69,6 +70,28 @@ class Selection:
 
         self._intervals = result
 
+    def remove(self, interval):
+        """Remove interval from the selection."""
+        nbeg, nend = interval
+        if nbeg > nend:
+            raise Exception("Invalid interval " + str(interval))
+
+        for i, (beg, end) in enumerate(self._intervals):
+            #  []    existing interval
+            # (  )   new interval
+            if nbeg <= beg and end <= nend:
+                self._intervals.remove((beg,end))
+            else:
+                # [  ]
+                #  (
+                if beg < nbeg <= end:
+                    self._intervals[i] = (beg, nbeg)
+                # [  ]
+                #   )
+                if beg <= nend < end:
+                    self._intervals[i] = (nend, end)
+
+
     def extend(self, selection):
         """Return the selection obtained by extending self with the selector's return"""
         result = Selection(self.session, self._intervals)
@@ -77,31 +100,44 @@ class Selection:
         return result
 
     def reduce(self, selection):
-        """Return the selection obtained by reducing self with the selector's return.
-        Reducing is defined by extending the complement of self"""
-        return self.complement().extend(selection).complement()
+        """Return the selection obtained by reducing self with the selector's return."""
+        result = Selection(self.session, self._intervals)
+        for interval in selection:
+            result.remove(interval)
+        return result
 
     def complement(self):
         """Return the complementary selection of self"""
-        return Selection(self.session, [interval for in_selection, interval in self.partition()
-                                        if not in_selection])
+        intervals = [interval for in_selection, interval in self.partition() if not in_selection]
+        return Selection(self.session, intervals)
 
-    def partition(self, lower_bound=0, upper_bound=float('infinity')):
+    def bound(self, lower_bound=None, upper_bound=None):
+        """Return the selection obtained by bounding self"""
+        if not lower_bound:
+            lower_bound = 0
+        if not upper_bound:
+            upper_bound = len(self.session.text)
+
+        result = Selection(self.session)
+        for beg, end in self:
+            beg = max(beg, lower_bound)
+            end = min(end, upper_bound)
+            if not beg > end:
+                result.add((beg, end))
+        return result
+
+    def partition(self):
         """Return a sorted list containing all intervals in self
         together with all complementary intervals"""
         text = self.session.text
         points = [point for interval in self for point in interval]
-        in_selection = True
-        if not points or points[0] > 0:
-            points.insert(0, 0)
-            in_selection = False
-        if not points or points[-1] < len(text):
-            points.append(len(text))
+        points.insert(0, 0)
+        points.append(len(text))
+        in_selection = False
 
         result = []
         for i in range(1, len(points)):
-            beg, end = points[i - 1], points[i]
-            if beg < upper_bound or end > lower_bound:
-                result.append((in_selection, (max(beg, lower_bound), min(end, upper_bound))))
+            interval = points[i - 1], points[i]
+            result.append((in_selection, interval))
             in_selection = not in_selection
         return result

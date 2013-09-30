@@ -4,5 +4,7 @@ implement 'extend till interval' in addition to 'extend (with selection)'
     question: maybe this should be decided by the selector itself
 idea: join n split system
 better (persistent) undo system
+better (persistent) clipboard (maybe stack based?)
+    Also be able to use system clipboards
 some general labelings such as bracket pairs
 add support for plugins in home directory

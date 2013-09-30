@@ -7,11 +7,12 @@ def selector(function):
     """Defaults to (0,0) when text or selection passed is empty.
     Returns original selection when result is empty or invalid."""
     def wrapper(selection, text):
+        # TODO: make sure None works in selectors
         result = function(selection, text)
         # If the result isn't valid, we return the original selection
-        for beg, end in result:
-            if not (0 <= beg < len(text) and 0 <= end <= len(text)):
-                return selection
+        #for beg, end in result:
+            #if not (0 <= beg < len(text) and 0 <= end <= len(text)):
+                #return selection
         # If the result is empty, we return the old selection
         return result if result else selection
     return wrapper

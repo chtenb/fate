@@ -80,7 +80,7 @@ class Session():
 
     def content(self, selection):
         """Return the content of the selection"""
-        return [self.text[beg:end] for beg, end in selection]
+        return [self.text[max(0, beg):min(len(self.text), end)] for beg, end in selection]
 
 
 # Load the plugins, after defining Session
