@@ -9,7 +9,7 @@ logging.basicConfig(filename=logfilename, level=logging.DEBUG)
 
 session_list = []
 # An enum containing all possible selection modes
-#selection_modes = enum.Enum("normal", "extend", "reduce")
+select_mode, extend_mode, reduce_mode = "SELECT", "EXTEND", "REDUCE"
 
 class Session():
     """Class containing all objects of one file editing session"""
@@ -19,9 +19,7 @@ class Session():
     OnRead = Event()
     OnWrite = Event()
 
-
-    reduce_mode = False
-    extend_mode = False
+    selection_mode = select_mode
 
     def __init__(self, filename=""):
         self.text = ""

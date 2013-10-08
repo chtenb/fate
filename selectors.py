@@ -1,9 +1,11 @@
 """A selector takes a selection and returns a second, derived selection"""
 from .selection import Selection
+from .session import select_mode, extend_mode, reduce_mode
 import re
 import logging
 
 # TODO rewrite decorators to deal with selection modes
+
 
 def selector(function):
     """Defaults to (0,0) when text or selection passed is empty.
@@ -13,23 +15,23 @@ def selector(function):
         if not selection:
             selection = session.selection
 
-        if session.reduce_mode:
+        if session.selection_mode == reduce_mode:
             result = function(selection.complement(), text)
             result = selection.reduce(result)
-        elif session.extend_mode:
+        elif session.selection_mode == extend_mode:
             result = function(selection, text)
             result = selection.extend(result)
         else:
             result = function(selection, text)
 
+        if not result:
+            # If the result is empty, we return the old selection
+            return selection
+
         # If the result isn't valid, we return the original selection
         for beg, end in result:
             if not (0 <= beg < len(text) and 0 <= end <= len(text)):
                 return selection
-
-        if not result:
-            # If the result is empty, we return the old selection
-            return selection
 
         return result
     return wrapper
@@ -55,7 +57,7 @@ def interval_selector(function):
         if not selection:
             selection = session.selection
 
-        if session.reduce_mode:
+        if session.selection_mode == reduce_mode:
             iterselection = selection.complement()
         else:
             iterselection = selection
@@ -72,12 +74,12 @@ def interval_selector(function):
                 if not (0 <= beg < len(text) and 0 <= end <= len(text)):
                     interval_result = interval
 
-            if session.reduce_mode or session.extend_mode:
+            if session.selection_mode == reduce_mode or session.selection_mode == extend_mode:
                 interval_result = min(interval[0], interval_result[0]), max(interval[1], interval_result[1])
             result.append(interval_result)
 
         result = Selection(session, result)
-        if session.reduce_mode:
+        if session.selection_mode == reduce_mode:
             result = selection.reduce(result)
             if result:
                 return result
@@ -146,27 +148,52 @@ def move_to_next_line(interval, text):
     return (max(eol, eol + beg - bol), max(eol, eol + end - bol))
 
 
+# TODO: create two functions that represent pattern_selector and interval_pattern_selector
+# A find_pattern function should be used by both
+
+def find_pattern(pattern, position, text, reverse=False):
+    regex = re.compile(pattern)
+    matches = regex.finditer(text)
+    if matches:
+        if reverse:
+            matches = reversed(list(matches))
+            for match in matches:
+                if match.start() < position:
+                    return match.start(), match.end()
+        else:
+            for match in matches:
+                if position < match.end():
+                    return match.start(), match.end()
+
+
 def pattern_selector(pattern, reverse=False):
     """Factory method for creating selectors based on a regular expression"""
-    @interval_selector
-    def wrapper(interval, text):
-        beg, end = interval
-        regex = re.compile(pattern)
-        matches = regex.finditer(text)
-        if matches:
-            if reverse:
-                matches = reversed(list(matches))
-                for match in matches:
-                    if match.start() < beg:
-                        return match.start(), match.end()
-            else:
-                for match in matches:
-                    if end < match.end():
-                        return match.start(), match.end()
+    @selector
+    def wrapper(selection, text):
+        if reverse:
+            position = selection[0][0]
+        else:
+            position = selection[-1][1]
+        match = find_pattern(pattern, position, text, reverse=reverse)
+        if match:
+            return Selection(selection.session, intervals=[match])
     return wrapper
 
+
+def pattern_interval_selector(pattern, reverse=False):
+    """Factory method for creating interval selectors based on a regular expression"""
+    @interval_selector
+    def wrapper(interval, text):
+        if reverse:
+            position = interval[0]
+        else:
+            position = interval[1]
+        return find_pattern(pattern, position, text, reverse=reverse)
+    return wrapper
+
+
 # Predefined pattern selectors
-next_word = pattern_selector(r'\b\w+\b')
-previous_word = pattern_selector(r'\b\w+\b', reverse=True)
-next_paragraph = pattern_selector(r'(?s)((?:[^\n][\n]?)+)')
-previous_paragraph = pattern_selector(r'(?s)((?:[^\n][\n]?)+)', reverse=True)
+next_word = pattern_interval_selector(r'\b\w+\b')
+previous_word = pattern_interval_selector(r'\b\w+\b', reverse=True)
+next_paragraph = pattern_interval_selector(r'(?s)((?:[^\n][\n]?)+)')
+previous_paragraph = pattern_interval_selector(r'(?s)((?:[^\n][\n]?)+)', reverse=True)
