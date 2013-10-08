@@ -11,3 +11,6 @@ def paste(self):
     operation = Operation(self, self.selection, self.clipboard)
     self.apply(operation)
 Session.paste = paste
+
+import logging
+logging.info('clipboard system loaded')

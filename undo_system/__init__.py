@@ -13,3 +13,6 @@ def undo(self):
 Session.OnApplyOperation.add(store_last_operation)
 Session.undo = undo
 Session.last_operation = None
+
+import logging
+logging.info('undo system loaded')

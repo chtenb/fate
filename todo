@@ -2,7 +2,10 @@ refactor operator and selector architecture
 allow backspacing as insert operations
 implement 'extend till interval' in addition to 'extend (with selection)'
     question: maybe this should be decided by the selector itself
-idea: join n split system
+    or maybe this should depend on the selector type:
+        then interval selectors would always extend till
+        while selectors would always extend with
+idea: join n split functions
 better (persistent) undo system
 better (persistent) clipboard (maybe stack based?)
     Also be able to use system clipboards

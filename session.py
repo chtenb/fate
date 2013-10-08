@@ -8,6 +8,8 @@ logfilename = tempfile.gettempdir() + '/protexted.log'
 logging.basicConfig(filename=logfilename, level=logging.DEBUG)
 
 session_list = []
+# An enum containing all possible selection modes
+#selection_modes = enum.Enum("normal", "extend", "reduce")
 
 class Session():
     """Class containing all objects of one file editing session"""
@@ -16,6 +18,7 @@ class Session():
     OnApplyOperation = Event()
     OnRead = Event()
     OnWrite = Event()
+
 
     reduce_mode = False
     extend_mode = False
@@ -51,15 +54,7 @@ class Session():
 
     def select(self, selector):
         """Apply the selector to the selection"""
-        if self.reduce_mode:
-            selection = selector(self.selection.complement(), self.text)
-            self.selection = self.selection.reduce(selection)
-        elif self.extend_mode:
-            selection = selector(self.selection, self.text)
-            self.selection = self.selection.extend(selection)
-        else:
-            selection = selector(self.selection, self.text)
-            self.selection = selection
+        self.selection = selector(self)
 
     def apply(self, operation):
         """Apply the operation to the text"""
@@ -85,3 +80,5 @@ class Session():
 
 # Load the plugins, after defining Session
 from . import plugins
+
+logging.info('protexted loaded')

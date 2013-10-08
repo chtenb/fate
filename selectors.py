@@ -1,20 +1,37 @@
 """A selector takes a selection and returns a second, derived selection"""
 from .selection import Selection
 import re
+import logging
 
+# TODO rewrite decorators to deal with selection modes
 
 def selector(function):
     """Defaults to (0,0) when text or selection passed is empty.
     Returns original selection when result is empty or invalid."""
-    def wrapper(selection, text):
-        # TODO: make sure None works in selectors
-        result = function(selection, text)
+    def wrapper(session, selection=None):
+        text = session.text
+        if not selection:
+            selection = session.selection
+
+        if session.reduce_mode:
+            result = function(selection.complement(), text)
+            result = selection.reduce(result)
+        elif session.extend_mode:
+            result = function(selection, text)
+            result = selection.extend(result)
+        else:
+            result = function(selection, text)
+
         # If the result isn't valid, we return the original selection
-        #for beg, end in result:
-            #if not (0 <= beg < len(text) and 0 <= end <= len(text)):
-                #return selection
-        # If the result is empty, we return the old selection
-        return result if result else selection
+        for beg, end in result:
+            if not (0 <= beg < len(text) and 0 <= end <= len(text)):
+                return selection
+
+        if not result:
+            # If the result is empty, we return the old selection
+            return selection
+
+        return result
     return wrapper
 
 
@@ -33,11 +50,20 @@ def interval_selector(function):
     This induces a selector, by applying the interval
     selector to all intervals contained in a selection
     Keeps original interval when result is empty or invalid."""
-    @selector
-    def wrapper(selection, text):
+    def wrapper(session, selection=None):
+        text = session.text
+        if not selection:
+            selection = session.selection
+
+        if session.reduce_mode:
+            iterselection = selection.complement()
+        else:
+            iterselection = selection
+
         result = []
-        for interval in selection:
+        for interval in iterselection:
             interval_result = function(interval, text)
+
             # If the result isn't valid, we take the original interval
             if not interval_result:
                 interval_result = interval
@@ -46,8 +72,16 @@ def interval_selector(function):
                 if not (0 <= beg < len(text) and 0 <= end <= len(text)):
                     interval_result = interval
 
+            if session.reduce_mode or session.extend_mode:
+                interval_result = min(interval[0], interval_result[0]), max(interval[1], interval_result[1])
             result.append(interval_result)
-        return Selection(selection.session, result)
+
+        result = Selection(session, result)
+        if session.reduce_mode:
+            result = selection.reduce(result)
+            if result:
+                return result
+            return selection
         return result
     return wrapper
 
@@ -98,7 +132,7 @@ def move_to_previous_line(interval, text):
     if bol == -1:
         return interval
     bol2 = text.rfind('\n', 0, bol)
-    return (bol2 + beg - bol, bol2 + end - bol)
+    return (min(bol, bol2 + beg - bol), min(bol, bol2 + end - bol))
 
 
 @interval_selector
@@ -109,7 +143,7 @@ def move_to_next_line(interval, text):
     if eol == -1:
         return interval
     bol = text.rfind('\n', 0, beg)
-    return (eol + beg - bol, eol + end - bol)
+    return (max(eol, eol + beg - bol), max(eol, eol + end - bol))
 
 
 def pattern_selector(pattern, reverse=False):

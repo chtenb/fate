@@ -15,4 +15,4 @@ Session.OnFileTypeLoaded = Event()
 Session.OnSessionInit.add(detect_filetype)
 
 import logging
-logging.debug('filetype system loaded')
+logging.info('filetype system loaded')
