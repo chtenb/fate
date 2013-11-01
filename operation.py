@@ -1,4 +1,4 @@
-# from .selection import Selection
+from .selection import Selection
 import copy
 
 
@@ -7,7 +7,7 @@ class Operation:
     def __init__(self, session, selection, new_content):
         self.old_selection = selection
         self.old_content = session.content(selection)
-        self.new_content = new_content
+        self.new_content = [eval_special_chars(s) for s in new_content]
 
         beg = selection[0][0]
         end = beg + len(self.new_content[0])
@@ -41,7 +41,12 @@ def reverse(string):
     return ''.join(result)
 
 
-def solve_backspace_chars(string):
+def eval_special_chars(string):
+    """Evaluate all special characters"""
+    return eval_backspace_chars(eval_delete_chars(string))
+
+
+def eval_backspace_chars(string):
     """Evaluate all backspace characters"""
     result = []
     count = 0
@@ -55,7 +60,7 @@ def solve_backspace_chars(string):
     return ''.join(reversed(result))
 
 
-def solve_delete_chars(string):
+def eval_delete_chars(string):
     """Evaluate all delete characters"""
     result = []
     count = 0
@@ -67,3 +72,4 @@ def solve_delete_chars(string):
         else:
             result.append(c)
     return ''.join(result)
+

@@ -1,5 +1,5 @@
 """An operator takes a selection (and optional additional arguments) and returns an operation"""
-from .operation import Operation
+from .operation import Operation, reverse
 
 
 def operator(function):
@@ -45,7 +45,7 @@ def insert_around(session, selection, string):
     old_content = session.content(selection)
     new_content = []
     character_pairs = [('{', '}'), ('[', ']'), ('(', ')')]
-    first_string = string[::-1]
+    first_string = reverse(string)
     second_string = string
     for first, second in character_pairs:
         first_string = first_string.replace(second, first)
