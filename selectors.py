@@ -148,14 +148,15 @@ def move_to_next_line(interval, text):
     return (max(eol, eol + beg - bol), max(eol, eol + end - bol))
 
 
-# TODO: create two functions that represent pattern_selector and interval_pattern_selector
-# A find_pattern function should be used by both
-
-def find_pattern(pattern, position, text, reverse=False):
+def find_pattern(pattern, position, text, reverse=False, all=False):
     regex = re.compile(pattern)
+
     matches = regex.finditer(text)
+
     if matches:
-        if reverse:
+        if all:
+            return [(match.start(), match.end()) for match in matches]
+        elif reverse:
             matches = reversed(list(matches))
             for match in matches:
                 if match.start() < position:
@@ -166,7 +167,7 @@ def find_pattern(pattern, position, text, reverse=False):
                     return match.start(), match.end()
 
 
-def pattern_selector(pattern, reverse=False):
+def pattern_selector(pattern, reverse=False, all=False):
     """Factory method for creating selectors based on a regular expression"""
     @selector
     def wrapper(selection, text):
@@ -174,9 +175,12 @@ def pattern_selector(pattern, reverse=False):
             position = selection[0][0]
         else:
             position = selection[-1][1]
-        match = find_pattern(pattern, position, text, reverse=reverse)
-        if match:
-            return Selection(selection.session, intervals=[match])
+
+        result = find_pattern(pattern, position, text, reverse=reverse, all=all)
+        if not all and result:
+            result = [result]
+        if result:
+            return Selection(selection.session, intervals=result)
     return wrapper
 
 

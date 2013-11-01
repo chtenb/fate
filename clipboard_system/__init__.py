@@ -8,8 +8,9 @@ def copy(self):
 Session.copy = copy
 
 def paste(self):
-    operation = Operation(self, self.selection, self.clipboard)
-    self.apply(operation)
+    if self.clipboard:
+        operation = Operation(self, self.selection, self.clipboard)
+        self.apply(operation)
 Session.paste = paste
 
 import logging
