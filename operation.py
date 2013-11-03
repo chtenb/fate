@@ -7,7 +7,7 @@ class Operation:
     def __init__(self, session, selection, new_content):
         self.old_selection = selection
         self.old_content = session.content(selection)
-        self.new_content = [eval_special_chars(s) for s in new_content]
+        self.new_content = new_content
 
         beg = selection[0][0]
         end = beg + len(self.new_content[0])
@@ -22,54 +22,4 @@ class Operation:
         result.old_selection, result.new_selection = result.new_selection, result.old_selection
         result.old_content, result.new_content = result.new_content, result.old_content
         return result
-
-# TODO
-# Implement solve_delete_chars and solve_backspace_chars
-# Implement reverse string (which changes backspaces to deletes and vice versa)
-
-
-def reverse(string):
-    """Reverse string, and change backspaces into deletes and vice versa"""
-    result = []
-    for c in reversed(string):
-        if c == '\b':
-            result.append('\x7f')
-        elif c == '\x7f':
-            result.append('\b')
-        else:
-            result.append(c)
-    return ''.join(result)
-
-
-def eval_special_chars(string):
-    """Evaluate all special characters"""
-    return eval_backspace_chars(eval_delete_chars(string))
-
-
-def eval_backspace_chars(string):
-    """Evaluate all backspace characters"""
-    result = []
-    count = 0
-    for c in reversed(string):
-        if c == '\b':
-            count += 1
-        elif count > 0:
-            count -= 1
-        else:
-            result.append(c)
-    return ''.join(reversed(result))
-
-
-def eval_delete_chars(string):
-    """Evaluate all delete characters"""
-    result = []
-    count = 0
-    for c in string:
-        if c == '\x7f':
-            count += 1
-        elif count > 0:
-            count -= 1
-        else:
-            result.append(c)
-    return ''.join(result)
 
