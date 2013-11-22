@@ -14,6 +14,7 @@ idea: join n split functions
     In the outside case, next_word would select the first word
         after the selection, for each interval, just as default.
 Selecting within another selection could also be useful.
+paste before and paste after
 better undo system
 better clipboard (maybe stack based?)
     Also be able to use system clipboards
