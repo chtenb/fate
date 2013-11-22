@@ -18,10 +18,12 @@ def selector(function):
 
         if session.selection_mode == reduce_mode:
             result = function(selection.complement(), text)
-            result = selection.reduce(result)
+            if result: # result can be None
+                result = selection.reduce(result)
         elif session.selection_mode == extend_mode:
             result = function(selection, text)
-            result = selection.extend(result)
+            if result: # result can be None
+                result = selection.extend(result)
         else:
             result = function(selection, text)
 

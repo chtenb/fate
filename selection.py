@@ -1,3 +1,5 @@
+import logging
+
 class Selection:
     """Sorted list of disjoint non-adjacent intervals"""
     def __init__(self, session, intervals=None):
@@ -76,20 +78,23 @@ class Selection:
         if nbeg > nend:
             raise Exception("Invalid interval " + str(interval))
 
+        result = []
         for i, (beg, end) in enumerate(self._intervals):
-            #  []    existing interval
-            # (  )   new interval
-            if nbeg <= beg and end <= nend:
-                self._intervals.remove((beg,end))
+            #   [  ]   existing interval
+            # )      ( new interval
+            if nend <= beg or end <= nbeg:
+                result.append((beg,end))
             else:
                 # [  ]
                 #  (
                 if beg < nbeg <= end:
-                    self._intervals[i] = (beg, nbeg)
+                    result.append((beg, nbeg))
                 # [  ]
                 #   )
-                if beg <= nend < end:
-                    self._intervals[i] = (nend, end)
+                if beg < nend < end:
+                    result.append((nend, end))
+
+        self._intervals = result
 
 
     def extend(self, selection):
