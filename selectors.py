@@ -1,4 +1,5 @@
-"""A selector takes a selection and returns a second, derived selection"""
+"""A selector takes a selection and returns a second, derived selection. We distinguish between functions that work selection-wise
+(selectors) and function that work interval-wise (interval selectors)."""
 from .selection import Selection
 from .session import select_mode, extend_mode, reduce_mode
 import re
@@ -43,8 +44,19 @@ def single_character(selection, text):
 
 
 @selector
+def empty(selection, text):
+    x = selection[0][0]
+    return Selection(selection.session, intervals=[(x, x)])
+
+
+@selector
 def complement(selection, text):
     return selection.complement()
+
+
+@selector
+def join(selection, text):
+    return Selection(selection.session, intervals=[(selection[0][0], selection[-1][1])])
 
 
 def interval_selector(function):
@@ -92,11 +104,11 @@ def interval_selector(function):
 def next_line(interval, text):
     """Return line beneath interval"""
     beg, end = interval
-    eol = text.find('\n', end)
+    eol = text.find('\n', end + 1)
     if eol == -1:
         eol = len(text) - 1
     bol = text.rfind('\n', 0, eol) + 1
-    return (bol, eol + 1)
+    return (bol, eol)
 
 
 @interval_selector
@@ -107,7 +119,7 @@ def previous_line(interval, text):
     eol = text.find('\n', bol)
     if eol == -1:
         eol = len(text) - 1
-    return (bol, eol + 1)
+    return (bol, eol)
 
 
 @interval_selector
@@ -148,6 +160,8 @@ def move_to_next_line(interval, text):
     return (max(eol, eol + beg - bol), max(eol, eol + end - bol))
 
 
+# reverse and all should be a single flag
+# a selection should be passed, indicating the bounds of the search space
 def find_pattern(pattern, position, text, reverse=False, all=False):
     regex = re.compile(pattern)
 
