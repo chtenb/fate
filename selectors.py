@@ -125,6 +125,28 @@ def previous_line(interval, text):
 
 
 @interval_selector
+def next_full_line(interval, text):
+    """Return line beneath interval including newline char"""
+    beg, end = interval
+    eol = text.find('\n', end)
+    if eol == -1:
+        eol = len(text) - 1
+    bol = text.rfind('\n', 0, eol) + 1
+    return (bol, eol + 1)
+
+
+@interval_selector
+def previous_full_line(interval, text):
+    """Return line above interval including newline char"""
+    beg, end = interval
+    bol = text.rfind('\n', 0, max(0, beg - 1)) + 1
+    eol = text.find('\n', bol)
+    if eol == -1:
+        eol = len(text) - 1
+    return (bol, eol + 1)
+
+
+@interval_selector
 def previous_char(interval, text):
     """Return previous char"""
     beg, end = interval

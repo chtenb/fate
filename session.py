@@ -70,6 +70,7 @@ class Session():
         self.text = ''.join(result)
         self.selection = operation.new_selection
         self.OnApplyOperation.fire(self, operation)
+        self.selection_mode = select_mode
 
     def content(self, selection):
         """Return the content of the selection"""
