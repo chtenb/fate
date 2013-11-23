@@ -1,20 +1,4 @@
-refactor operator and selector architecture
-idea: join n split functions
-    Join could be easily implemented.
-    Split should maybe be implemented as an even more advanced way
-    of doing selections. One should be able to select all possible
-    occurences. Splitting is then equal to reducing with all possible
-    occurences. This suggests some sort of idea of quantors:
-    previous, next, forall
-    either inside, outside (default) or anywhere.
-    In the anywhere case, next_word would select the first word of the text.
-    In the inside case, next_word would select the first word
-        inside the selection, for each interval.
-    In the outside case, next_word would select the first word
-        after the selection, for each interval, just as default.
-better undo system
 better clipboard (maybe stack based?)
     Also be able to use system clipboards
-some general labelings such as bracket pairs
 add support for plugins in home directory
 persistent session

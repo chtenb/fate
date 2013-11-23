@@ -20,6 +20,7 @@ class Session():
     OnWrite = Event()
 
     selection_mode = select_mode
+    forall = False
 
     def __init__(self, filename=""):
         self.text = ""

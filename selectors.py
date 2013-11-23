@@ -205,7 +205,7 @@ def find_pattern(pattern, position, text, reverse=False, all=False):
                     return match.start(), match.end()
 
 
-def pattern_selector(pattern, reverse=False, all=False):
+def pattern_selector(pattern, reverse=False):
     """Factory method for creating selectors based on a regular expression"""
     @selector
     def wrapper(selection, text):
@@ -214,7 +214,7 @@ def pattern_selector(pattern, reverse=False, all=False):
         else:
             position = selection[-1][1]
 
-        result = find_pattern(pattern, position, text, reverse=reverse, all=all)
+        result = find_pattern(pattern, position, text, reverse=reverse, all=selection.session.forall)
         if not all and result:
             result = [result]
         if result:
