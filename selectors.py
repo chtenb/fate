@@ -1,28 +1,40 @@
 """A selector takes a selection and returns a second, derived selection. We distinguish between functions that work selection-wise
 (selectors) and function that work interval-wise (interval selectors)."""
 from .selection import Selection
+from .operation import Operation
 from .session import select_mode, extend_mode, reduce_mode
 import re
 import logging
 
-# TODO rewrite decorators to deal with selection modes
+# TODO rename decorators to global and local selector, and make selector
+# a decorator used by both
+
+
+def to_selection(obj):
+    if obj.__class__ == Operation:
+        obj.session.apply(obj)
+        return obj.new_selection
+    elif obj.__class__ == Selection:
+        return obj
+    else:
+        raise Exception('Only Selections and Operations can be applied')
 
 
 def selector(function):
     """Defaults to (0,0) when text or selection passed is empty.
     Returns original selection when result is empty or invalid."""
-    def wrapper(session, selection=None):
+    def wrapper(obj):
+        selection = to_selection(obj)
+        session = selection.session
         text = session.text
-        if not selection:
-            selection = session.selection
 
         if session.selection_mode == reduce_mode:
             result = function(selection.complement(), text)
-            if result: # result can be None
+            if result:  # result can be None
                 result = selection.reduce(result)
         elif session.selection_mode == extend_mode:
             result = function(selection, text)
-            if result: # result can be None
+            if result:  # result can be None
                 result = selection.extend(result)
         else:
             result = function(selection, text)
@@ -31,7 +43,7 @@ def selector(function):
             # If the result is empty, we return the old selection
             return selection
 
-        # If the result isn't valid, we return the original selection
+        # If the result isnt valid, we return the original selection
         for beg, end in result:
             if not (0 <= beg < len(text) and 0 <= end <= len(text)):
                 return selection
@@ -66,10 +78,10 @@ def interval_selector(function):
     This induces a selector, by applying the interval
     selector to all intervals contained in a selection
     Keeps original interval when result is empty or invalid."""
-    def wrapper(session, selection=None):
+    def wrapper(obj):
+        selection = to_selection(obj)
+        session = selection.session
         text = session.text
-        if not selection:
-            selection = session.selection
 
         if session.selection_mode == reduce_mode:
             iterselection = selection.complement()
@@ -80,7 +92,7 @@ def interval_selector(function):
         for interval in iterselection:
             interval_result = function(interval, text)
 
-            # If the result isn't valid, we take the original interval
+            # If the result isnt valid, we take the original interval
             if not interval_result:
                 interval_result = interval
             else:

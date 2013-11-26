@@ -1,4 +1,21 @@
+consistent use of default selection etc
+some convenient higher level operators, such as 'open line'
+contextual completion
+    It is probably necessary to reconsider the operator design.
+    In order to be able to control the insertion of text,
+    the inserted text shouldn't be restricted to the user interface.
+    Note that this is also needed for completion.
+    Options:
+        - Session gets new fields insertions, deletions, operation
+        - Somehow make operators more incremental. This bothers
+          however insert_before to have proper deletions and to have
+          the insertions in the right order
+    For completion it is also needed that the full text can be
+    constructed including the pending operation. This would make life
+    more easy for the user interface as well, but would probably
+    require a fast datastructure for large files.
+maybe change behaviour of selectors to start selecting within
 better clipboard (maybe stack based?)
     Also be able to use system clipboards
 add support for plugins in home directory
-persistent session
+persistent session (using a context manager)

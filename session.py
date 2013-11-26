@@ -1,6 +1,7 @@
 """A session represents the state of an editing session"""
 from .event import Event
 from .selection import Selection
+from .operation import Operation
 import logging
 import tempfile
 
@@ -10,6 +11,7 @@ logging.basicConfig(filename=logfilename, level=logging.DEBUG)
 session_list = []
 # An enum containing all possible selection modes
 select_mode, extend_mode, reduce_mode = "SELECT", "EXTEND", "REDUCE"
+
 
 class Session():
     """Class containing all objects of one file editing session"""
@@ -27,6 +29,7 @@ class Session():
         self.filename = filename
         self.selection = Selection(self)
         self.selection.add((0, 0))
+
         if filename:
             self.read()
         global session_list
@@ -53,7 +56,7 @@ class Session():
 
     def select(self, selector):
         """Apply the selector to the selection"""
-        self.selection = selector(self)
+        self.selection = selector(self.selection)
 
     def apply(self, operation):
         """Apply the operation to the text"""
@@ -69,9 +72,9 @@ class Session():
                 result.append(string)
 
         self.text = ''.join(result)
-        self.selection = operation.new_selection
         self.OnApplyOperation.fire(self, operation)
         self.selection_mode = select_mode
+        return operation.new_selection
 
     def content(self, selection):
         """Return the content of the selection"""
