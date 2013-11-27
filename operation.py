@@ -1,5 +1,6 @@
 from .selection import Selection
 import copy
+import logging
 
 
 class Operation:
@@ -18,8 +19,8 @@ class Operation:
     def __init__(self, selection):
         self.session = selection.session
         self.old_selection = selection
-        self.old_content = selection.session.content(selection)
-        self.new_content = self.old_content
+        self.old_content = self.session.content(selection)
+        self.new_content = self.old_content[:]
 
         # new_selection should be computed on apply only
         #

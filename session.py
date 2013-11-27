@@ -74,6 +74,7 @@ class Session():
         self.text = ''.join(result)
         self.OnApplyOperation.fire(self, operation)
         self.selection_mode = select_mode
+        self.selection = operation.new_selection
         return operation.new_selection
 
     def content(self, selection):

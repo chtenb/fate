@@ -6,7 +6,6 @@ import re
 import logging
 
 def to_operation(obj):
-    logging.debug(obj.__class__)
     if obj.__class__ == Selection:
         return Operation(obj)
     elif obj.__class__ == Operation:
