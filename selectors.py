@@ -115,63 +115,25 @@ def interval_selector(function):
 
 
 @interval_selector
-def next_line(interval, text):
-    """Return line beneath interval"""
-    beg, end = interval
-    eol = text.find('\n', end + 1)
-    if eol == -1:
-        eol = len(text) - 1
-    bol = text.rfind('\n', 0, eol) + 1
-    return (bol, eol)
-
-
-@interval_selector
-def previous_line(interval, text):
-    """Return line above interval"""
-    beg, end = interval
-    bol = text.rfind('\n', 0, max(0, beg - 1)) + 1
-    eol = text.find('\n', bol)
-    if eol == -1:
-        eol = len(text) - 1
-    return (bol, eol)
-
-
-@interval_selector
-def next_full_line(interval, text):
-    """Return line beneath interval including newline char"""
-    beg, end = interval
-    eol = text.find('\n', end)
-    if eol == -1:
-        eol = len(text) - 1
-    bol = text.rfind('\n', 0, eol) + 1
-    return (bol, eol + 1)
-
-
-@interval_selector
-def previous_full_line(interval, text):
-    """Return line above interval including newline char"""
-    beg, end = interval
-    bol = text.rfind('\n', 0, max(0, beg - 1)) + 1
-    eol = text.find('\n', bol)
-    if eol == -1:
-        eol = len(text) - 1
-    return (bol, eol + 1)
-
-
-@interval_selector
 def previous_char(interval, text):
     """Return previous char"""
     beg, end = interval
-    nbeg = max(0, beg - 1)
-    return (nbeg, nbeg + 1)
+    if end == beg + 1:
+        n = max(0, beg - 1)
+    else:
+        n = end - 1
+    return (n, n + 1)
 
 
 @interval_selector
 def next_char(interval, text):
     """Return next char"""
     beg, end = interval
-    nend = min(len(text), end + 1)
-    return (nend - 1, nend)
+    if end == beg + 1:
+        n = min(len(text), beg + 1)
+    else:
+        n = beg
+    return (n, n + 1)
 
 
 @interval_selector
@@ -196,25 +158,25 @@ def move_to_next_line(interval, text):
     return (max(eol, eol + beg - bol), max(eol, eol + end - bol))
 
 
-# reverse and all should be a single flag
-# a selection should be passed, indicating the bounds of the search space
-def find_pattern(pattern, position, text, reverse=False, all=False):
+def find_pattern(pattern, interval, text, reverse=False, all=False, group=0):
+    beg, end = interval
     regex = re.compile(pattern)
 
     matches = regex.finditer(text)
 
     if matches:
         if all:
-            return [(match.start(), match.end()) for match in matches]
-        elif reverse:
-            matches = reversed(list(matches))
-            for match in matches:
-                if match.start() < position:
-                    return match.start(), match.end()
+            return [(match.start(group), match.end(group)) for match in matches]
         else:
+            if reverse:
+                matches = reversed(list(matches))
             for match in matches:
-                if position < match.end():
-                    return match.start(), match.end()
+                mbeg, mend = match.start(group), match.end(group)
+                if (mbeg, mend) != interval:
+                    if (beg < mend and mbeg < end
+                            or reverse and mend <= end
+                            or not reverse and mbeg >= beg):
+                        return mbeg, mend
 
 
 def pattern_selector(pattern, reverse=False):
@@ -222,11 +184,11 @@ def pattern_selector(pattern, reverse=False):
     @selector
     def wrapper(selection, text):
         if reverse:
-            position = selection[0][0]
+            interval = selection[0]
         else:
-            position = selection[-1][1]
+            interval = selection[-1]
 
-        result = find_pattern(pattern, position, text, reverse=reverse, all=selection.session.forall)
+        result = find_pattern(pattern, interval, text, reverse=reverse, all=selection.session.forall)
         if not all and result:
             result = [result]
         if result:
@@ -234,20 +196,20 @@ def pattern_selector(pattern, reverse=False):
     return wrapper
 
 
-def pattern_interval_selector(pattern, reverse=False):
+def pattern_interval_selector(pattern, reverse=False, group=0):
     """Factory method for creating interval selectors based on a regular expression"""
     @interval_selector
     def wrapper(interval, text):
-        if reverse:
-            position = interval[0]
-        else:
-            position = interval[1]
-        return find_pattern(pattern, position, text, reverse=reverse)
+        return find_pattern(pattern, interval, text, reverse=reverse, group=group)
     return wrapper
 
 
+def pattern_pair(pattern, **kwargs):
+    return (pattern_interval_selector(pattern, **kwargs),
+            pattern_interval_selector(pattern, reverse=True, **kwargs))
+
 # Predefined pattern selectors
-next_word = pattern_interval_selector(r'\b\w+\b')
-previous_word = pattern_interval_selector(r'\b\w+\b', reverse=True)
-next_paragraph = pattern_interval_selector(r'(?s)((?:[^\n][\n]?)+)')
-previous_paragraph = pattern_interval_selector(r'(?s)((?:[^\n][\n]?)+)', reverse=True)
+next_word, previous_word = pattern_pair(r'\b\w+\b')
+next_line, previous_line = pattern_pair(r'\s*([^\n]*)', group=1)
+next_full_line, previous_full_line = pattern_pair(r'[^\n]*\n')
+next_paragraph, previous_paragraph = pattern_pair(r'(?s)((?:[^\n][\n]?)+)')
