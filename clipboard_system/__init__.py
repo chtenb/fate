@@ -18,7 +18,8 @@ def paste(self, before=False):
             else:
                 new_content.append(content[i] + self.clipboard[i % l])
 
-        operation = Operation(self, self.selection, new_content)
+        operation = Operation(self.selection)
+        operation.new_content = new_content
         self.apply(operation)
 Session.paste = paste
 

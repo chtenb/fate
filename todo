@@ -1,21 +1,15 @@
-consistent use of default selection etc
 some convenient higher level operators, such as 'open line'
-contextual completion
-    It is probably necessary to reconsider the operator design.
-    In order to be able to control the insertion of text,
-    the inserted text shouldn't be restricted to the user interface.
-    Note that this is also needed for completion.
+fix reduce and extend to work with the new selector behaviour
+    I think this is fairly easy: in all modes the pattern selector has to iterate until the current selection changes
+It is probably necessary to reconsider the selector-operator design.
     Options:
-        - Session gets new fields insertions, deletions, operation
-        - Somehow make operators more incremental. This bothers
-          however insert_before to have proper deletions and to have
-          the insertions in the right order
+        - Session gets new field operation, and selectors always get the session passed which they can modify. However, this doesn't restrict what operators and selectors do in any way: they both just modify the session arbitrarily. Unless being a selector means being decorated by @selector. Hm, that sounds nice.
+contextual completion
     For completion it is also needed that the full text can be
-    constructed including the pending operation. This would make life
-    more easy for the user interface as well, but would probably
-    require a fast datastructure for large files.
+    constructed including the pending operation. (No it isn't!! Only filtering is done based on the input, the context is not changed)
 maybe change behaviour of selectors to start selecting within
 better clipboard (maybe stack based?)
     Also be able to use system clipboards
+add backwards find (F)
 add support for plugins in home directory
 persistent session (using a context manager)

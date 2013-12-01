@@ -43,7 +43,7 @@ def open_line(selection):
         indent = get_indent(content)
         return content + '\n' + indent
 
-    return next_line(previous_char(previous_char(next_char(new_line(next_line(selection))))))
+    return next_line(previous_char(previous_char(next_char(new_line(next_full_line(selection))))))
 
 
 @operator
