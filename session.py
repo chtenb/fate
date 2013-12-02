@@ -22,7 +22,7 @@ class Session():
     OnWrite = Event()
 
     selection_mode = select_mode
-    forall = False
+    saved = True
 
     def __init__(self, filename=""):
         self.text = ""
@@ -52,6 +52,7 @@ class Session():
         if self.filename:
             with open(self.filename, 'w') as fd:
                 fd.write(self.text)
+            saved = True
             self.OnWrite.fire(self)
 
     def select(self, selector):
@@ -72,6 +73,7 @@ class Session():
                 result.append(string)
 
         self.text = ''.join(result)
+        self.saved = False
         self.OnApplyOperation.fire(self, operation)
         self.selection_mode = select_mode
         self.selection = operation.new_selection

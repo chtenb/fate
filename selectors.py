@@ -189,14 +189,15 @@ def global_pattern_selector(pattern, reverse=False, group=0):
             if selection.intersects(interval):
                 new_intervals.append(interval)
 
-        new_selection = Selection(selection.session, intervals=new_intervals)
-        if mode == extend_mode:
-            new_selection = selection.extend(new_selection)
-        elif mode == reduce_mode:
-            new_selection = selection.reduce(new_selection)
+        if new_intervals:
+            new_selection = Selection(selection.session, intervals=new_intervals)
+            if mode == extend_mode:
+                new_selection = selection.extend(new_selection)
+            elif mode == reduce_mode:
+                new_selection = selection.reduce(new_selection)
 
-        if selection != new_selection:
-            return new_selection
+            if new_selection and selection != new_selection:
+                return new_selection
 
 
         # If that doesn't change the selection, start selecting one by one, and process according to mode
@@ -215,7 +216,7 @@ def global_pattern_selector(pattern, reverse=False, group=0):
                 elif mode == reduce_mode:
                     new_selection = selection.reduce(new_selection)
 
-                if selection != new_selection:
+                if new_selection and selection != new_selection:
                     return new_selection
 
     return wrapper

@@ -90,7 +90,7 @@ class Selection:
             else:
                 # [  ]
                 #  (
-                if beg < nbeg <= end:
+                if beg < nbeg < end:
                     result.append((beg, nbeg))
                 # [  ]
                 #   )
