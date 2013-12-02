@@ -171,23 +171,57 @@ def find_pattern(pattern, interval, text, reverse=False, all=False, group=0):
                         return mbeg, mend
 
 
-def global_pattern_selector(pattern, reverse=False):
+def global_pattern_selector(pattern, reverse=False, group=0):
     """Factory method for creating global selectors based on a regular expression"""
-    @global_selector
-    def wrapper(selection, text):
+    @selector
+    def wrapper(selection, text, mode):
+        matches = re.finditer(pattern, text)
         if reverse:
-            interval = selection[0]
-        else:
-            interval = selection[-1]
+            matches = reversed(list(matches))
 
-        result = find_pattern(pattern, interval, text, reverse=reverse, all=selection.session.forall)
-        if not all and result:
-            result = [result]
-        if result:
-            return Selection(selection.session, intervals=result)
+        match_intervals = []
+        for match in matches:
+            match_intervals.append((match.start(group), match.end(group)))
+
+        # First select all occurences intersecting with selection, and process according to mode
+        new_intervals = []
+        for interval in match_intervals:
+            if selection.intersects(interval):
+                new_intervals.append(interval)
+
+        new_selection = Selection(selection.session, intervals=new_intervals)
+        if mode == extend_mode:
+            new_selection = selection.extend(new_selection)
+        elif mode == reduce_mode:
+            new_selection = selection.reduce(new_selection)
+
+        if selection != new_selection:
+            return new_selection
+
+
+        # If that doesn't change the selection, start selecting one by one, and process according to mode
+        new_intervals = []
+        if reverse:
+            beg, end = selection[-1]
+        else:
+            beg, end = selection[0]
+
+        for mbeg, mend in match_intervals:
+            new_selection = Selection(selection.session, intervals=[(mbeg, mend)])
+            # If match is in the right direction
+            if not reverse and mend > beg or reverse and mbeg < end:
+                if mode == extend_mode:
+                    new_selection = selection.extend(new_selection)
+                elif mode == reduce_mode:
+                    new_selection = selection.reduce(new_selection)
+
+                if selection != new_selection:
+                    return new_selection
+
     return wrapper
 
 
+# TODO: debug local_pattern_selector for weird stuff with multiple intervals
 def local_pattern_selector(pattern, reverse=False, group=0):
     """Factory method for creating local selectors based on a regular expression"""
     @selector
@@ -209,9 +243,10 @@ def local_pattern_selector(pattern, reverse=False, group=0):
         if reverse:
             matches = reversed(list(matches))
 
-        result = []
+        new_intervals = []
         for interval in selection:
             beg, end = interval
+            new_interval = None
 
             for match in matches:
                 mbeg, mend = match.start(group), match.end(group)
@@ -235,9 +270,9 @@ def local_pattern_selector(pattern, reverse=False, group=0):
             if not new_interval:
                 new_interval = interval
 
-            result.append(new_interval)
+            new_intervals.append(new_interval)
 
-        return Selection(selection.session, intervals=result)
+        return Selection(selection.session, intervals=new_intervals)
     return wrapper
 
 
@@ -246,8 +281,8 @@ def pattern_pair(pattern, **kwargs):
             local_pattern_selector(pattern, reverse=True, **kwargs))
 
 
-next_char, previous_char = pattern_pair(r'.')
+next_char, previous_char = pattern_pair(r'(?s).')
 next_word, previous_word = pattern_pair(r'\b\w+\b')
 next_line, previous_line = pattern_pair(r'\s*([^\n]*)', group=1)
-next_full_line, previous_full_line = pattern_pair(r'[^\n]*\n')
+next_full_line, previous_full_line = pattern_pair(r'[^\n]*\n?')
 next_paragraph, previous_paragraph = pattern_pair(r'(?s)((?:[^\n][\n]?)+)')

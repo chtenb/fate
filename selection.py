@@ -21,6 +21,9 @@ class Selection:
     def __str__(self):
         return str(self._intervals)
 
+    def __eq__(a, b):
+        return a._intervals == b._intervals
+
     def index(self, interval):
         return self._intervals.index(interval)
 
@@ -146,3 +149,11 @@ class Selection:
             result.append((in_selection, interval))
             in_selection = not in_selection
         return result
+
+    def intersects(self, interval):
+        """Check if interval intersects with self"""
+        beg, end = interval
+        for i in self:
+            if beg <= i[0] < end or beg < i[1] <= end or i[0] < beg and end < i[1]:
+                return True
+        return False
