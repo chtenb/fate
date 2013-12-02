@@ -151,26 +151,6 @@ def local_selector(function):
 # TODO: select inside brackets (or maybe even more general: select between two separators)
 
 
-def find_pattern(pattern, interval, text, reverse=False, all=False, group=0):
-    beg, end = interval
-
-    matches = re.finditer(pattern, text)
-
-    if matches:
-        if all:
-            return [(match.start(group), match.end(group)) for match in matches]
-        else:
-            if reverse:
-                matches = reversed(list(matches))
-            for match in matches:
-                mbeg, mend = match.start(group), match.end(group)
-                if (mbeg, mend) != interval:
-                    if (beg < mend and mbeg < end
-                            or reverse and mend <= end
-                            or not reverse and mbeg >= beg):
-                        return mbeg, mend
-
-
 def global_pattern_selector(pattern, reverse=False, group=0):
     """Factory method for creating global selectors based on a regular expression"""
     @selector
