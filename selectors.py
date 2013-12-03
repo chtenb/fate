@@ -202,7 +202,6 @@ def global_pattern_selector(pattern, reverse=False, group=0):
     return wrapper
 
 
-# TODO: debug local_pattern_selector for weird stuff with multiple intervals
 def local_pattern_selector(pattern, reverse=False, group=0):
     """Factory method for creating local selectors based on a regular expression"""
     @selector
@@ -224,13 +223,16 @@ def local_pattern_selector(pattern, reverse=False, group=0):
         if reverse:
             matches = reversed(list(matches))
 
+        match_intervals = []
+        for match in matches:
+            match_intervals.append((match.start(group), match.end(group)))
+
         new_intervals = []
         for interval in selection:
             beg, end = interval
             new_interval = None
 
-            for match in matches:
-                mbeg, mend = match.start(group), match.end(group)
+            for mbeg, mend in match_intervals:
                 # If match is in the right direction
                 if not reverse and mend > beg or reverse and mbeg < end:
                     if mode == extend_mode:

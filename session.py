@@ -52,7 +52,7 @@ class Session():
         if self.filename:
             with open(self.filename, 'w') as fd:
                 fd.write(self.text)
-            saved = True
+            self.saved = True
             self.OnWrite.fire(self)
 
     def select(self, selector):
