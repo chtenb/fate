@@ -1,8 +1,6 @@
 """An operator takes a selection (and optional additional arguments) and returns an operation"""
 from .operation import Operation
 from .selection import Selection
-from .selectors import next_line, previous_char, next_char
-import re
 import logging
 
 def to_operation(obj):
@@ -29,21 +27,6 @@ def interval_operator(function):
             operation.new_content[i] = function(operation.new_content[i], *args)
         return operation
     return wrapper
-
-
-def open_line(selection):
-    """A higher level operator which opens a line after the first
-    new line character, for each interval"""
-    def get_indent(line):
-        m = re.match('\s', line)
-        return m.group(0) if m else ''
-
-    @interval_operator
-    def new_line(content):
-        indent = get_indent(content)
-        return content + '\n' + indent
-
-    return next_line(previous_char(previous_char(next_char(new_line(next_full_line(selection))))))
 
 
 @operator
