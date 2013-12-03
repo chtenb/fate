@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# protexted documentation build configuration file, created by
+# fate documentation build configuration file, created by
 # sphinx-quickstart on Tue Aug 27 09:04:33 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -41,7 +41,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'protexted'
+project = 'fate'
 copyright = '2013, Chiel ten Brinke'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -165,7 +165,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'protexteddoc'
+htmlhelp_basename = 'fatedoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -184,7 +184,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'protexted.tex', 'protexted Documentation',
+  ('index', 'fate.tex', 'fate Documentation',
    'Chiel ten Brinke', 'manual'),
 ]
 
@@ -214,7 +214,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'protexted', 'protexted Documentation',
+    ('index', 'fate', 'fate Documentation',
      ['Chiel ten Brinke'], 1)
 ]
 
@@ -228,8 +228,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'protexted', 'protexted Documentation',
-   'Chiel ten Brinke', 'protexted', 'One line description of project.',
+  ('index', 'fate', 'fate Documentation',
+   'Chiel ten Brinke', 'fate', 'One line description of project.',
    'Miscellaneous'),
 ]
 
@@ -246,7 +246,7 @@ texinfo_documents = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = 'protexted'
+epub_title = 'fate'
 epub_author = 'Chiel ten Brinke'
 epub_publisher = 'Chiel ten Brinke'
 epub_copyright = '2013, Chiel ten Brinke'

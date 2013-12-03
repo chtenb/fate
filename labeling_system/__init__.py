@@ -11,7 +11,7 @@ Session.labeling = Labeling()
 def load_filetype_syntax(session):
     if session.filetype:
         try:
-            import_module('.labeling_system.' + session.filetype, 'protexted')
+            import_module('.labeling_system.' + session.filetype, 'fatecore')
         except ImportError:
             logging.info('No labeling script found for filetype ' + session.filetype)
 

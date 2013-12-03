@@ -5,7 +5,7 @@ from .operation import Operation
 import logging
 import tempfile
 
-logfilename = tempfile.gettempdir() + '/protexted.log'
+logfilename = tempfile.gettempdir() + '/fate.log'
 logging.basicConfig(filename=logfilename, level=logging.DEBUG)
 
 session_list = []
@@ -87,4 +87,4 @@ class Session():
 # Load the plugins, after defining Session
 from . import plugins
 
-logging.info('protexted loaded')
+logging.info('fate loaded')
