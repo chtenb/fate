@@ -1,6 +1,6 @@
-"""Macros are compositions of selectors and operators"""
+"""Macros are sequences of actions. Actions are functions that act on a session."""
 from .selectors import next_full_line, previous_full_line, previous_char, next_char
-from .operators import interval_operator
+from .operators import local_operator
 import re
 import logging
 
@@ -14,7 +14,7 @@ def open_line_after(selection):
         m = re.match('\s', line)
         return m.group(0) if m else ''
 
-    @interval_operator
+    @local_operator
     def add_new_line(content):
         indent = get_indent(content)
         return content + indent + '\n'
@@ -31,7 +31,7 @@ def open_line_before(selection):
         m = re.match('\s', line)
         return m.group(0) if m else ''
 
-    @interval_operator
+    @local_operator
     def add_new_line(content):
         indent = get_indent(content)
         return indent + '\n' + content

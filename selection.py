@@ -28,6 +28,7 @@ class Selection:
         return self._intervals.index(interval)
 
     def contains(self, position):
+        """Check if position is contained in self"""
         for beg, end in self:
             if beg <= position < end:
                 return (beg, end)
@@ -36,7 +37,6 @@ class Selection:
         """Add interval to the selection. If interval is overlapping
         with or adjacent to some existing interval, they are merged."""
         nbeg, nend = interval
-        #TODO
         if nbeg != None and nend != None and nbeg > nend:
             raise Exception("Invalid interval " + str(interval))
 

@@ -1,4 +1,5 @@
-"""An operator takes a selection (and optional additional arguments) and returns an operation"""
+"""An operator is a function that is decorated by `selector`, either directly or indirectly. An operator is a special type of action, that
+is used to modify the text of the session."""
 from .operation import Operation
 from .selection import Selection
 import logging

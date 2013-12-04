@@ -1,3 +1,4 @@
+"""Detect and set filetype and fire the OnFileTypeLoaded event"""
 from ..session import Session
 from ..event import Event
 

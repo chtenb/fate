@@ -1,10 +1,10 @@
-"""Implements a simple linear undo system"""
+"""Implements a simple linear undo system."""
 from ..session import Session
 import logging
 
 
 def store_last_operation(session, operation):
-    """Store most recent operation, unless it is an undo or a redo"""
+    """Store most recent operation, unless it is an undo or a redo."""
     if not session.performing_undo_or_redo:
         del session.operation_list[session.last_operation + 1:]
         session.operation_list.append(operation)
@@ -13,7 +13,7 @@ def store_last_operation(session, operation):
 
 
 def undo(self):
-    """Apply the last operation reversely"""
+    """Apply the last operation reversely."""
     if self.last_operation >= 0:
         self.performing_undo_or_redo = True
         self.operation_list[self.last_operation].inverse().apply()
@@ -22,7 +22,7 @@ Session.undo = undo
 
 
 def redo(self):
-    """Redo the next operation in the list"""
+    """Redo the next operation in the list."""
     if self.last_operation < len(self.operation_list) - 1:
         self.performing_undo_or_redo = True
         self.last_operation += 1

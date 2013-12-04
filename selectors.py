@@ -1,5 +1,6 @@
-"""A selector takes a selection and returns a second, derived selection. We distinguish between functions that work selection-wise
-(global selectors) and function that work interval-wise (local selectors)."""
+"""A selector is a function that is decorated by `selector`, either directly or indirectly. It is an action that is used to modify that
+selection of the session. We distinguish between functions that work selection-wise (global selectors) and function that work interval-wise
+(local selectors). Furthermore we have selectors that are based on regular expressions."""
 from .selection import Selection
 from .operation import Operation
 from .modes import select_mode, extend_mode, reduce_mode
@@ -27,27 +28,32 @@ def selector(function):
 
 @selector
 def single_interval(selection, text, mode):
+    """Reduce the selection to a single interval."""
     return Selection(selection.session, intervals=selection[0])
 
 
 @selector
 def empty(selection, text, mode):
+    """Reduce the selection to a single empty interval."""
     x = selection[0][0]
     return Selection(selection.session, intervals=[(x, x)])
 
 
 @selector
 def everything(selection, text, mode):
+    """Select the entire text."""
     return Selection(selection.session, intervals=[(0, len(text))])
 
 
 @selector
 def join(selection, text, mode):
+    """Join all intervals together."""
     return Selection(selection.session, intervals=[(selection[0][0], selection[-1][1])])
 
 
 @selector
 def complement(selection, text, mode):
+    """Return the complement."""
     return selection.complement()
 
 

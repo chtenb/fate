@@ -5,7 +5,7 @@ import logging
 
 
 class Operation:
-    """Container of modified content of a selection"""
+    """A container of modified content of a selection. Can be inverted such that we can undo the operation."""
 
     def __init__(self, selection):
         self.session = selection.session

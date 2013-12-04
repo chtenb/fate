@@ -1,7 +1,8 @@
+"""An implementation of a simple event system"""
 import logging
 
 class Event:
-    """An implementation of a simple event system"""
+    """Simple event class"""
     def __init__(self):
         self._handlers = []
 

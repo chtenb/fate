@@ -1,3 +1,5 @@
+"""A simple clipboard system that can store the content of a single selection."""
+# TODO: move clipboard into the core, make it stackbased and turn copy/paste into actions.
 from ..session import Session
 from ..operation import Operation
 
