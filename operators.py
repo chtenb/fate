@@ -3,58 +3,66 @@ from .operation import Operation
 from .selection import Selection
 import logging
 
-def to_operation(obj):
-    if obj.__class__ == Selection:
-        return Operation(obj)
-    elif obj.__class__ == Operation:
-        return obj
-    else:
-        raise Exception('Only Selections and Operations can be applied')
 
 def operator(function):
     """A decorator for things that need to be done in every atomic operator"""
-    def wrapper(obj, *args):
-        operation = to_operation(obj)
-        operation.new_content = function(operation.new_content, *args)
-        return operation
+    def wrapper(session, preview=False):
+        operation = Operation(session.selection)
+        operation.new_content = function(operation.new_content)
+
+        if preview:
+            return operation
+        else:
+            operation.apply()
+
     return wrapper
 
 
-def interval_operator(function):
-    def wrapper(obj, *args):
-        operation = to_operation(obj)
-        for i in range(len(operation.new_content)):
-            operation.new_content[i] = function(operation.new_content[i], *args)
-        return operation
+def local_operator(function):
+    @operator
+    def wrapper(old_content):
+        new_content = []
+        for s in old_content:
+            new_content.append(function(s))
+        return new_content
     return wrapper
 
 
-@operator
+@local_operator
 def delete(content):
-    return ['' for s in content]
+    return ''
 
 
-@interval_operator
-def change_after(content, insertions, deletions):
-    return content[:-deletions or None] + insertions
+# The following functions are operator constructors
+def change_after(insertions, deletions):
+    @local_operator
+    def wrapper(content):
+        return content[:-deletions or None] + insertions
+    return wrapper
 
 
-@interval_operator
-def change_before(content, insertions, deletions):
-    return insertions + content[deletions:]
+def change_before(insertions, deletions):
+    @local_operator
+    def wrapper(content):
+        return insertions + content[deletions:]
+    return wrapper
 
 
-@interval_operator
-def change_in_place(content, insertions, deletions):
-    return insertions
+def change_in_place(insertions, deletions):
+    @local_operator
+    def wrapper(content):
+        return insertions
+    return wrapper
 
 
-@interval_operator
-def change_around(content, insertions, deletions):
-    character_pairs = [('{', '}'), ('[', ']'), ('(', ')')]
-    first_string = insertions[::-1]
-    second_string = insertions
-    for first, second in character_pairs:
-        first_string = first_string.replace(second, first)
-        second_string = second_string.replace(first, second)
-    return first_string + content[deletions:-deletions or None] + second_string
+def change_around(insertions, deletions):
+    @local_operator
+    def wrapper(content):
+        character_pairs = [('{', '}'), ('[', ']'), ('(', ')')]
+        first_string = insertions[::-1]
+        second_string = insertions
+        for first, second in character_pairs:
+            first_string = first_string.replace(second, first)
+            second_string = second_string.replace(first, second)
+        return first_string + content[deletions:-deletions or None] + second_string
+    return wrapper

@@ -1,44 +1,27 @@
 """A selector takes a selection and returns a second, derived selection. We distinguish between functions that work selection-wise
-(selectors) and function that work interval-wise (interval selectors)."""
+(global selectors) and function that work interval-wise (local selectors)."""
 from .selection import Selection
 from .operation import Operation
-from .session import select_mode, extend_mode, reduce_mode
+from .modes import select_mode, extend_mode, reduce_mode
 import re
 import logging
 
-# NOTE: to implement selectors generically, we probably need them to be generators, just like patterns
-# In case of next_char, this would mean that it starts yielding beg until len(text)
-# This way we can iterate until we have a changed selection/interval (just like we already do for patterns
-# An alternative to this is moving the mode stuff to pattern_selector, and decorate pattern directly with @selector
-
-def to_selection(obj):
-    if obj.__class__ == Operation:
-        obj.session.apply(obj)
-        return obj.new_selection
-    elif obj.__class__ == Selection:
-        return obj
-    else:
-        raise Exception('Only Selections and Operations can be applied')
-
 
 def selector(function):
-    def wrapper(obj):
-        selection = to_selection(obj)
-        session = selection.session
+    def wrapper(session):
+        selection = session.selection
         text = session.text
 
         result = function(selection, text, session.selection_mode)
 
-        # If the result is empty, we return the old selection
+        # If the result is empty or invalid, we keep the original
         if not result:
-            return selection
-
-        # If the result is invalid, we return the original selection
+            return
         for beg, end in result:
             if not (0 <= beg < len(text) and 0 <= end <= len(text)):
-                return selection
+                return
 
-        return result
+        session.selection = result
     return wrapper
 
 

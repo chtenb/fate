@@ -16,7 +16,7 @@ def undo(self):
     """Apply the last operation reversely"""
     if self.last_operation >= 0:
         self.performing_undo_or_redo = True
-        self.apply(self.operation_list[self.last_operation].inverse())
+        self.operation_list[self.last_operation].inverse().apply()
         self.last_operation -= 1
 Session.undo = undo
 
@@ -26,7 +26,7 @@ def redo(self):
     if self.last_operation < len(self.operation_list) - 1:
         self.performing_undo_or_redo = True
         self.last_operation += 1
-        self.apply(self.operation_list[self.last_operation])
+        self.operation_list[self.last_operation].apply()
 Session.redo = redo
 
 

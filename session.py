@@ -1,34 +1,30 @@
 """A session represents the state of an editing session"""
 from .event import Event
 from .selection import Selection
-from .operation import Operation
 import logging
 import tempfile
+from . import modes
 
 logfilename = tempfile.gettempdir() + '/fate.log'
 logging.basicConfig(filename=logfilename, level=logging.DEBUG)
 
 session_list = []
-# An enum containing all possible selection modes
-select_mode, extend_mode, reduce_mode = "SELECT", "EXTEND", "REDUCE"
 
 
 class Session():
     """Class containing all objects of one file editing session"""
-    # E.g. text, selection, undo tree, jump history
     OnSessionInit = Event()
     OnApplyOperation = Event()
     OnRead = Event()
     OnWrite = Event()
 
-    selection_mode = select_mode
+    selection_mode = modes.select_mode
     saved = True
 
     def __init__(self, filename=""):
         self.text = ""
         self.filename = filename
         self.selection = Selection(self)
-        self.selection.add((0, 0))
 
         if filename:
             self.read()
@@ -55,29 +51,13 @@ class Session():
             self.saved = True
             self.OnWrite.fire(self)
 
-    def select(self, selector):
-        """Apply the selector to the selection"""
-        self.selection = selector(self.selection)
-
-    def apply(self, operation):
-        """Apply the operation to the text"""
-        partition = operation.old_selection.partition()
-        partition_content = [(in_selection, self.text[beg:end]) for in_selection, (beg, end) in partition]
-        count = 0
-        result = []
-        for in_selection, string in partition_content:
-            if in_selection:
-                result.append(operation.new_content[count])
-                count += 1
-            else:
-                result.append(string)
-
-        self.text = ''.join(result)
-        self.saved = False
-        self.OnApplyOperation.fire(self, operation)
-        self.selection_mode = select_mode
-        self.selection = operation.new_selection
-        return operation.new_selection
+    def apply(self, actions):
+        """Apply an action or a sequence of actions to self"""
+        if isinstance(actions, (list, tuple)):
+            for action in actions:
+                action(self)
+        else:
+            actions(self)
 
     def content(self, selection):
         """Return the content of the selection"""
