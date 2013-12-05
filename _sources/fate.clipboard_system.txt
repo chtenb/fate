@@ -1,0 +1,11 @@
+clipboard_system Package
+========================
+
+:mod:`clipboard_system` Package
+-------------------------------
+
+.. automodule:: fate.clipboard_system
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

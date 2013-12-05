@@ -1,0 +1,59 @@
+labeling_system Package
+=======================
+
+:mod:`labeling_system` Package
+------------------------------
+
+.. automodule:: fate.labeling_system
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`common` Module
+--------------------
+
+.. automodule:: fate.labeling_system.common
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`haskell` Module
+---------------------
+
+.. automodule:: fate.labeling_system.haskell
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`javascript` Module
+------------------------
+
+.. automodule:: fate.labeling_system.javascript
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`labeling` Module
+----------------------
+
+.. automodule:: fate.labeling_system.labeling
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`python` Module
+--------------------
+
+.. automodule:: fate.labeling_system.python
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`txt` Module
+-----------------
+
+.. automodule:: fate.labeling_system.txt
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

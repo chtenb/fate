@@ -1,0 +1,11 @@
+filetype_system Package
+=======================
+
+:mod:`filetype_system` Package
+------------------------------
+
+.. automodule:: fate.filetype_system
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

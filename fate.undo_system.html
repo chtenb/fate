@@ -1,0 +1,141 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>undo_system Package &mdash; fate 0.1a documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1a',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="fate 0.1a documentation" href="index.html" />
+    <link rel="up" title="fate Package" href="fate.html" />
+    <link rel="prev" title="labeling_system Package" href="fate.labeling_system.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fate.labeling_system.html" title="labeling_system Package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">fate 0.1a documentation</a> &raquo;</li>
+          <li><a href="fate.html" accesskey="U">fate Package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="undo-system-package">
+<h1>undo_system Package<a class="headerlink" href="#undo-system-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">undo_system</span></tt> Package<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-fate.undo_system"></span><p>Implements a simple linear undo system.</p>
+<dl class="function">
+<dt id="fate.undo_system.redo">
+<tt class="descclassname">fate.undo_system.</tt><tt class="descname">redo</tt><big>(</big><em>self</em><big>)</big><a class="reference internal" href="_modules/fate/undo_system.html#redo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.undo_system.redo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redo the next operation in the list.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fate.undo_system.store_last_operation">
+<tt class="descclassname">fate.undo_system.</tt><tt class="descname">store_last_operation</tt><big>(</big><em>session</em>, <em>operation</em><big>)</big><a class="reference internal" href="_modules/fate/undo_system.html#store_last_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.undo_system.store_last_operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store most recent operation, unless it is an undo or a redo.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fate.undo_system.undo">
+<tt class="descclassname">fate.undo_system.</tt><tt class="descname">undo</tt><big>(</big><em>self</em><big>)</big><a class="reference internal" href="_modules/fate/undo_system.html#undo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.undo_system.undo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the last operation reversely.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">undo_system Package</a><ul>
+<li><a class="reference internal" href="#id1"><tt class="docutils literal"><span class="pre">undo_system</span></tt> Package</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="fate.labeling_system.html"
+                        title="previous chapter">labeling_system Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/fate.undo_system.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fate.labeling_system.html" title="labeling_system Package"
+             >previous</a> |</li>
+        <li><a href="index.html">fate 0.1a documentation</a> &raquo;</li>
+          <li><a href="fate.html" >fate Package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Chiel ten Brinke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

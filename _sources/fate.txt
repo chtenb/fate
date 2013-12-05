@@ -1,0 +1,85 @@
+fate Package
+============
+
+:mod:`event` Module
+-------------------
+
+.. automodule:: fate.event
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`macros` Module
+--------------------
+
+.. automodule:: fate.macros
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`modes` Module
+-------------------
+
+.. automodule:: fate.modes
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`operation` Module
+-----------------------
+
+.. automodule:: fate.operation
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`operators` Module
+-----------------------
+
+.. automodule:: fate.operators
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`plugins` Module
+---------------------
+
+.. automodule:: fate.plugins
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`selection` Module
+-----------------------
+
+.. automodule:: fate.selection
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`selectors` Module
+-----------------------
+
+.. automodule:: fate.selectors
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`session` Module
+---------------------
+
+.. automodule:: fate.session
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    fate.clipboard_system
+    fate.filetype_system
+    fate.labeling_system
+    fate.undo_system
+

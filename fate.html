@@ -1,0 +1,603 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>fate Package &mdash; fate 0.1a documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1a',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="fate 0.1a documentation" href="index.html" />
+    <link rel="next" title="clipboard_system Package" href="fate.clipboard_system.html" />
+    <link rel="prev" title="Welcome to fate’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fate.clipboard_system.html" title="clipboard_system Package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to fate’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">fate 0.1a documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="fate-package">
+<h1>fate Package<a class="headerlink" href="#fate-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-fate.event">
+<span id="event-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">event</span></tt> Module<a class="headerlink" href="#module-fate.event" title="Permalink to this headline">¶</a></h2>
+<p>An implementation of a simple event system</p>
+<dl class="class">
+<dt id="fate.event.Event">
+<em class="property">class </em><tt class="descclassname">fate.event.</tt><tt class="descname">Event</tt><a class="reference internal" href="_modules/fate/event.html#Event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.event.Event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Simple event class</p>
+<dl class="method">
+<dt id="fate.event.Event.add">
+<tt class="descname">add</tt><big>(</big><em>handler</em><big>)</big><a class="reference internal" href="_modules/fate/event.html#Event.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.event.Event.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fate.event.Event.fire">
+<tt class="descname">fire</tt><big>(</big><em>*args</em><big>)</big><a class="reference internal" href="_modules/fate/event.html#Event.fire"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.event.Event.fire" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fate.event.Event.remove">
+<tt class="descname">remove</tt><big>(</big><em>handler</em><big>)</big><a class="reference internal" href="_modules/fate/event.html#Event.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.event.Event.remove" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fate.macros">
+<span id="macros-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">macros</span></tt> Module<a class="headerlink" href="#module-fate.macros" title="Permalink to this headline">¶</a></h2>
+<p>Macros are sequences of actions. Actions are functions that act on a session.</p>
+<dl class="function">
+<dt id="fate.macros.open_line_after">
+<tt class="descclassname">fate.macros.</tt><tt class="descname">open_line_after</tt><big>(</big><em>selection</em><big>)</big><a class="reference internal" href="_modules/fate/macros.html#open_line_after"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.macros.open_line_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>A higher level operator which opens a line after the first
+new line character, for each interval</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fate.macros.open_line_before">
+<tt class="descclassname">fate.macros.</tt><tt class="descname">open_line_before</tt><big>(</big><em>selection</em><big>)</big><a class="reference internal" href="_modules/fate/macros.html#open_line_before"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.macros.open_line_before" title="Permalink to this definition">¶</a></dt>
+<dd><p>A higher level operator which opens a line before the first
+new line character, for each interval</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-fate.modes">
+<span id="modes-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">modes</span></tt> Module<a class="headerlink" href="#module-fate.modes" title="Permalink to this headline">¶</a></h2>
+<p>An enum containing all possible selection modes</p>
+</div>
+<div class="section" id="module-fate.operation">
+<span id="operation-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">operation</span></tt> Module<a class="headerlink" href="#module-fate.operation" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fate.operation.Operation">
+<em class="property">class </em><tt class="descclassname">fate.operation.</tt><tt class="descname">Operation</tt><big>(</big><em>selection</em><big>)</big><a class="reference internal" href="_modules/fate/operation.html#Operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.operation.Operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>A container of modified content of a selection. Can be inverted such that we can undo the operation.</p>
+<dl class="method">
+<dt id="fate.operation.Operation.apply">
+<tt class="descname">apply</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/fate/operation.html#Operation.apply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.operation.Operation.apply" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fate.operation.Operation.inverse">
+<tt class="descname">inverse</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/fate/operation.html#Operation.inverse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.operation.Operation.inverse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fate.operation.Operation.new_selection">
+<tt class="descname">new_selection</tt><a class="reference internal" href="_modules/fate/operation.html#Operation.new_selection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.operation.Operation.new_selection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fate.operators">
+<span id="operators-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">operators</span></tt> Module<a class="headerlink" href="#module-fate.operators" title="Permalink to this headline">¶</a></h2>
+<p>An operator is a function that is decorated by <cite>selector</cite>, either directly or indirectly. An operator is a special type of action, that
+is used to modify the text of the session.</p>
+<dl class="function">
+<dt id="fate.operators.change_after">
+<tt class="descclassname">fate.operators.</tt><tt class="descname">change_after</tt><big>(</big><em>insertions</em>, <em>deletions</em><big>)</big><a class="reference internal" href="_modules/fate/operators.html#change_after"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.operators.change_after" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.operators.change_around">
+<tt class="descclassname">fate.operators.</tt><tt class="descname">change_around</tt><big>(</big><em>insertions</em>, <em>deletions</em><big>)</big><a class="reference internal" href="_modules/fate/operators.html#change_around"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.operators.change_around" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.operators.change_before">
+<tt class="descclassname">fate.operators.</tt><tt class="descname">change_before</tt><big>(</big><em>insertions</em>, <em>deletions</em><big>)</big><a class="reference internal" href="_modules/fate/operators.html#change_before"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.operators.change_before" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.operators.change_in_place">
+<tt class="descclassname">fate.operators.</tt><tt class="descname">change_in_place</tt><big>(</big><em>insertions</em>, <em>deletions</em><big>)</big><a class="reference internal" href="_modules/fate/operators.html#change_in_place"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.operators.change_in_place" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.operators.delete">
+<tt class="descclassname">fate.operators.</tt><tt class="descname">delete</tt><big>(</big><em>session</em>, <em>preview=False</em><big>)</big><a class="reference internal" href="_modules/fate/operators.html#delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.operators.delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.operators.local_operator">
+<tt class="descclassname">fate.operators.</tt><tt class="descname">local_operator</tt><big>(</big><em>function</em><big>)</big><a class="reference internal" href="_modules/fate/operators.html#local_operator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.operators.local_operator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.operators.operator">
+<tt class="descclassname">fate.operators.</tt><tt class="descname">operator</tt><big>(</big><em>function</em><big>)</big><a class="reference internal" href="_modules/fate/operators.html#operator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.operators.operator" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator for things that need to be done in every atomic operator</p>
+</dd></dl>
+
+</div>
+<div class="section" id="plugins-module">
+<h2><tt class="xref py py-mod docutils literal"><span class="pre">plugins</span></tt> Module<a class="headerlink" href="#plugins-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-fate.selection">
+<span id="selection-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">selection</span></tt> Module<a class="headerlink" href="#module-fate.selection" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="fate.selection.Selection">
+<em class="property">class </em><tt class="descclassname">fate.selection.</tt><tt class="descname">Selection</tt><big>(</big><em>session</em>, <em>intervals=None</em><big>)</big><a class="reference internal" href="_modules/fate/selection.html#Selection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selection.Selection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Sorted list of disjoint non-adjacent intervals</p>
+<dl class="method">
+<dt id="fate.selection.Selection.add">
+<tt class="descname">add</tt><big>(</big><em>interval</em><big>)</big><a class="reference internal" href="_modules/fate/selection.html#Selection.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selection.Selection.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add interval to the selection. If interval is overlapping
+with or adjacent to some existing interval, they are merged.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fate.selection.Selection.bound">
+<tt class="descname">bound</tt><big>(</big><em>lower_bound=None</em>, <em>upper_bound=None</em><big>)</big><a class="reference internal" href="_modules/fate/selection.html#Selection.bound"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selection.Selection.bound" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the selection obtained by bounding self</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fate.selection.Selection.complement">
+<tt class="descname">complement</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/fate/selection.html#Selection.complement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selection.Selection.complement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the complementary selection of self</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fate.selection.Selection.contains">
+<tt class="descname">contains</tt><big>(</big><em>position</em><big>)</big><a class="reference internal" href="_modules/fate/selection.html#Selection.contains"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selection.Selection.contains" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if position is contained in self</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fate.selection.Selection.extend">
+<tt class="descname">extend</tt><big>(</big><em>selection</em><big>)</big><a class="reference internal" href="_modules/fate/selection.html#Selection.extend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selection.Selection.extend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the selection obtained by extending self with the selector&#8217;s return</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fate.selection.Selection.index">
+<tt class="descname">index</tt><big>(</big><em>interval</em><big>)</big><a class="reference internal" href="_modules/fate/selection.html#Selection.index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selection.Selection.index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fate.selection.Selection.intersects">
+<tt class="descname">intersects</tt><big>(</big><em>interval</em><big>)</big><a class="reference internal" href="_modules/fate/selection.html#Selection.intersects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selection.Selection.intersects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if interval intersects with self</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fate.selection.Selection.partition">
+<tt class="descname">partition</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/fate/selection.html#Selection.partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selection.Selection.partition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a sorted list containing all intervals in self
+together with all complementary intervals</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fate.selection.Selection.reduce">
+<tt class="descname">reduce</tt><big>(</big><em>selection</em><big>)</big><a class="reference internal" href="_modules/fate/selection.html#Selection.reduce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selection.Selection.reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the selection obtained by reducing self with the selector&#8217;s return.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fate.selection.Selection.remove">
+<tt class="descname">remove</tt><big>(</big><em>interval</em><big>)</big><a class="reference internal" href="_modules/fate/selection.html#Selection.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selection.Selection.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove interval from the selection.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-fate.selectors">
+<span id="selectors-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">selectors</span></tt> Module<a class="headerlink" href="#module-fate.selectors" title="Permalink to this headline">¶</a></h2>
+<p>A selector is a function that is decorated by <cite>selector</cite>, either directly or indirectly. It is an action that is used to modify that
+selection of the session. We distinguish between functions that work selection-wise (global selectors) and function that work interval-wise
+(local selectors). Furthermore we have selectors that are based on regular expressions.</p>
+<dl class="function">
+<dt id="fate.selectors.complement">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">complement</tt><big>(</big><em>session</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#complement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.complement" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.empty">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">empty</tt><big>(</big><em>session</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#empty"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.empty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.everything">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">everything</tt><big>(</big><em>session</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#everything"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.everything" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.global_pattern_selector">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">global_pattern_selector</tt><big>(</big><em>pattern</em>, <em>reverse=False</em>, <em>group=0</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#global_pattern_selector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.global_pattern_selector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory method for creating global selectors based on a regular expression</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.global_selector">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">global_selector</tt><big>(</big><em>function</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#global_selector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.global_selector" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.join">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">join</tt><big>(</big><em>session</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#join"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.join" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.local_pattern_selector">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">local_pattern_selector</tt><big>(</big><em>pattern</em>, <em>reverse=False</em>, <em>group=0</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#local_pattern_selector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.local_pattern_selector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory method for creating local selectors based on a regular expression</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.local_selector">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">local_selector</tt><big>(</big><em>function</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#local_selector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.local_selector" title="Permalink to this definition">¶</a></dt>
+<dd><p>An interval selector takes an interval to another interval.
+This induces a selector, by applying the interval
+selector to all intervals contained in a selection.
+Keeps original interval when resulting interval is invalid.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.move_to_next_line">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">move_to_next_line</tt><big>(</big><em>session</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#move_to_next_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.move_to_next_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.move_to_previous_line">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">move_to_previous_line</tt><big>(</big><em>session</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#move_to_previous_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.move_to_previous_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.next_char">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">next_char</tt><big>(</big><em>session</em><big>)</big><a class="headerlink" href="#fate.selectors.next_char" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.next_full_line">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">next_full_line</tt><big>(</big><em>session</em><big>)</big><a class="headerlink" href="#fate.selectors.next_full_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.next_line">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">next_line</tt><big>(</big><em>session</em><big>)</big><a class="headerlink" href="#fate.selectors.next_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.next_paragraph">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">next_paragraph</tt><big>(</big><em>session</em><big>)</big><a class="headerlink" href="#fate.selectors.next_paragraph" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.next_word">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">next_word</tt><big>(</big><em>session</em><big>)</big><a class="headerlink" href="#fate.selectors.next_word" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.pattern_pair">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">pattern_pair</tt><big>(</big><em>pattern</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#pattern_pair"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.pattern_pair" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.previous_char">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">previous_char</tt><big>(</big><em>session</em><big>)</big><a class="headerlink" href="#fate.selectors.previous_char" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.previous_full_line">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">previous_full_line</tt><big>(</big><em>session</em><big>)</big><a class="headerlink" href="#fate.selectors.previous_full_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.previous_line">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">previous_line</tt><big>(</big><em>session</em><big>)</big><a class="headerlink" href="#fate.selectors.previous_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.previous_paragraph">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">previous_paragraph</tt><big>(</big><em>session</em><big>)</big><a class="headerlink" href="#fate.selectors.previous_paragraph" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.previous_word">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">previous_word</tt><big>(</big><em>session</em><big>)</big><a class="headerlink" href="#fate.selectors.previous_word" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.selector">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">selector</tt><big>(</big><em>function</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#selector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.selector" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="fate.selectors.single_interval">
+<tt class="descclassname">fate.selectors.</tt><tt class="descname">single_interval</tt><big>(</big><em>session</em><big>)</big><a class="reference internal" href="_modules/fate/selectors.html#single_interval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.selectors.single_interval" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-fate.session">
+<span id="session-module"></span><h2><tt class="xref py py-mod docutils literal"><span class="pre">session</span></tt> Module<a class="headerlink" href="#module-fate.session" title="Permalink to this headline">¶</a></h2>
+<p>A session represents the state of an editing session.</p>
+<dl class="class">
+<dt id="fate.session.Session">
+<em class="property">class </em><tt class="descclassname">fate.session.</tt><tt class="descname">Session</tt><big>(</big><em>filename=''</em><big>)</big><a class="reference internal" href="_modules/fate/session.html#Session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.session.Session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Contains all objects of one file editing session</p>
+<dl class="attribute">
+<dt id="fate.session.Session.OnApplyOperation">
+<tt class="descname">OnApplyOperation</tt><em class="property"> = &lt;fate.event.Event object at 0xb219a6c&gt;</em><a class="headerlink" href="#fate.session.Session.OnApplyOperation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fate.session.Session.OnFileTypeLoaded">
+<tt class="descname">OnFileTypeLoaded</tt><em class="property"> = &lt;fate.event.Event object at 0xb21be2c&gt;</em><a class="headerlink" href="#fate.session.Session.OnFileTypeLoaded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fate.session.Session.OnGenerateLabeling">
+<tt class="descname">OnGenerateLabeling</tt><em class="property"> = &lt;fate.event.Event object at 0xb1c698c&gt;</em><a class="headerlink" href="#fate.session.Session.OnGenerateLabeling" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fate.session.Session.OnRead">
+<tt class="descname">OnRead</tt><em class="property"> = &lt;fate.event.Event object at 0xb219aec&gt;</em><a class="headerlink" href="#fate.session.Session.OnRead" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fate.session.Session.OnSessionInit">
+<tt class="descname">OnSessionInit</tt><em class="property"> = &lt;fate.event.Event object at 0xb2199ac&gt;</em><a class="headerlink" href="#fate.session.Session.OnSessionInit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fate.session.Session.OnWrite">
+<tt class="descname">OnWrite</tt><em class="property"> = &lt;fate.event.Event object at 0xb219a8c&gt;</em><a class="headerlink" href="#fate.session.Session.OnWrite" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fate.session.Session.apply">
+<tt class="descname">apply</tt><big>(</big><em>actions</em><big>)</big><a class="reference internal" href="_modules/fate/session.html#Session.apply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.session.Session.apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply an action or a sequence of actions to self.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fate.session.Session.clipboard">
+<tt class="descname">clipboard</tt><em class="property"> = []</em><a class="headerlink" href="#fate.session.Session.clipboard" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fate.session.Session.content">
+<tt class="descname">content</tt><big>(</big><em>selection</em><big>)</big><a class="reference internal" href="_modules/fate/session.html#Session.content"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.session.Session.content" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the content of the selection.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fate.session.Session.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="headerlink" href="#fate.session.Session.copy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fate.session.Session.labeling">
+<tt class="descname">labeling</tt><em class="property"> = {}</em><a class="headerlink" href="#fate.session.Session.labeling" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fate.session.Session.last_operation">
+<tt class="descname">last_operation</tt><em class="property"> = -1</em><a class="headerlink" href="#fate.session.Session.last_operation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fate.session.Session.operation_list">
+<tt class="descname">operation_list</tt><em class="property"> = []</em><a class="headerlink" href="#fate.session.Session.operation_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fate.session.Session.paste">
+<tt class="descname">paste</tt><big>(</big><em>before=False</em><big>)</big><a class="headerlink" href="#fate.session.Session.paste" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fate.session.Session.performing_undo_or_redo">
+<tt class="descname">performing_undo_or_redo</tt><em class="property"> = False</em><a class="headerlink" href="#fate.session.Session.performing_undo_or_redo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fate.session.Session.read">
+<tt class="descname">read</tt><big>(</big><em>filename=None</em><big>)</big><a class="reference internal" href="_modules/fate/session.html#Session.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.session.Session.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read text from file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fate.session.Session.redo">
+<tt class="descname">redo</tt><big>(</big><big>)</big><a class="headerlink" href="#fate.session.Session.redo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redo the next operation in the list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="fate.session.Session.saved">
+<tt class="descname">saved</tt><em class="property"> = True</em><a class="headerlink" href="#fate.session.Session.saved" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="fate.session.Session.selection_mode">
+<tt class="descname">selection_mode</tt><em class="property"> = 'SELECT'</em><a class="headerlink" href="#fate.session.Session.selection_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fate.session.Session.undo">
+<tt class="descname">undo</tt><big>(</big><big>)</big><a class="headerlink" href="#fate.session.Session.undo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the last operation reversely.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fate.session.Session.write">
+<tt class="descname">write</tt><big>(</big><em>filename=None</em><big>)</big><a class="reference internal" href="_modules/fate/session.html#Session.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fate.session.Session.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write current text to file.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fate.clipboard_system.html">clipboard_system Package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fate.clipboard_system.html#id1"><tt class="docutils literal"><span class="pre">clipboard_system</span></tt> Package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fate.filetype_system.html">filetype_system Package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fate.filetype_system.html#id1"><tt class="docutils literal"><span class="pre">filetype_system</span></tt> Package</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fate.labeling_system.html">labeling_system Package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fate.labeling_system.html#id1"><tt class="docutils literal"><span class="pre">labeling_system</span></tt> Package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fate.labeling_system.html#module-fate.labeling_system.common"><tt class="docutils literal"><span class="pre">common</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fate.labeling_system.html#module-fate.labeling_system.haskell"><tt class="docutils literal"><span class="pre">haskell</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fate.labeling_system.html#module-fate.labeling_system.javascript"><tt class="docutils literal"><span class="pre">javascript</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fate.labeling_system.html#module-fate.labeling_system.labeling"><tt class="docutils literal"><span class="pre">labeling</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fate.labeling_system.html#module-fate.labeling_system.python"><tt class="docutils literal"><span class="pre">python</span></tt> Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fate.labeling_system.html#module-fate.labeling_system.txt"><tt class="docutils literal"><span class="pre">txt</span></tt> Module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fate.undo_system.html">undo_system Package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fate.undo_system.html#id1"><tt class="docutils literal"><span class="pre">undo_system</span></tt> Package</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">fate Package</a><ul>
+<li><a class="reference internal" href="#module-fate.event"><tt class="docutils literal"><span class="pre">event</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-fate.macros"><tt class="docutils literal"><span class="pre">macros</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-fate.modes"><tt class="docutils literal"><span class="pre">modes</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-fate.operation"><tt class="docutils literal"><span class="pre">operation</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-fate.operators"><tt class="docutils literal"><span class="pre">operators</span></tt> Module</a></li>
+<li><a class="reference internal" href="#plugins-module"><tt class="docutils literal"><span class="pre">plugins</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-fate.selection"><tt class="docutils literal"><span class="pre">selection</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-fate.selectors"><tt class="docutils literal"><span class="pre">selectors</span></tt> Module</a></li>
+<li><a class="reference internal" href="#module-fate.session"><tt class="docutils literal"><span class="pre">session</span></tt> Module</a></li>
+<li><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to fate&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="fate.clipboard_system.html"
+                        title="next chapter">clipboard_system Package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/fate.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fate.clipboard_system.html" title="clipboard_system Package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to fate’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">fate 0.1a documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Chiel ten Brinke.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
