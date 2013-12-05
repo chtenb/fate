@@ -20,6 +20,7 @@ class Session():
 
     selection_mode = modes.select_mode
     saved = True
+    clipboard = []
 
     def __init__(self, filename=""):
         self.text = ""

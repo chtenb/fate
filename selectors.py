@@ -137,6 +137,17 @@ def local_selector(function):
     return wrapper
 
 
+@local_selector
+def empty_before(interval, text):
+    beg, end = interval
+    return (beg, beg)
+
+
+@local_selector
+def empty_after(interval, text):
+    beg, end = interval
+    return (end, end)
+
 # TODO: select inside brackets (or maybe even more general: select between two separators)
 
 
@@ -167,7 +178,6 @@ def global_pattern_selector(pattern, reverse=False, group=0):
 
             if new_selection and selection != new_selection:
                 return new_selection
-
 
         # If that doesn't change the selection, start selecting one by one, and process according to mode
         new_intervals = []
@@ -222,8 +232,10 @@ def local_pattern_selector(pattern, reverse=False, group=0):
             new_interval = None
 
             for mbeg, mend in match_intervals:
-                # If match is in the right direction
-                if not reverse and mend > beg or reverse and mbeg < end:
+                # If match is valid
+                # i.e. overlaps (or is empty and adjacent)
+                # or is beyond current interval in right direction
+                if not reverse and (mend > beg or mbeg == beg) or reverse and (mbeg < end or mend == end):
                     if mode == extend_mode:
                         new_interval = min(beg, mbeg), max(end, mend)
                     elif mode == reduce_mode:
@@ -258,3 +270,4 @@ next_word, previous_word = pattern_pair(r'\b\w+\b')
 next_line, previous_line = pattern_pair(r'\s*([^\n]*)', group=1)
 next_full_line, previous_full_line = pattern_pair(r'[^\n]*\n?')
 next_paragraph, previous_paragraph = pattern_pair(r'(?s)((?:[^\n][\n]?)+)')
+next_white_space, previous_white_space = pattern_pair(r'\s')
