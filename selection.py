@@ -1,4 +1,4 @@
-import logging
+"""This module contains the Selection class."""
 
 class Selection:
     """Sorted list of disjoint non-adjacent intervals"""
@@ -21,10 +21,11 @@ class Selection:
     def __str__(self):
         return str(self._intervals)
 
-    def __eq__(a, b):
-        return a._intervals == b._intervals
+    def __eq__(self, selection):
+        return self._intervals == selection._intervals
 
     def index(self, interval):
+        """Return the index of `interval`."""
         return self._intervals.index(interval)
 
     def contains(self, position):
@@ -82,11 +83,11 @@ class Selection:
             raise Exception("Invalid interval " + str(interval))
 
         result = []
-        for i, (beg, end) in enumerate(self._intervals):
+        for beg, end in self._intervals:
             #   [  ]   existing interval
             # )      ( new interval
             if nend <= beg or end <= nbeg:
-                result.append((beg,end))
+                result.append((beg, end))
             else:
                 # [  ]
                 #  (

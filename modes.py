@@ -1,2 +1,2 @@
 """An enum containing all possible selection modes"""
-select_mode, extend_mode, reduce_mode = "SELECT", "EXTEND", "REDUCE"
+SELECT_MODE, EXTEND_MODE, REDUCE_MODE = "SELECT", "EXTEND", "REDUCE"

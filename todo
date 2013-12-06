@@ -1,10 +1,10 @@
-some convenient higher level operators, such as 'open line'
-turn copy paste into actions
 make macros undoable instead of just single operations
+better clipboard (maybe stack based?)
+add match parenthesis
+add block selectors
+improve syntax highlighting, for instance by disregarding quotes in comments
+add support for plugins in home directory
 contextual completion
     For completion it is also needed that the full text can be
     constructed including the pending operation. (No it isn't!! Only filtering is done based on the input, the context is not changed)
-better clipboard (maybe stack based?)
-add backwards find (F)
-add support for plugins in home directory
 persistent session (using a context manager)

@@ -18,7 +18,7 @@ class Session():
     OnRead = Event()
     OnWrite = Event()
 
-    selection_mode = modes.select_mode
+    selection_mode = modes.SELECT_MODE
     saved = True
     clipboard = []
 
@@ -29,7 +29,6 @@ class Session():
 
         if filename:
             self.read()
-        global session_list
         session_list.append(self)
         self.OnSessionInit.fire(self)
 

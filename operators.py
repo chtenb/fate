@@ -1,8 +1,6 @@
 """An operator is a function that is decorated by `selector`, either directly or indirectly. An operator is a special type of action, that
 is used to modify the text of the session."""
 from .operation import Operation
-from .selection import Selection
-import logging
 
 
 def operator(function):
@@ -20,22 +18,25 @@ def operator(function):
 
 
 def local_operator(function):
+    """A local operator operates interval wise."""
     @operator
     def wrapper(old_content):
         new_content = []
-        for s in old_content:
-            new_content.append(function(s))
+        for string in old_content:
+            new_content.append(function(string))
         return new_content
     return wrapper
 
 
 @local_operator
 def delete(content):
+    """Delete content."""
     return ''
 
 
 # The following functions are operator constructors
 def change_after(insertions, deletions):
+    """Operator constructor which deletes `deletions` and adds `insertions` at the tail of each interval content."""
     @local_operator
     def wrapper(content):
         return content[:-deletions or None] + insertions
@@ -43,6 +44,7 @@ def change_after(insertions, deletions):
 
 
 def change_before(insertions, deletions):
+    """Operator constructor which deletes `deletions` and adds `insertions` at the head of each interval content."""
     @local_operator
     def wrapper(content):
         return insertions + content[deletions:]
@@ -50,6 +52,7 @@ def change_before(insertions, deletions):
 
 
 def change_in_place(insertions, deletions):
+    """Operator constructor which puts `insertions` in place of each interval content. The deletions argument is not used."""
     @local_operator
     def wrapper(content):
         return insertions
@@ -57,6 +60,7 @@ def change_in_place(insertions, deletions):
 
 
 def change_around(insertions, deletions):
+    """Operator constructor which deletes `deletions` and adds `insertions` both at the tail and at the head of each interval content."""
     @local_operator
     def wrapper(content):
         character_pairs = [('{', '}'), ('[', ']'), ('(', ')')]

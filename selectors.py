@@ -2,13 +2,12 @@
 selection of the session. We distinguish between functions that work selection-wise (global selectors) and function that work interval-wise
 (local selectors). Furthermore we have selectors that are based on regular expressions."""
 from .selection import Selection
-from .operation import Operation
-from .modes import select_mode, extend_mode, reduce_mode
+from .modes import SELECT_MODE, EXTEND_MODE, REDUCE_MODE
 import re
-import logging
 
 
 def selector(function):
+    """This is a decorator. The passed function will be turned into a selector and will be given a selection, text and selection mode."""
     def wrapper(session):
         selection = session.selection
         text = session.text
@@ -35,8 +34,8 @@ def single_interval(selection, text, mode):
 @selector
 def empty(selection, text, mode):
     """Reduce the selection to a single empty interval."""
-    x = selection[0][0]
-    return Selection(selection.session, intervals=[(x, x)])
+    beg = selection[0][0]
+    return Selection(selection.session, intervals=[(beg, beg)])
 
 
 @selector
@@ -58,13 +57,14 @@ def complement(selection, text, mode):
 
 
 def global_selector(function):
+    """This is a decorator. The passed function will be turned into a global selector and will be given a selection, text and selection mode."""
     @selector
     def wrapper(selection, text, mode):
-        if mode == reduce_mode:
+        if mode == REDUCE_MODE:
             result = function(selection.complement(), text)
             if result:  # result can be None
                 result = selection.reduce(result)
-        elif mode == extend_mode:
+        elif mode == EXTEND_MODE:
             result = function(selection, text)
             if result:  # result can be None
                 result = selection.extend(result)
@@ -100,13 +100,10 @@ def move_to_next_line(selection, text):
 
 
 def local_selector(function):
-    """An interval selector takes an interval to another interval.
-    This induces a selector, by applying the interval
-    selector to all intervals contained in a selection.
-    Keeps original interval when resulting interval is invalid."""
+    """A local selector takes an interval to another interval. This induces a selector, by applying the interval selector to all intervals contained in a selection. Keeps original interval when resulting interval is invalid."""
     @selector
     def wrapper(selection, text, mode):
-        if mode == reduce_mode:
+        if mode == REDUCE_MODE:
             iterselection = selection.complement()
         else:
             iterselection = selection
@@ -123,12 +120,12 @@ def local_selector(function):
                 if not (0 <= beg < len(text) and 0 <= end <= len(text)):
                     interval_result = interval
 
-            if mode == reduce_mode or mode == extend_mode:
+            if mode == REDUCE_MODE or mode == EXTEND_MODE:
                 interval_result = min(interval[0], interval_result[0]), max(interval[1], interval_result[1])
             result.append(interval_result)
 
         result = Selection(selection.session, result)
-        if mode == reduce_mode:
+        if mode == REDUCE_MODE:
             result = selection.reduce(result)
             if result:
                 return result
@@ -139,12 +136,14 @@ def local_selector(function):
 
 @local_selector
 def empty_before(interval, text):
+    """Return the empty interval before each interval."""
     beg, end = interval
     return (beg, beg)
 
 
 @local_selector
 def empty_after(interval, text):
+    """Return the empty interval after each interval."""
     beg, end = interval
     return (end, end)
 
@@ -171,9 +170,9 @@ def global_pattern_selector(pattern, reverse=False, group=0):
 
         if new_intervals:
             new_selection = Selection(selection.session, intervals=new_intervals)
-            if mode == extend_mode:
+            if mode == EXTEND_MODE:
                 new_selection = selection.extend(new_selection)
-            elif mode == reduce_mode:
+            elif mode == REDUCE_MODE:
                 new_selection = selection.reduce(new_selection)
 
             if new_selection and selection != new_selection:
@@ -190,9 +189,9 @@ def global_pattern_selector(pattern, reverse=False, group=0):
             new_selection = Selection(selection.session, intervals=[(mbeg, mend)])
             # If match is in the right direction
             if not reverse and mend > beg or reverse and mbeg < end:
-                if mode == extend_mode:
+                if mode == EXTEND_MODE:
                     new_selection = selection.extend(new_selection)
-                elif mode == reduce_mode:
+                elif mode == REDUCE_MODE:
                     new_selection = selection.reduce(new_selection)
 
                 if new_selection and selection != new_selection:
@@ -236,9 +235,9 @@ def local_pattern_selector(pattern, reverse=False, group=0):
                 # i.e. overlaps (or is empty and adjacent)
                 # or is beyond current interval in right direction
                 if not reverse and (mend > beg or mbeg == beg) or reverse and (mbeg < end or mend == end):
-                    if mode == extend_mode:
+                    if mode == EXTEND_MODE:
                         new_interval = min(beg, mbeg), max(end, mend)
-                    elif mode == reduce_mode:
+                    elif mode == REDUCE_MODE:
                         if reverse:
                             mend = max(end, mend)
                         else:
@@ -261,6 +260,7 @@ def local_pattern_selector(pattern, reverse=False, group=0):
 
 
 def pattern_pair(pattern, **kwargs):
+    """Return two local pattern selectors for given pattern, one matching forward and one matching backward."""
     return (local_pattern_selector(pattern, **kwargs),
             local_pattern_selector(pattern, reverse=True, **kwargs))
 

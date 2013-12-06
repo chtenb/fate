@@ -1,7 +1,7 @@
+"""This module defines the class Operation."""
 from .selection import Selection
 from . import modes
 import copy
-import logging
 
 
 class Operation:
@@ -25,12 +25,14 @@ class Operation:
         return result
 
     def inverse(self):
+        """Return the inverse operation of self."""
         result = copy.copy(self)
         result.old_selection = self.new_selection
         result.old_content, result.new_content = result.new_content, result.old_content
         return result
 
     def apply(self):
+        """Apply self to the session."""
         session = self.session
         partition = self.old_selection.partition()
         partition_content = [(in_selection, session.text[beg:end]) for in_selection, (beg, end) in partition]
@@ -46,6 +48,6 @@ class Operation:
         session.text = ''.join(result)
         session.saved = False
         session.OnApplyOperation.fire(session, self)
-        session.selection_mode = modes.select_mode
+        session.selection_mode = modes.SELECT_MODE
         session.selection = self.new_selection
 
