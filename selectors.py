@@ -1,13 +1,18 @@
-"""A selector is a function that is decorated by `selector`, either directly or indirectly. It is an action that is used to modify that
-selection of the session. We distinguish between functions that work selection-wise (global selectors) and function that work interval-wise
-(local selectors). Furthermore we have selectors that are based on regular expressions."""
+"""A selector is a function that is decorated by `selector`,
+either directly or indirectly.
+It is an action that is used to modify that selection of the session.
+We distinguish between functions that work selection-wise (global selectors)
+and function that work interval-wise (local selectors).
+Furthermore we have selectors that are based on regular expressions."""
 from .selection import Selection
 from .modes import SELECT_MODE, EXTEND_MODE, REDUCE_MODE
 import re
 
 
 def selector(function):
-    """This is a decorator. The passed function will be turned into a selector and will be given a selection, text and selection mode."""
+    """This is a decorator.
+    The passed function will be turned into a selector and will be given
+    a selection, text and selection mode."""
     def wrapper(session):
         selection = session.selection
         text = session.text
@@ -57,7 +62,9 @@ def complement(selection, text, mode):
 
 
 def global_selector(function):
-    """This is a decorator. The passed function will be turned into a global selector and will be given a selection, text and selection mode."""
+    """This is a decorator.
+    The passed function will be turned into a global selector and will be given
+    a selection, text and selection mode."""
     @selector
     def wrapper(selection, text, mode):
         if mode == REDUCE_MODE:
@@ -84,7 +91,8 @@ def move_to_previous_line(selection, text):
     if bol == -1:
         return interval
     bol2 = text.rfind('\n', 0, bol)
-    return Selection(selection.session, intervals=[(min(bol, bol2 + beg - bol), min(bol, bol2 + end - bol))])
+    return Selection(selection.session,
+                     intervals=[(min(bol, bol2 + beg - bol), min(bol, bol2 + end - bol))])
 
 
 @global_selector
@@ -96,11 +104,14 @@ def move_to_next_line(selection, text):
     if eol == -1:
         return interval
     bol = text.rfind('\n', 0, beg)
-    return Selection(selection.session, intervals=[(max(eol, eol + beg - bol), max(eol, eol + end - bol))])
+    return Selection(selection.session,
+                     intervals=[(max(eol, eol + beg - bol), max(eol, eol + end - bol))])
 
 
 def local_selector(function):
-    """A local selector takes an interval to another interval. This induces a selector, by applying the interval selector to all intervals contained in a selection. Keeps original interval when resulting interval is invalid."""
+    """A local selector takes an interval to another interval.
+    This induces a selector, by applying the interval selector to all intervals contained
+    in a selection. Keeps original interval when resulting interval is invalid."""
     @selector
     def wrapper(selection, text, mode):
         if mode == REDUCE_MODE:
@@ -121,7 +132,8 @@ def local_selector(function):
                     interval_result = interval
 
             if mode == REDUCE_MODE or mode == EXTEND_MODE:
-                interval_result = min(interval[0], interval_result[0]), max(interval[1], interval_result[1])
+                interval_result = (min(interval[0], interval_result[0]),
+                                   max(interval[1], interval_result[1]))
             result.append(interval_result)
 
         result = Selection(selection.session, result)
@@ -147,8 +159,6 @@ def empty_after(interval, text):
     beg, end = interval
     return (end, end)
 
-# TODO: select inside brackets (or maybe even more general: select between two separators)
-
 
 def global_pattern_selector(pattern, reverse=False, group=0):
     """Factory method for creating global selectors based on a regular expression"""
@@ -162,7 +172,8 @@ def global_pattern_selector(pattern, reverse=False, group=0):
         for match in matches:
             match_intervals.append((match.start(group), match.end(group)))
 
-        # First select all occurences intersecting with selection, and process according to mode
+        # First select all occurences intersecting with selection,
+        # and process according to mode
         new_intervals = []
         for interval in match_intervals:
             if selection.intersects(interval):
@@ -178,7 +189,8 @@ def global_pattern_selector(pattern, reverse=False, group=0):
             if new_selection and selection != new_selection:
                 return new_selection
 
-        # If that doesn't change the selection, start selecting one by one, and process according to mode
+        # If that doesn't change the selection, start selecting one by one,
+        # and process according to mode
         new_intervals = []
         if reverse:
             beg, end = selection[-1]
@@ -234,7 +246,8 @@ def local_pattern_selector(pattern, reverse=False, group=0):
                 # If match is valid
                 # i.e. overlaps (or is empty and adjacent)
                 # or is beyond current interval in right direction
-                if not reverse and (mend > beg or mbeg == beg) or reverse and (mbeg < end or mend == end):
+                if (not reverse and (mend > beg or mbeg == beg)
+                        or reverse and (mbeg < end or mend == end)):
                     if mode == EXTEND_MODE:
                         new_interval = min(beg, mbeg), max(end, mend)
                     elif mode == REDUCE_MODE:
@@ -260,7 +273,8 @@ def local_pattern_selector(pattern, reverse=False, group=0):
 
 
 def pattern_pair(pattern, **kwargs):
-    """Return two local pattern selectors for given pattern, one matching forward and one matching backward."""
+    """Return two local pattern selectors for given pattern,
+    one matching forward and one matching backward."""
     return (local_pattern_selector(pattern, **kwargs),
             local_pattern_selector(pattern, reverse=True, **kwargs))
 

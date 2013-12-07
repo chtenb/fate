@@ -5,7 +5,10 @@ import copy
 
 
 class Operation:
-    """A container of modified content of a selection. Can be inverted such that we can undo the operation."""
+    """A container of modified content of a selection.
+    Can be inverted such that the operation can be undone by applying the inverse.
+    The members are `old_selection`, `old_content`, `new_content` and `new_selection`.
+    """
 
     def __init__(self, selection):
         self.session = selection.session
@@ -35,7 +38,8 @@ class Operation:
         """Apply self to the session."""
         session = self.session
         partition = self.old_selection.partition()
-        partition_content = [(in_selection, session.text[beg:end]) for in_selection, (beg, end) in partition]
+        partition_content = [(in_selection, session.text[beg:end])
+                             for in_selection, (beg, end) in partition]
         count = 0
         result = []
         for in_selection, string in partition_content:
@@ -50,4 +54,3 @@ class Operation:
         session.OnApplyOperation.fire(session, self)
         session.selection_mode = modes.SELECT_MODE
         session.selection = self.new_selection
-

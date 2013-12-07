@@ -1,5 +1,7 @@
 """Actions are functions that act on a session. Macros are sequences of actions."""
-from .selectors import next_full_line, previous_full_line, previous_char, next_char, next_white_space, previous_white_space, empty_after, empty_before, local_pattern_selector, empty
+from .selectors import (next_full_line, previous_full_line, previous_char, next_char,
+                        next_white_space, previous_white_space, empty_after,
+                        empty_before, local_pattern_selector, empty)
 from .operators import change_after, change_before
 from .operation import Operation
 from . import modes
@@ -34,7 +36,8 @@ def copy(session):
 
 
 def paste(session, before):
-    """Paste clipboard before or after current selection."""
+    """This is not an action,
+    but serves as a helper function for paste_before and paste_after."""
     if session.clipboard:
         content = session.content(session.selection)
         new_content = []
@@ -51,18 +54,19 @@ def paste(session, before):
 
 
 def paste_before(session):
+    """Paste clipboard before current selection."""
     paste(session, before=True)
 
 
 def paste_after(session):
+    """Paste clipboard after current selection."""
     paste(session, before=False)
 
 
 open_line_after = [select_mode, empty_after, next_full_line,
-        local_pattern_selector(r'[ \t]*\b'), copy, next_full_line,
-        change_after('\n', 0), previous_char, empty_before, paste_before]
+                   local_pattern_selector(r'[ \t]*\b'), copy, next_full_line,
+                   change_after('\n', 0), previous_char, empty_before, paste_before]
 
 open_line_before = [select_mode, empty_before, next_full_line,
-        local_pattern_selector(r'[ \t]*\b'), copy, next_full_line,
-        change_before('\n', 0), next_char, empty_before, paste_before]
-
+                    local_pattern_selector(r'[ \t]*\b'), copy, next_full_line,
+                    change_before('\n', 0), next_char, empty_before, paste_before]

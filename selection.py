@@ -1,5 +1,6 @@
 """This module contains the Selection class."""
 
+
 class Selection:
     """Sorted list of disjoint non-adjacent intervals"""
     def __init__(self, session, intervals=None):
@@ -100,7 +101,6 @@ class Selection:
 
         self._intervals = result
 
-
     def extend(self, selection):
         """Return the selection obtained by extending self with the selector's return"""
         result = Selection(self.session, self._intervals)
@@ -117,7 +117,8 @@ class Selection:
 
     def complement(self):
         """Return the complementary selection of self"""
-        intervals = [interval for in_selection, interval in self.partition() if not in_selection]
+        intervals = [interval for in_selection, interval in self.partition()
+                     if not in_selection]
         return Selection(self.session, intervals)
 
     def bound(self, lower_bound=None, upper_bound=None):

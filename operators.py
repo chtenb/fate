@@ -1,10 +1,18 @@
-"""An operator is a function that is decorated by `selector`, either directly or indirectly. An operator is a special type of action, that
-is used to modify the text of the session."""
+"""An operator is a function that is decorated by `selector`,
+either directly or indirectly.
+An operator is a special type of action,
+that is used to modify the text of the session."""
 from .operation import Operation
 
 
 def operator(function):
-    """A decorator for things that need to be done in every atomic operator"""
+    """A decorator that turns a function taking a list of strings to an operator.
+    The resulting operator will have the following arguments.
+
+    :param session: The session on which the operator will act.
+    :param preview: If True the resulting operation will only be returned,
+                    otherwise the operation will be applied to the session.
+    """
     def wrapper(session, preview=False):
         operation = Operation(session.selection)
         operation.new_content = function(operation.new_content)
@@ -36,7 +44,8 @@ def delete(content):
 
 # The following functions are operator constructors
 def change_after(insertions, deletions):
-    """Operator constructor which deletes `deletions` and adds `insertions` at the tail of each interval content."""
+    """Operator constructor which deletes `deletions`
+    and adds `insertions` at the tail of each interval content."""
     @local_operator
     def wrapper(content):
         return content[:-deletions or None] + insertions
@@ -44,7 +53,8 @@ def change_after(insertions, deletions):
 
 
 def change_before(insertions, deletions):
-    """Operator constructor which deletes `deletions` and adds `insertions` at the head of each interval content."""
+    """Operator constructor which deletes `deletions`
+    and adds `insertions` at the head of each interval content."""
     @local_operator
     def wrapper(content):
         return insertions + content[deletions:]
@@ -52,7 +62,8 @@ def change_before(insertions, deletions):
 
 
 def change_in_place(insertions, deletions):
-    """Operator constructor which puts `insertions` in place of each interval content. The deletions argument is not used."""
+    """Operator constructor which puts `insertions` in place of each interval content.
+    The deletions argument is not used."""
     @local_operator
     def wrapper(content):
         return insertions
@@ -60,7 +71,8 @@ def change_in_place(insertions, deletions):
 
 
 def change_around(insertions, deletions):
-    """Operator constructor which deletes `deletions` and adds `insertions` both at the tail and at the head of each interval content."""
+    """Operator constructor which deletes `deletions`
+    and adds `insertions` both at the tail and at the head of each interval content."""
     @local_operator
     def wrapper(content):
         character_pairs = [('{', '}'), ('[', ']'), ('(', ')')]
