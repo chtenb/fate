@@ -23,5 +23,5 @@ class Event:
         for handler in self._handlers:
             try:
                 handler(*args)
-            except Exception as e:
+            except TypeError as e:
                 logging.error(e, exc_info=True)
