@@ -9,7 +9,6 @@ import logging
 
 # Load standard plugins
 from . import filetype_system
-from . import undo_system
 from . import labeling_system
 
 logging.info('All standard plugins are loaded.')

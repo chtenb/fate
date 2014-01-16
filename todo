@@ -1,4 +1,7 @@
-make macros undoable instead of just single operations
+fix bug that prevents selecting previous line when last \n is selected
+make actions undoable instead of just single operations (this is hard)
+    making distinction between actors and actions is likely to fix this
+    Somehow we need to prevent bypassing the apply function in session
 better clipboard (maybe stack based?)
 add match parenthesis
 add block selectors

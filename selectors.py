@@ -1,18 +1,13 @@
-"""A selector is a function that is decorated by `selector`,
-either directly or indirectly.
-It is an action that is used to modify that selection of the session.
-We distinguish between functions that work selection-wise (global selectors)
-and function that work interval-wise (local selectors).
-Furthermore we have selectors that are based on regular expressions."""
+""" A selector is a special type of action that is used to modify the selection of a session. Strictly speaking, a selector is a function that is decorated by `selector`, either directly or indirectly. We distinguish between functions that work selection-wise (global selectors) and function that work interval-wise (local selectors). Furthermore we have selectors that are based on regular expressions."""
 from .selection import Selection
+from .action import actor
 from .modes import SELECT_MODE, EXTEND_MODE, REDUCE_MODE
 import re
 
 
 def selector(function):
-    """This is a decorator.
-    The passed function will be turned into a selector and will be given
-    a selection, text and selection mode."""
+    """This is the function decorator for selectors. The passed function will be turned into a selector and will be given a selection, text and selection mode."""
+    @actor
     def wrapper(session):
         selection = session.selection
         text = session.text
@@ -62,9 +57,7 @@ def complement(selection, text, mode):
 
 
 def global_selector(function):
-    """This is a decorator.
-    The passed function will be turned into a global selector and will be given
-    a selection, text and selection mode."""
+    """This is a decorator. The passed function will be turned into a global selector and will be given a selection, text and selection mode."""
     @selector
     def wrapper(selection, text, mode):
         if mode == REDUCE_MODE:
@@ -109,9 +102,7 @@ def move_to_next_line(selection, text):
 
 
 def local_selector(function):
-    """A local selector takes an interval to another interval.
-    This induces a selector, by applying the interval selector to all intervals contained
-    in a selection. Keeps original interval when resulting interval is invalid."""
+    """A local selector takes an interval to another interval.  This induces a selector, by applying the interval selector to all intervals contained in a selection. Keeps original interval when resulting interval is invalid."""
     @selector
     def wrapper(selection, text, mode):
         if mode == REDUCE_MODE:

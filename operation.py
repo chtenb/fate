@@ -10,14 +10,15 @@ class Operation:
     The members are `old_selection`, `old_content`, `new_content` and `new_selection`.
     """
 
-    def __init__(self, selection):
+    def __init__(self, selection, new_content=None):
         self.session = selection.session
         self.old_selection = selection
         self.old_content = self.session.content(selection)
-        self.new_content = self.old_content[:]
+        self.new_content = new_content or self.old_content[:]
 
     @property
     def new_selection(self):
+        """The selection containing the potential result of the operation."""
         beg = self.old_selection[0][0]
         end = beg + len(self.new_content[0])
         result = Selection(self.session, [(beg, end)])
@@ -34,7 +35,7 @@ class Operation:
         result.old_content, result.new_content = result.new_content, result.old_content
         return result
 
-    def apply(self):
+    def do(self):
         """Apply self to the session."""
         session = self.session
         partition = self.old_selection.partition()
@@ -54,3 +55,8 @@ class Operation:
         session.OnApplyOperation.fire(session, self)
         session.selection_mode = modes.SELECT_MODE
         session.selection = self.new_selection
+
+    def undo(self):
+        """Undo operation."""
+        inv = self.inverse()
+        inv.do()

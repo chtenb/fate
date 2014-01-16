@@ -1,13 +1,14 @@
-"""An operator is a function that is decorated by `selector`,
-either directly or indirectly.
-An operator is a special type of action,
-that is used to modify the text of the session."""
+"""An operator is a special type of action, that applies an operation to a
+session. Strictly speaking, an operator is a function that is decorated
+by operator, either directly or indirectly.
+"""
 from .operation import Operation
+from .action import actor
 
 
 def operator(function):
-    """A decorator that turns a function taking a list of strings to an operator.
-    The resulting operator will have the following arguments.
+    """A decorator that turns a function taking a list of strings to an
+    operator. The resulting operator will have the following arguments.
 
     :param session: The session on which the operator will act.
     :param preview: If True the resulting operation will only be returned,
@@ -16,12 +17,10 @@ def operator(function):
     def wrapper(session, preview=False):
         operation = Operation(session.selection)
         operation.new_content = function(operation.new_content)
-
         if preview:
             return operation
         else:
-            operation.apply()
-
+            operation.do()
     return wrapper
 
 
@@ -62,8 +61,8 @@ def change_before(insertions, deletions):
 
 
 def change_in_place(insertions, deletions):
-    """Operator constructor which puts `insertions` in place of each interval content.
-    The deletions argument is not used."""
+    """Operator constructor which puts `insertions` in place of each
+    interval content. The deletions argument is not used."""
     @local_operator
     def wrapper(content):
         return insertions
@@ -71,8 +70,9 @@ def change_in_place(insertions, deletions):
 
 
 def change_around(insertions, deletions):
-    """Operator constructor which deletes `deletions`
-    and adds `insertions` both at the tail and at the head of each interval content."""
+    """Operator constructor which deletes `deletions` and adds
+    `insertions` both at the tail and at the head of each interval
+    content."""
     @local_operator
     def wrapper(content):
         character_pairs = [('{', '}'), ('[', ']'), ('(', ')')]

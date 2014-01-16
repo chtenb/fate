@@ -1,9 +1,12 @@
 """A session represents the state of an editing session."""
 from .event import Event
 from .selection import Selection
+from .clipboard import Clipboard
+from .action import ActionTree
+from . import modes
+
 import logging
 import tempfile
-from . import modes
 
 logfilename = tempfile.gettempdir() + '/fate.log'
 logging.basicConfig(filename=logfilename, level=logging.DEBUG)
@@ -15,12 +18,16 @@ class Session():
     """Contains all objects of one file editing session"""
     OnSessionInit = Event()
     OnApplyOperation = Event()
+    OnApplyActor = Event()
     OnRead = Event()
     OnWrite = Event()
 
+    clipboard = Clipboard()
+    actiontree = ActionTree()
+
     selection_mode = modes.SELECT_MODE
     saved = True
-    clipboard = []
+    processing_actor = False
 
     def __init__(self, filename=""):
         self.text = ""
@@ -50,14 +57,6 @@ class Session():
                 fd.write(self.text)
             self.saved = True
             self.OnWrite.fire(self)
-
-    def apply(self, actions):
-        """Apply an action or a sequence of actions to self."""
-        if isinstance(actions, (list, tuple)):
-            for action in actions:
-                action(self)
-        else:
-            actions(self)
 
     def content(self, selection):
         """Return the content of the selection."""

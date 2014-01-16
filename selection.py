@@ -25,6 +25,14 @@ class Selection:
     def __eq__(self, selection):
         return self._intervals == selection._intervals
 
+    def do(self):
+        """Set selection to be the current selection of the session."""
+        self.session.selection = self
+
+    def undo(self):
+        """Undoing is not yet supported."""
+        pass
+
     def index(self, interval):
         """Return the index of `interval`."""
         return self._intervals.index(interval)
@@ -159,3 +167,4 @@ class Selection:
             if beg <= i[0] < end or beg < i[1] <= end or i[0] < beg and end < i[1]:
                 return True
         return False
+
