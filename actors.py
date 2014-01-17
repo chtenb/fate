@@ -11,9 +11,9 @@ from . import modes
 def escape(session):
     """Escape"""
     if session.selection_mode == modes.SELECT_MODE:
-        session.apply(modes.select_mode)
+        modes.select_mode(session)
     else:
-        session.apply(empty)
+        empty(session)
 
 
 open_line_after = actor(modes.select_mode, empty_after, next_full_line,

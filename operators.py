@@ -14,6 +14,7 @@ def operator(function):
     :param preview: If True the resulting operation will only be returned,
                     otherwise the operation will be applied to the session.
     """
+    @actor
     def wrapper(session, preview=False):
         operation = Operation(session.selection)
         operation.new_content = function(operation.new_content)
