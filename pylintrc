@@ -5,7 +5,8 @@
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-#init-hook=
+init-hook='import os,sys;sys.path.insert(0,"/home/chiel/Projects/fate-tui/lib_fate/")'
+
 
 # Profiled execution.
 profile=no

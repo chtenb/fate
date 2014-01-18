@@ -1,3 +1,4 @@
+"""A script to execute some tests."""
 import os
 import sys
 
