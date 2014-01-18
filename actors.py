@@ -16,6 +16,13 @@ def escape(session):
         empty(session)
 
 
+def undo(session):
+    session.actiontree.undo()
+
+def redo(session):
+    session.actiontree.redo()
+
+
 open_line_after = actor(modes.select_mode, empty_after, next_full_line,
                    local_pattern_selector(r'[ \t]*\b'), copy, next_full_line,
                    change_after('\n', 0), previous_char, empty_before, paste_before)

@@ -21,7 +21,7 @@ def selector(function):
             if not (0 <= beg < len(text) and 0 <= end <= len(text)):
                 return
 
-        session.selection = result
+        return result
     return wrapper
 
 
@@ -114,9 +114,9 @@ def local_selector(function):
         for interval in iterselection:
             interval_result = function(interval, text)
 
-            # If the result invalid, we take the original interval
+            # If the result invalid, we return None
             if not interval_result:
-                interval_result = interval
+                return None
             else:
                 beg, end = interval_result
                 if not (0 <= beg < len(text) and 0 <= end <= len(text)):
@@ -253,9 +253,9 @@ def local_pattern_selector(pattern, reverse=False, group=0):
                     if new_interval and new_interval != interval:
                         break
 
-            # If the result invalid, we take the original interval
-            if not new_interval:
-                new_interval = interval
+            # If the result invalid or the same as old interval, we return None
+            if not new_interval or new_interval == interval:
+                return None
 
             new_intervals.append(new_interval)
 

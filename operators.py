@@ -15,13 +15,10 @@ def operator(function):
                     otherwise the operation will be applied to the session.
     """
     @actor
-    def wrapper(session, preview=False):
+    def wrapper(session):
         operation = Operation(session.selection)
         operation.new_content = function(operation.new_content)
-        if preview:
-            return operation
-        else:
-            operation.do()
+        return operation
     return wrapper
 
 

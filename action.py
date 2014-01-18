@@ -1,4 +1,5 @@
 """This module exposes the basic action machinery."""
+import logging
 
 
 class ActionTree:
@@ -9,12 +10,15 @@ class ActionTree:
 
     def undo(self):
         """Undo previous action."""
-        self.current_node.action.undo()
-        self.current_node = self.current_node.parent
+        if self.current_node and self.current_node.parent:
+            self.current_node.action.undo()
+            self.current_node = self.current_node.parent
 
     def redo(self):
-        """Redo next action."""
-        pass
+        """Redo most recent next action."""
+        if self.current_node and self.current_node.children:
+            self.current_node = self.current_node.children[-1]
+            self.current_node.action.do(redo=True)
 
     def add(self, action):
         """Perform a new action."""
@@ -83,10 +87,10 @@ class Action:
 
     def undo(self):
         """Undo action."""
-        for sub_action in self.sub_actions:
+        for sub_action in self:
             sub_action.undo()
 
-    def do(self, toplevel=True):
+    def do(self, toplevel=True, redo=False):
         """Do action."""
         for sub_action in self.sub_actions:
             if sub_action.__class__ == Action:
@@ -94,7 +98,7 @@ class Action:
             else:
                 sub_action.do()
 
-        if toplevel:
+        if toplevel and not redo:
             self.session.actiontree.add(self)
             self.session.OnApplyActor.fire(self)
 
@@ -121,8 +125,12 @@ def actor(*args):
     """This function returns the compositional actor from the argument actors,
     and does the resulting actions upon execution."""
     def wrapper(session, preview=False):
-        action = Action(session, *[f(session, preview=True)
-            if hasattr(f, 'is_actor') else f(session) for f in args])
+        actionlist = [f(session, preview=True)
+            if hasattr(f, 'is_actor') else f(session) for f in args]
+        actionlist = [x for x in actionlist if x]
+        if not actionlist:
+            return
+        action = Action(session, *actionlist)
 
         if preview:
             return action

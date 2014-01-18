@@ -1,12 +1,11 @@
-fix bug that prevents selecting previous line when last \n is selected
-make actions undoable instead of just single operations (this is hard)
-    making distinction between actors and actions is likely to fix this
-    Somehow we need to prevent bypassing the apply function in session
 better clipboard (maybe stack based?)
+fix bug that prevents selecting previous line when last \n is selected
+switch to alternative regex engine
+add simple unit test
+
 add match parenthesis
 add block selectors
 improve syntax highlighting, for instance by disregarding quotes in comments
-add support for plugins in home directory
 contextual completion
     For completion it is also needed that the full text can be
     constructed including the pending operation. (No it isn't!! Only filtering is done based on the input, the context is not changed)

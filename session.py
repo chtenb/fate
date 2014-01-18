@@ -25,9 +25,9 @@ class Session():
     clipboard = Clipboard()
     actiontree = ActionTree()
 
+    selection = None
     selection_mode = modes.SELECT_MODE
     saved = True
-    processing_actor = False
 
     def __init__(self, filename=""):
         self.text = ""
