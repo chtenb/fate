@@ -1,5 +1,4 @@
 """This module exposes the basic action machinery."""
-import logging
 
 
 class ActionTree:
@@ -26,7 +25,7 @@ class ActionTree:
         self.current_node.add_child(node)
         self.current_node = node
 
-    def pretty_print(self):
+    def dump(self):
         """Return a multiline string containing the pretty printed tree.
         It should look like this, where X is the current position:
         o-o-o-o-o-X-o-o-o
@@ -35,7 +34,7 @@ class ActionTree:
             ↳ o-o-o
                 ↳ o-o-o
         """
-        return '\n'.join(self.root.pretty_print(self.current_node))
+        return '\n'.join(self.root.dump(self.current_node))
 
 
 class Node:
@@ -49,7 +48,7 @@ class Node:
         """Add a child to node."""
         self.children.append(node)
 
-    def pretty_print(self, current_node):
+    def dump(self, current_node):
         """Return an array with the pretty printed lines of all children of self."""
         me = 'X' if self is current_node else 'o'
 
@@ -58,7 +57,7 @@ class Node:
 
         result = []
         for i, child in enumerate(self.children):
-            child_dump = child.pretty_print(current_node)
+            child_dump = child.dump(current_node)
             last_child = '|' if i < len(self.children) - 1 else ' '
 
             if i == 0:
@@ -126,7 +125,7 @@ def actor(*args):
     and does the resulting actions upon execution."""
     def wrapper(session, preview=False):
         actionlist = [f(session, preview=True)
-            if hasattr(f, 'is_actor') else f(session) for f in args]
+                      if hasattr(f, 'is_actor') else f(session) for f in args]
         actionlist = [x for x in actionlist if x]
         if not actionlist:
             return
