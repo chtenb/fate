@@ -11,8 +11,6 @@ def operator(function):
     operator. The resulting operator will have the following arguments.
 
     :param session: The session on which the operator will act.
-    :param preview: If True the resulting operation will only be returned,
-                    otherwise the operation will be applied to the session.
     """
     @actor
     def wrapper(session):

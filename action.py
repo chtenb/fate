@@ -2,13 +2,15 @@
 
 
 class ActionTree:
-    """Stores the action history as a tree with undo/redo functionality."""
+    """
+    Stores the action history as a tree with undo/redo functionality.
+    """
     def __init__(self):
         self.root = Node(None, None)
         self.current_node = self.root
 
     def undo(self):
-        """Undo previous action."""
+        """Undo previous action set current_node to its parent."""
         if self.current_node and self.current_node.parent:
             self.current_node.action.undo()
             self.current_node = self.current_node.parent
@@ -25,8 +27,18 @@ class ActionTree:
         self.current_node.add_child(node)
         self.current_node = node
 
+    def hard_undo(self):
+        """
+        Actually removes current_node.
+        Useful for previewing operations.
+        """
+        current_node = self.current_node
+        self.undo()
+        self.current_node.children.remove(current_node)
+
     def dump(self):
-        """Return a multiline string containing the pretty printed tree.
+        """
+        Return a multiline string containing the pretty printed tree.
         It should look like this, where X is the current position:
         o-o-o-o-o-X-o-o-o
             |     | ↳ o-o-o-o-o
@@ -113,7 +125,10 @@ class Action:
                     yield sub_action
 
     def contains_class(self, _class):
-        """Check if an atomic subaction of class _class is contained in self."""
+        """
+        Check if an atomic subaction of class _class is contained
+        in self.
+        """
         for sub_action in self:
             if sub_action.__class__ == _class:
                 return True
@@ -121,8 +136,10 @@ class Action:
 
 
 def actor(*args):
-    """This function returns the compositional actor from the argument actors,
-    and does the resulting actions upon execution."""
+    """
+    This function returns the compositional actor from the
+    argument actors, and does the resulting actions upon execution.
+    """
     def wrapper(session, preview=False):
         actionlist = [f(session, preview=True)
                       if hasattr(f, 'is_actor') else f(session) for f in args]

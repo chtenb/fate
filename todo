@@ -1,8 +1,7 @@
-better clipboard (maybe stack based?)
 fix bug that prevents selecting previous line when last \n is selected
-switch to alternative regex engine
-add simple unit test
+add unit tests
 
+switch to alternative regex engine
 add match parenthesis
 add block selectors
 improve syntax highlighting, for instance by disregarding quotes in comments

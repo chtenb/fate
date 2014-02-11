@@ -9,7 +9,6 @@ class Operation:
     Can be inverted such that the operation can be undone by applying the inverse.
     The members are `old_selection`, `old_content`, `new_content` and `new_selection`.
     """
-
     def __init__(self, selection, new_content=None):
         self.session = selection.session
         self.old_selection = selection
