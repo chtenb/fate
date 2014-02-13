@@ -2,7 +2,7 @@
 from .event import Event
 from .selection import Selection
 from .clipboard import Clipboard
-from .action import ActionTree
+from .actiontree import ActionTree
 from . import modes
 
 import logging
