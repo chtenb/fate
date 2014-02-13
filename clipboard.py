@@ -25,10 +25,6 @@ class Clipboard:
         except IndexError:
             return
 
-    def dump(self):
-        """Return a string representing the stack."""
-        return '-'.join('o' for x in self.storage)
-
 
 def copy(session):
     """Copy current selected content to clipboard."""
