@@ -1,16 +1,17 @@
 """This module defines the class Operation."""
 from .selection import Selection
+from .action import Action
 from . import modes
 import copy
 
 
-class Operation:
+class Operation(Action):
     """A container of modified content of a selection.
     Can be inverted such that the operation can be undone by applying the inverse.
     The members are `old_selection`, `old_content`, `new_content` and `new_selection`.
     """
     def __init__(self, selection, new_content=None):
-        self.session = selection.session
+        Action.__init__(self, selection.session)
         self.old_selection = selection
         self.old_content = self.session.content(selection)
         self.new_content = new_content or self.old_content[:]
@@ -34,7 +35,7 @@ class Operation:
         result.old_content, result.new_content = result.new_content, result.old_content
         return result
 
-    def do(self):
+    def _do(self):
         """Apply self to the session."""
         session = self.session
         partition = self.old_selection.partition()
@@ -55,7 +56,7 @@ class Operation:
         session.selection_mode = modes.SELECT_MODE
         session.selection = self.new_selection
 
-    def undo(self):
+    def _undo(self):
         """Undo operation."""
         inv = self.inverse()
-        inv.do()
+        inv.redo()

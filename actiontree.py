@@ -21,7 +21,7 @@ class ActionTree:
         """Redo most recent next action."""
         if self.current_node and self.current_node.children:
             self.current_node = self.current_node.children[-1]
-            self.current_node.action.do(redo=True)
+            self.current_node.action.redo()
 
     def add(self, action):
         """Perform a new action."""

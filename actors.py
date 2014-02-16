@@ -6,7 +6,7 @@ from .selectors import (next_full_line, previous_full_line,
                         empty_before, local_pattern_selector, empty)
 from .operators import change_after, change_before, delete
 from .clipboard import copy, paste_after, paste_before, clear
-from .action import actor
+from .action import compose
 from . import modes
 
 
@@ -29,18 +29,18 @@ def redo(session):
 
 select_indent = local_pattern_selector(r'(?m)^([ \t]*)[^ \t]', group=1)
 
-open_line_after = actor(modes.select_mode, empty_after,
+open_line_after = compose(modes.select_mode, empty_after,
                         next_full_line,
                         select_indent, copy,
                         next_full_line, change_after('\n', 0),
                         previous_char, empty_before, paste_before,
                         clear)
 
-open_line_before = actor(modes.select_mode, empty_before,
+open_line_before = compose(modes.select_mode, empty_before,
                          next_full_line,
                          select_indent, copy,
                          next_full_line, change_before('\n', 0),
                          next_char, empty_before, paste_before,
                          clear)
 
-cut = actor(copy, delete)
+cut = compose(copy, delete)

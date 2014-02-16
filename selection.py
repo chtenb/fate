@@ -1,10 +1,11 @@
 """This module contains the Selection class."""
+from .action import Action
 
 
-class Selection:
+class Selection(Action):
     """Sorted list of disjoint non-adjacent intervals"""
     def __init__(self, session, intervals=None):
-        self.session = session
+        Action.__init__(self, session)
         self.previous_selection = session.selection
 
         self._intervals = []
@@ -26,11 +27,11 @@ class Selection:
     def __eq__(self, selection):
         return selection.__class__ == Selection and self._intervals == selection._intervals
 
-    def do(self):
+    def _do(self):
         """Set selection to be the current selection of the session."""
         self.session.selection = self
 
-    def undo(self):
+    def _undo(self):
         """Set current selection to previous selection."""
         self.session.selection = self.previous_selection
 
