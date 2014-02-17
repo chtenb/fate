@@ -199,7 +199,7 @@ def reduce_interval(self, interval):
         return nbeg, nend
 
 
-def local_pattern_selector(pattern, reverse=False, group=0):
+def local_pattern_selector(pattern, reverse=False, group=0, only_within=False):
     """
     Factory method for creating local selectors based on a regular expression.
     """
@@ -213,6 +213,11 @@ def local_pattern_selector(pattern, reverse=False, group=0):
             new_interval = None
 
             for mbeg, mend in match_intervals:
+                # If only_within is True,
+                # match must be within current interval
+                if only_within and not (beg <= mbeg and mend <= end):
+                    continue
+
                 # If match is valid, i.e. overlaps
                 # or is beyond current interval in right direction
                 if (not reverse and mend > beg

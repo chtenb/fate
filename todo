@@ -1,9 +1,12 @@
-fix bug that prevents selecting previous line when last \n is selected
-add unit tests
+SHORT TERM
+support autoindent
+add select around/inside, switch case,
+make distinction between undo selector and undo operator
+implement repeat last selector or operator
 
+LONG TERM
+add unit tests
 switch to alternative regex engine
-add match parenthesis
-add block selectors
 improve syntax highlighting, for instance by disregarding quotes in comments
 contextual completion
     For completion it is also needed that the full text can be
