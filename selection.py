@@ -3,7 +3,7 @@ from .action import Action
 
 
 class Selection(Action):
-    """Sorted list of disjoint non-adjacent intervals"""
+    """Sorted list of disjoint non-adjacent intervals."""
     def __init__(self, session, intervals=None):
         Action.__init__(self, session)
         self.previous_selection = session.selection
@@ -25,10 +25,11 @@ class Selection(Action):
         return str(self._intervals)
 
     def __eq__(self, selection):
-        return selection.__class__ == Selection and self._intervals == selection._intervals
+        return (selection.__class__ == Selection
+                and self._intervals == selection._intervals)
 
     def _do(self):
-        """Set selection to be the current selection of the session."""
+        """Set self to be the current selection of the session."""
         self.session.selection = self
 
     def _undo(self):
@@ -36,26 +37,27 @@ class Selection(Action):
         self.session.selection = self.previous_selection
 
     def index(self, interval):
-        """Return the index of `interval`."""
+        """Return the index of given interval."""
         return self._intervals.index(interval)
 
-    def contains(self, position):
-        """Check if position is contained in self"""
+    def contains(self, pos):
+        """Check if given position is contained in self."""
         for beg, end in self:
-            if beg <= position < end:
+            if beg <= pos < end:
                 return (beg, end)
 
     def add(self, interval):
-        """Add interval to the selection. If interval is overlapping
-        with or adjacent to some existing interval, they are merged."""
+        """
+        Add interval to the selection. If interval is overlapping
+        with or adjacent to some existing interval, they are merged.
+        """
         nbeg, nend = interval
-        if nbeg != None and nend != None and nbeg > nend:
-            raise Exception("Invalid interval " + str(interval))
+        assert nbeg <= nend
 
         # First merge overlapping or adjacent existing intervals into the new interval
         for (beg, end) in self._intervals:
-            # [  ]
-            #  (
+            # [  ]  existing interval
+            #  (    new interval
             if beg < nbeg <= end:
                 nbeg = beg
             # [  ]
@@ -81,7 +83,6 @@ class Selection(Action):
                         result.append((nbeg, nend))
                         added = True
                     result.append((beg, end))
-
         if not added:
             result.append((nbeg, nend))
 
@@ -90,13 +91,13 @@ class Selection(Action):
     def remove(self, interval):
         """Remove interval from the selection."""
         nbeg, nend = interval
-        if nbeg > nend:
-            raise Exception("Invalid interval " + str(interval))
+        assert nbeg <= nend
 
         result = []
+        # Iterate through existing intervals and cut them
         for beg, end in self._intervals:
             #   [  ]   existing interval
-            # )      ( new interval
+            # )      ( given interval
             if nend <= beg or end <= nbeg:
                 result.append((beg, end))
             else:
@@ -112,7 +113,7 @@ class Selection(Action):
         self._intervals = result
 
     def extend(self, selection):
-        """Return the selection obtained by extending self with the selector's return"""
+        """Return the selection obtained by extending self with the selector's return."""
         result = Selection(self.session, self._intervals)
         for interval in selection:
             result.add(interval)
@@ -126,13 +127,13 @@ class Selection(Action):
         return result
 
     def complement(self):
-        """Return the complementary selection of self"""
+        """Return the complementary selection of self."""
         intervals = [interval for in_selection, interval in self.partition()
                      if not in_selection]
         return Selection(self.session, intervals)
 
     def bound(self, lower_bound=None, upper_bound=None):
-        """Return the selection obtained by bounding self"""
+        """Return the selection obtained by bounding self."""
         if not lower_bound:
             lower_bound = 0
         if not upper_bound:
@@ -147,26 +148,27 @@ class Selection(Action):
         return result
 
     def partition(self):
-        """Return a sorted list containing all intervals in self
-        together with all complementary intervals"""
+        """
+        Return a sorted list containing all intervals in self
+        together with all complementary intervals.
+        """
         text = self.session.text
-        points = [point for interval in self for point in interval]
-        points.insert(0, 0)
-        points.append(len(text))
+        positions = [pos for interval in self for pos in interval]
+        positions.insert(0, 0)
+        positions.append(len(text))
         in_selection = False
 
         result = []
-        for i in range(1, len(points)):
-            interval = points[i - 1], points[i]
+        for i in range(1, len(positions)):
+            interval = positions[i - 1], positions[i]
             result.append((in_selection, interval))
             in_selection = not in_selection
         return result
 
     def intersects(self, interval):
-        """Check if interval intersects with self"""
+        """Check if interval intersects with self."""
         beg, end = interval
         for i in self:
             if beg <= i[0] < end or beg < i[1] <= end or i[0] < beg and end < i[1]:
                 return True
         return False
-

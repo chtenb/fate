@@ -1,4 +1,5 @@
-"""This module loads all standard plugins and the user script.
+"""
+This module loads fate by loading all standard plugins and the user script.
 This makes sure that all code that depends on these won't have to import them manually.
 """
 from os.path import expanduser
