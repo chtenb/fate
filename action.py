@@ -25,22 +25,14 @@ class Action:
 
         if not redo:
             self.session.actiontree.add(self)
-        self.session.OnApplyActor.fire(self)
+        if self.session.text_changed:
+            self.session.saved = False
+            self.session.OnTextChanged.fire(self.session)
+            self.session.text_changed = False
 
     def redo(self):
         """Redo action."""
         self.do(redo=True)
-
-def actor(function):
-    """Base function for actors."""
-    def wrapper(session, preview=False):
-        action = function(session)
-        if action and not preview:
-            action.do()
-        else:
-            return action
-
-    return wrapper
 
 
 class CompoundAction(Action):
@@ -80,13 +72,13 @@ class CompoundAction(Action):
                 if sub_action != None:
                     yield sub_action
 
-    def contains_class(self, _class):
+    def contains_class(self, cls):
         """
         Check if an atomic subaction of class _class is contained
         in self.
         """
         for sub_action in self:
-            if sub_action.__class__ == _class:
+            if sub_action.__class__ == cls:
                 return True
         return False
 

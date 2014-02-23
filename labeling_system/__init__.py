@@ -24,7 +24,7 @@ def generate_labeling(session, *args):
     session.OnGenerateLabeling.fire(session)
 
 Session.OnSessionInit.add(load_filetype_syntax)
-Session.OnApplyOperation.add(generate_labeling)
+Session.OnTextChanged.add(generate_labeling)
 Session.OnRead.add(generate_labeling)
 
 logging.info('labeling system loaded')

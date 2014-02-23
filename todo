@@ -1,10 +1,14 @@
 SHORT TERM
+should insert mode be managed inside fatelib? More generally, should fatelib be able to ask for user input?
+add functools.wraps everywhere
+make selectors either work on session or work isolated
 support autoindent
 add select around/inside, switch case,
 make distinction between undo selector and undo operator
 implement repeat last selector or operator
 
 LONG TERM
+implement fix interval functionality
 add unit tests
 switch to alternative regex engine
 improve syntax highlighting, for instance by disregarding quotes in comments

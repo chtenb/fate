@@ -1,20 +1,47 @@
 """This module defines the class Operation."""
 from .selection import Selection
 from .action import Action
+from .selectors import select_indent
 from . import modes
-import copy
+from copy import copy, deepcopy
+import logging
 
 
 class Operation(Action):
-    """A container of modified content of a selection.
+    """
+    A container of modified content of a selection.
     Can be inverted such that the operation can be undone by applying the inverse.
     The members are `old_selection`, `old_content`, `new_content` and `new_selection`.
     """
     def __init__(self, selection, new_content=None):
         Action.__init__(self, selection.session)
         self.old_selection = selection
-        self.old_content = self.session.content(selection)
-        self.new_content = new_content or self.old_content[:]
+        self.old_content = selection.content
+        try:
+            self.new_content = new_content or self.old_content[:]
+        except AttributeError:
+            # new_content has been overriden
+            # TODO neater fix for this
+            pass
+
+    def __str__(self):
+        attributes = [('old_selection', self.old_selection),
+                      ('new_selection', self.new_selection),
+                      ('old_content', self.old_content),
+                      ('new_content', self.new_content)]
+        return '\n'.join([k + ': ' + str(v) for k, v in attributes])
+
+    def __deepcopy__(self, memo):
+        result = copy(self)
+        result.old_selection = deepcopy(self.old_selection, memo)
+        result.old_content = self.old_content[:]
+        try:
+            self.new_content = self.new_content[:]
+        except AttributeError:
+            # new_content has been overriden
+            # TODO neater fix for this
+            pass
+        return result
 
     @property
     def new_selection(self):
@@ -28,35 +55,86 @@ class Operation(Action):
             result.add((beg, end))
         return result
 
-    def inverse(self):
-        """Return the inverse operation of self."""
-        result = copy.copy(self)
-        result.old_selection = self.new_selection
-        result.old_content, result.new_content = result.new_content, result.old_content
-        return result
-
-    def _do(self):
+    def _do(self, inverse=False):
         """Apply self to the session."""
+        if inverse:
+            old_selection = self.new_selection
+            new_selection = self.old_selection
+            new_content = self.old_content
+        else:
+            new_selection = self.new_selection
+            old_selection = self.old_selection
+            new_content = self.new_content
+
         session = self.session
-        partition = self.old_selection.partition()
+        partition = old_selection.partition()
         partition_content = [(in_selection, session.text[beg:end])
                              for in_selection, (beg, end) in partition]
         count = 0
         result = []
         for in_selection, string in partition_content:
             if in_selection:
-                result.append(self.new_content[count])
+                result.append(new_content[count])
                 count += 1
             else:
                 result.append(string)
 
         session.text = ''.join(result)
-        session.saved = False
-        session.OnApplyOperation.fire(session, self)
+        session.text_changed = True
         session.selection_mode = modes.SELECT_MODE
-        session.selection = self.new_selection
+        session.selection = new_selection
 
     def _undo(self):
         """Undo operation."""
-        inv = self.inverse()
-        inv.redo()
+        self._do(inverse=True)
+
+
+class InsertOperation(Operation):
+    """An operation for the change_before operator."""
+    def __init__(self, session):
+        selection = session.selection
+        Operation.__init__(self, selection)
+        self.insertions = ['' for _ in selection]
+        self.deletions = [0 for _ in selection]
+        self.feed('')
+
+    def __str__(self):
+        return ('insertions: ' + str(self.insertions) + '\n'
+                + 'deletions: ' + str(self.deletions) + '\n'
+                + Operation.__str__(self))
+
+    def __deepcopy__(self, memo):
+        result = Operation.__deepcopy__(self, memo)
+        result.insertions = self.insertions[:]
+        result.deletions = self.deletions[:]
+        return result
+
+    def feed(self, string):
+        """Feed a string (typically a char) to the operation."""
+        for i in range(len(self.new_selection)):
+            for char in string:
+                if char == '\b':
+                    # remove char
+                    if self.insertions[i]:
+                        self.insertions[i] = self.insertions[i][:-1]
+                    else:
+                        self.deletions[i] += 1
+                elif char == '\n':
+                    # get indent
+                    indent = select_indent(Selection(self.session, intervals=[self.new_selection[i]]), self.session.text)
+                    indent = indent.content[0]
+                    # add indent after \n
+                    self.insertions[i] += char + indent
+                else:
+                    # add char
+                    self.insertions[i] += char
+
+        # Undo the previous version of self
+        self.session.actiontree.hard_undo()
+        # And apply the current version of self
+        self.do()
+
+    def done(self):
+        """Finish constructing this operation."""
+        self.session.insertoperation = None
+

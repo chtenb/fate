@@ -1,18 +1,19 @@
-"""An operator is a special type of action, that applies an operation to a
+"""
+An operator is a special type of action, that applies an operation to a
 session. Strictly speaking, an operator is a function that is decorated
 by operator, either directly or indirectly.
 """
-from .operation import Operation
-from .action import actor
+from .operation import Operation, InsertOperation
+from .selection import Selection
+from .selectors import select_indent, previous_full_line
+import logging
 
 
 def operator(function):
-    """A decorator that turns a function taking a list of strings to an
-    operator. The resulting operator will have the following arguments.
-
-    :param session: The session on which the operator will act.
     """
-    @actor
+    A decorator that turns a function taking a list of strings to an
+    operator. The resulting operator will have the following arguments.
+    """
     def wrapper(session):
         operation = Operation(session.selection)
         operation.new_content = function(operation.new_content)
@@ -36,46 +37,159 @@ def delete(content):
     """Delete content."""
     return ''
 
-
 # The following functions are operator constructors
-def change_after(insertions, deletions):
+
+
+def append(string):
+    """Append to content."""
+    @local_operator
+    def wrapper(content):
+        return content + string
+    return wrapper
+
+
+def insert(string):
+    """Insert before content."""
+    @local_operator
+    def wrapper(content):
+        return string + content
+    return wrapper
+
+
+# We should probably change the following functions to accept the string of inserted characters (including backspaces)
+# That way we can make sure that indentation is right, even if the function is repeated in a different context
+
+# def insertoperator(function):
+    # def wrapper(operation):
+        # session = operation.session
+        # text = session.text
+        # new_content = []
+        # for interval in operation.new_selection:
+            # interval_selection = Selection(session, intervals=[interval])
+            # content = interval_selection.content[0]
+            # content = function(content, interval_selection, text)
+            # new_content.append(content)
+        # session.actiontree.hard_undo()
+        # operation.new_content = new_content
+        # operation.do()
+    # return wrapper
+
+
+# def change_after(inputstring):
+    #"""Operator constructor which deletes `deletions`
+    # and adds `insertions` at the tail of each interval content."""
+    #@insertoperator
+    # def wrapper(content, interval_selection, text):
+        # for char in inputstring:
+            # if char == '\b':
+                ## remove char
+                # content = content[:-1]
+            # elif char == '\n':
+                ## get indent
+                # indent = select_indent(interval_selection, text)
+                # indent = indent.content[0]
+                ## add indent after \n
+                # content += char + indent
+            # else:
+                ## add char
+                # content += char
+        # return content
+    # return wrapper
+
+# def change_before(inputstring):
+    #"""Operator constructor which deletes `deletions`
+    # and adds `insertions` at the tail of each interval content."""
+    #@insertoperator
+    # def wrapper(content, interval_selection, text):
+        # for char in inputstring:
+            # if char == '\b':
+                ## remove char
+                # content = content[1:]
+            # elif char == '\n':
+                ## get indent
+                # indent = select_indent(interval_selection, text)
+                # logging.debug(str(indent))
+                # indent = indent.content[0]
+                # logging.debug(str(indent) + '$')
+                ## add indent after \n
+                # content = char + indent + content
+            # else:
+                ## add char
+                # content = char + content
+        # return content
+    # return wrapper
+
+
+class ChangeBefore(InsertOperation):
+    def __init__(self, session):
+        InsertOperation.__init__(self, session)
+
+    @property
+    def new_content(self):
+        return [self.insertions[i]
+                + self.old_content[i][self.deletions[i]:]
+                for i in range(len(self.old_content))]
+
+
+def change_before(session):
     """Operator constructor which deletes `deletions`
-    and adds `insertions` at the tail of each interval content."""
-    @local_operator
-    def wrapper(content):
-        return content[:-deletions or None] + insertions
-    return wrapper
+    and adds `insertions` at the head of each interval."""
+    session.insertoperation = ChangeBefore(session)
 
 
-def change_before(insertions, deletions):
+class ChangeAfter(InsertOperation):
+    def __init__(self, session):
+        InsertOperation.__init__(self, session)
+
+    @property
+    def new_content(self):
+        return [self.old_content[i][self.deletions[i]:]
+                + self.insertions[i]
+                for i in range(len(self.old_content))]
+
+
+def change_after(session):
     """Operator constructor which deletes `deletions`
-    and adds `insertions` at the head of each interval content."""
-    @local_operator
-    def wrapper(content):
-        return insertions + content[deletions:]
-    return wrapper
+    and adds `insertions` at the head of each interval."""
+    session.insertoperation = ChangeAfter(session)
 
 
-def change_in_place(insertions, deletions):
-    """Operator constructor which puts `insertions` in place of each
-    interval content. The deletions argument is not used."""
-    @local_operator
-    def wrapper(content):
-        return insertions
-    return wrapper
+class ChangeInPlace(InsertOperation):
+    def __init__(self, session):
+        InsertOperation.__init__(self, session)
+
+    @property
+    def new_content(self):
+        return [self.insertions[i] for i in range(len(self.old_content))]
 
 
-def change_around(insertions, deletions):
-    """Operator constructor which deletes `deletions` and adds
-    `insertions` both at the tail and at the head of each interval
-    content."""
-    @local_operator
-    def wrapper(content):
+def change_in_place(session):
+    """Operator constructor which deletes `deletions`
+    and adds `insertions` at the head of each interval."""
+    session.insertoperation = ChangeInPlace(session)
+
+
+class ChangeAround(InsertOperation):
+    def __init__(self, session):
+        InsertOperation.__init__(self, session)
+
+    @property
+    def new_content(self):
         character_pairs = [('{', '}'), ('[', ']'), ('(', ')')]
-        first_string = insertions[::-1]
-        second_string = insertions
-        for first, second in character_pairs:
-            first_string = first_string.replace(second, first)
-            second_string = second_string.replace(first, second)
-        return first_string + content[deletions:-deletions or None] + second_string
-    return wrapper
+        result = []
+        for i in range(len(self.old_content)):
+            first_string = self.insertions[i][::-1]
+            second_string = self.insertions[i]
+            for first, second in character_pairs:
+                first_string = first_string.replace(second, first)
+                second_string = second_string.replace(first, second)
+            result.append(first_string
+                          + self.old_content[i][self.deletions[i]:-self.deletions[i] or None]
+                          + second_string)
+        return result
+
+
+def change_around(session):
+    """Operator constructor which deletes `deletions`
+    and adds `insertions` at the head of each interval."""
+    session.insertoperation = ChangeAround(session)

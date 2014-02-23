@@ -1,5 +1,8 @@
 """This module contains the Selection class."""
 from .action import Action
+from copy import copy
+
+# TODO create an Interval class to make selections on intervals easy
 
 
 class Selection(Action):
@@ -28,6 +31,11 @@ class Selection(Action):
         return (selection.__class__ == Selection
                 and self._intervals == selection._intervals)
 
+    def __deepcopy__(self, memo):
+        result = copy(self)
+        result._intervals = self._intervals[:]
+        return result
+
     def _do(self):
         """Set self to be the current selection of the session."""
         self.session.selection = self
@@ -35,6 +43,11 @@ class Selection(Action):
     def _undo(self):
         """Set current selection to previous selection."""
         self.session.selection = self.previous_selection
+
+    @property
+    def content(self):
+        """Return the content of self."""
+        return [self.session.text[max(0, beg):min(len(self.session.text), end)] for beg, end in self]
 
     def index(self, interval):
         """Return the index of given interval."""

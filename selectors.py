@@ -7,9 +7,10 @@ and function that work interval-wise (local selectors).
 Furthermore we have selectors that are based on regular expressions.
 """
 from .selection import Selection
-from .action import actor
-from .modes import EXTEND_MODE, REDUCE_MODE
+from .modes import SELECT_MODE, EXTEND_MODE, REDUCE_MODE
+from functools import wraps
 import re
+import logging
 
 
 def selector(function):
@@ -21,12 +22,27 @@ def selector(function):
     If the resulting Selection is empty, invalid or the same as
     the original selection, return nothing.
     """
-    @actor
-    def wrapper(session):
-        selection = session.selection
-        text = session.text
+    #@actor
+    #def wrapper(session):
+    @wraps(function)
+    def wrapper(obj, text=None, selection_mode=SELECT_MODE):
+        # This can either be called like f(session)
+        # or like f(selection, text, selection_mode)
+        # TODO: operator should probably also be able to do this
+        from .session import Session
+        if obj.__class__ == Session:
+            session = obj
+            selection = session.selection
+            text = session.text
+            selection_mode = session.selection_mode
+        elif obj.__class__ == Selection:
+            selection = obj
+            if text == None:
+                raise TypeError('No text passed.')
+        else:
+            raise TypeError('obj is no instance of Session or Selection.')
 
-        result = function(selection, text, session.selection_mode)
+        result = function(selection, text, selection_mode)
         assert result == None or result.__class__ == Selection
 
         # If the result is empty, invalid or the same, return None
@@ -36,7 +52,10 @@ def selector(function):
             if not (0 <= beg < len(text) and 0 <= end <= len(text)):
                 return
 
-        return result
+        if obj.__class__ == Session:
+            result.do()
+        else:
+            return result
     return wrapper
 
 
@@ -146,6 +165,7 @@ def global_pattern_selector(pattern, reverse=False, group=0):
     @selector
     def wrapper(selection, text, mode):
         match_intervals = find_pattern(text, pattern, reverse, group)
+        logging.debug(str(list(match_intervals)))
 
         # First select all occurences intersecting with selection,
         # and process according to mode
@@ -245,6 +265,9 @@ def local_pattern_selector(pattern, reverse=False, group=0, only_within=False):
         return Selection(selection.session, intervals=new_intervals)
     return wrapper
 
+
+select_indent = local_pattern_selector(r'(?m)^([ \t]*)',
+        reverse=True, group=1)
 
 def pattern_pair(pattern, **kwargs):
     """Return two local pattern selectors for given pattern,
