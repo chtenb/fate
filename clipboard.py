@@ -1,5 +1,7 @@
 """A class definition for the clipboard and some actors."""
 from .operation import Operation
+from .action import actor
+from logging import debug
 
 
 class Clipboard:
@@ -27,14 +29,14 @@ class Clipboard:
 
 def copy(session):
     """Copy current selected content to clipboard."""
-    session.clipboard.push(session.content(session.selection))
+    session.clipboard.push(session.selection.content)
 
 
 def paste(session, before):
     """This is not an actor,
     but serves as a helper function for paste_before and paste_after."""
     if session.clipboard:
-        old_content = session.content(session.selection)
+        old_content = session.selection.content
         clipboard_content = session.clipboard.peek()
         if not clipboard_content:
             return
@@ -48,12 +50,15 @@ def paste(session, before):
         return Operation(session.selection, new_content)
 
 
-def paste_before(session):
+@actor
+def paste_before(session, preview=False):
     """Paste clipboard before current selection."""
     return paste(session, before=True)
 
 
-def paste_after(session):
+
+@actor
+def paste_after(session, preview=False):
     """Paste clipboard after current selection."""
     return paste(session, before=False)
 

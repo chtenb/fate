@@ -30,14 +30,14 @@ open_line_after = compose(modes.select_mode, previous_full_line,
                           select_indent, copy,
                           next_full_line, append('\n'),
                           previous_char, empty_before, paste_before,
-                          clear)
+                          clear, change_after)
 open_line_after.__docs__ = """Open a line after interval."""
 
 open_line_before = compose(modes.select_mode, next_full_line,
                            select_indent, copy,
                            next_full_line, insert('\n'),
                            next_char, empty_before, paste_before,
-                           clear)
+                           clear, change_after)
 open_line_before.__docs__ = """Open a line before interval."""
 
 cut = compose(copy, delete)

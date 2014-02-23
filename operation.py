@@ -121,7 +121,7 @@ class InsertOperation(Operation):
                         self.deletions[i] += 1
                 elif char == '\n':
                     # get indent
-                    indent = select_indent(Selection(self.session, intervals=[self.new_selection[i]]), self.session.text)
+                    indent = select_indent(self.session, preview=True, selection=Selection(self.session, intervals=[self.new_selection[i]]))
                     indent = indent.content[0]
                     # add indent after \n
                     self.insertions[i] += char + indent
@@ -134,6 +134,7 @@ class InsertOperation(Operation):
         # And apply the current version of self
         self.do()
 
+    # TODO: maybe this should turn into __call__
     def done(self):
         """Finish constructing this operation."""
         self.session.insertoperation = None

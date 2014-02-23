@@ -1,5 +1,6 @@
 """This module exposes the basic action machinery."""
 
+
 class Action:
     """Base class for actions."""
 
@@ -18,6 +19,7 @@ class Action:
     def undo(self):
         """Undo action."""
         self._undo()
+        self.check_text_changed()
 
     def do(self, redo=False):
         """Do action."""
@@ -25,6 +27,10 @@ class Action:
 
         if not redo:
             self.session.actiontree.add(self)
+        self.check_text_changed()
+
+    def check_text_changed(self):
+        """Check for changes in text."""
         if self.session.text_changed:
             self.session.saved = False
             self.session.OnTextChanged.fire(self.session)
@@ -83,20 +89,11 @@ class CompoundAction(Action):
         return False
 
 
-def compose(*args):
-    """
-    This function returns the compositional actor from the
-    argument actors, and does the resulting actions upon execution.
-    """
-    def wrapper(session, toplevel=True):
-        actionlist = [f(session, toplevel=False)
-                      if hasattr(f, 'is_actor') else f(session) for f in args]
-        actionlist = [x for x in actionlist if x]
-        if not actionlist:
-            return
-        action = CompoundAction(session, *actionlist)
-
-        if toplevel:
+def actor(function):
+    """Base function for actors."""
+    def wrapper(session, preview=False, **kwargs):
+        action = function(session, **kwargs)
+        if action and not preview:
             action.do()
         else:
             return action
@@ -104,3 +101,18 @@ def compose(*args):
     wrapper.is_actor = True
     return wrapper
 
+
+def compose(*args):
+    """
+    This function returns the compositional actor from the
+    argument actors, and does the resulting actions upon execution.
+    """
+    @actor
+    def wrapper(session):
+        actionlist = [f(session, preview=True)
+                      if hasattr(f, 'is_actor') else f(session) for f in args]
+        actionlist = [x for x in actionlist if x]
+        if not actionlist:
+            return
+        return CompoundAction(session, *actionlist)
+    return wrapper

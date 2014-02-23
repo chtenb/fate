@@ -8,6 +8,7 @@ Furthermore we have selectors that are based on regular expressions.
 """
 from .selection import Selection
 from .modes import SELECT_MODE, EXTEND_MODE, REDUCE_MODE
+from .action import actor
 from functools import wraps
 import re
 import logging
@@ -22,25 +23,11 @@ def selector(function):
     If the resulting Selection is empty, invalid or the same as
     the original selection, return nothing.
     """
-    #@actor
-    #def wrapper(session):
-    @wraps(function)
-    def wrapper(obj, text=None, selection_mode=SELECT_MODE):
-        # This can either be called like f(session)
-        # or like f(selection, text, selection_mode)
-        # TODO: operator should probably also be able to do this
-        from .session import Session
-        if obj.__class__ == Session:
-            session = obj
-            selection = session.selection
-            text = session.text
-            selection_mode = session.selection_mode
-        elif obj.__class__ == Selection:
-            selection = obj
-            if text == None:
-                raise TypeError('No text passed.')
-        else:
-            raise TypeError('obj is no instance of Session or Selection.')
+    @actor
+    def wrapper(session, selection=None, selection_mode=None):
+        selection = selection or session.selection
+        text = session.text
+        selection_mode = selection_mode or session.selection_mode
 
         result = function(selection, text, selection_mode)
         assert result == None or result.__class__ == Selection
@@ -52,10 +39,7 @@ def selector(function):
             if not (0 <= beg < len(text) and 0 <= end <= len(text)):
                 return
 
-        if obj.__class__ == Session:
-            result.do()
-        else:
-            return result
+        return result
     return wrapper
 
 

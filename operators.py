@@ -6,18 +6,19 @@ by operator, either directly or indirectly.
 from .operation import Operation, InsertOperation
 from .selection import Selection
 from .selectors import select_indent, previous_full_line
+from .action import actor
 import logging
 
 
 def operator(function):
     """
     A decorator that turns a function taking a list of strings to an
-    operator. The resulting operator will have the following arguments.
+    operator.
     """
+    @actor
     def wrapper(session):
-        operation = Operation(session.selection)
-        operation.new_content = function(operation.new_content)
-        return operation
+        new_content = function(session.selection.content)
+        return Operation(session.selection, new_content)
     return wrapper
 
 
@@ -56,70 +57,10 @@ def insert(string):
     return wrapper
 
 
-# We should probably change the following functions to accept the string of inserted characters (including backspaces)
-# That way we can make sure that indentation is right, even if the function is repeated in a different context
+# The following operators need to maintain state while being
+# constructed, and therefore are classes
 
-# def insertoperator(function):
-    # def wrapper(operation):
-        # session = operation.session
-        # text = session.text
-        # new_content = []
-        # for interval in operation.new_selection:
-            # interval_selection = Selection(session, intervals=[interval])
-            # content = interval_selection.content[0]
-            # content = function(content, interval_selection, text)
-            # new_content.append(content)
-        # session.actiontree.hard_undo()
-        # operation.new_content = new_content
-        # operation.do()
-    # return wrapper
-
-
-# def change_after(inputstring):
-    #"""Operator constructor which deletes `deletions`
-    # and adds `insertions` at the tail of each interval content."""
-    #@insertoperator
-    # def wrapper(content, interval_selection, text):
-        # for char in inputstring:
-            # if char == '\b':
-                ## remove char
-                # content = content[:-1]
-            # elif char == '\n':
-                ## get indent
-                # indent = select_indent(interval_selection, text)
-                # indent = indent.content[0]
-                ## add indent after \n
-                # content += char + indent
-            # else:
-                ## add char
-                # content += char
-        # return content
-    # return wrapper
-
-# def change_before(inputstring):
-    #"""Operator constructor which deletes `deletions`
-    # and adds `insertions` at the tail of each interval content."""
-    #@insertoperator
-    # def wrapper(content, interval_selection, text):
-        # for char in inputstring:
-            # if char == '\b':
-                ## remove char
-                # content = content[1:]
-            # elif char == '\n':
-                ## get indent
-                # indent = select_indent(interval_selection, text)
-                # logging.debug(str(indent))
-                # indent = indent.content[0]
-                # logging.debug(str(indent) + '$')
-                ## add indent after \n
-                # content = char + indent + content
-            # else:
-                ## add char
-                # content = char + content
-        # return content
-    # return wrapper
-
-
+# TODO: Why is not every operator just a subclass of Operation?
 class ChangeBefore(InsertOperation):
     def __init__(self, session):
         InsertOperation.__init__(self, session)
@@ -151,6 +92,7 @@ class ChangeAfter(InsertOperation):
 def change_after(session):
     """Operator constructor which deletes `deletions`
     and adds `insertions` at the head of each interval."""
+    logging.debug(session.selection)
     session.insertoperation = ChangeAfter(session)
 
 
