@@ -134,7 +134,6 @@ class InsertOperation(Operation):
         # And apply the current version of self
         self.do()
 
-    # TODO: maybe this should turn into __call__
     def done(self):
         """Finish constructing this operation."""
         self.session.insertoperation = None
