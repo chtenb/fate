@@ -166,10 +166,6 @@ having to actually apply them to the session.
 If we wouldn't care about that, we might as well use the above.
 """
 
-#TODO: we also want to be able to accept a selection in the __init__.
-#That way we can chain several selectors and inspect the result afterwards,
-#without affecting a session.
-
 
 class SelectEverything(Selection):
     def __init__(self, session, selection=None, selection_mode=None):
@@ -199,9 +195,9 @@ class SelectPattern(Selection):
 from functools import partial
 SelectIndent = partial(SelectPattern, r'(?m)^([ \t]*)', reverse=True, group=1)
 
-indent = SelectIndent(mysession)  # create selection
-indent(mysession)  # execute the selection on a session
-indent.undo(mysession)  # undo the selection on a session
+my_indent = SelectIndent(mysession)  # create selection
+my_indent(mysession)  # execute the selection on a session
+my_indent.undo(mysession)  # undo the selection on a session
 
 
 """
@@ -231,54 +227,39 @@ class Updateable(Undoable):
     finished = False
 
     def update(self, session, *args):
+        """
+        Calls the _update method to update self,
+        and makes sure to apply the update to the session.
+        """
         self._update(session, *args)
         session.actiontree.hard_undo()
         self(session)
 
     def _update(self, session, *args):
+        """
+        Abstract method that should modify self based on the given arguments.
+        """
         raise Exception('An abstract method is not callable.')
 
     def finish(self):
         self.finished = True
 
 
-#class Completeable(Operation, Updateable):
-    #def __init__(self, selection):
-        #Operation.__init__(self, selection, None)
-        #self.insertions = ['' for _ in selection]
-        #self.deletions = [0 for _ in selection]
-
-    #def _update(self, session, string, complete):
-        #if complete:
-            #if session.completer.current_completion:
-                #self.insertions = session.completer.current_completion
-        #elif string:
-            #self.insertions += string
-
-    #def update(self, session, string='', complete=False):
-        #Updateable.update(session, string, complete)
-        #if string:
-            #session.completer.update_completions()
-
-
-class ChangeAfter(Operation, Updateable):
+class InsertOperation(Operation, Updateable):
+    """Abstract class for operations dealing with insertion of text."""
     def __init__(self, selection):
         Operation.__init__(self, selection, None)
         self.insertions = ['' for _ in selection]
         self.deletions = [0 for _ in selection]
 
-    def _update(self, session, string, complete):
-        if complete:
-            if session.completer.current_completion:
-                self.insertions = session.completer.current_completion
-        elif string:
-            self.insert(session, string)
+    def _update(self, session, string):
+        self.insert(session, string)
 
     def insert(self, session, string):
         """Insert a string (typically a char) in the operation."""
-        indent = SelectIndent(session, self.new_selection)
-        for i in range(len(self.new_selection)):
-            for char in string:
+        for char in string:
+            indent = SelectIndent(session, self.new_selection)
+            for i in range(len(self.new_selection)):
                 if char == '\b':
                     # remove char
                     if self.insertions[i]:
@@ -292,11 +273,44 @@ class ChangeAfter(Operation, Updateable):
                     # add char
                     self.insertions[i] += char
 
-    def update(self, session, string='', complete=False):
-        Updateable.update(session, string, complete)
-        if string:
-            session.completer.update_completions()
 
+class ChangeAround(InsertOperation):
+    @property
+    def new_content(self):
+        character_pairs = [('{', '}'), ('[', ']'), ('(', ')')]
+        result = []
+        for i in range(len(self.old_content)):
+            first_string = self.insertions[i][::-1]
+            second_string = self.insertions[i]
+            for first, second in character_pairs:
+                first_string = first_string.replace(second, first)
+                second_string = second_string.replace(first, second)
+            result.append(first_string
+                          + self.old_content[i][self.deletions[i]:-self.deletions[i] or None]
+                          + second_string)
+        return result
+
+
+"""
+Eventually we also want to have completion, so we should see if we
+can fit that into our current design.
+Let us introduce a subclass of InsertOperation named Completeable.
+"""
+
+
+class Completeable(InsertOperation):
+    """Abstract class for insert operations that can be completed."""
+    def _update(self, session, string, complete):
+        if complete:
+            if session.completer.current_completion:
+                self.insertions = session.completer.current_completion
+        elif string:
+            self.insert(session, string)
+            # Notify the completer that the insertions have changed
+            session.completer.need_refresh = True
+
+
+class ChangeAfter(Completeable):
     @property
     def new_content(self):
         return [self.old_content[i][self.deletions[i]:]
@@ -308,12 +322,12 @@ class ChangeAfter(Operation, Updateable):
 To be able to compose undoable actions together, we define the class
 Compound.
 A sequence of actions is undoable iff all sub actions are undoable.
-Note that the class CompoundAction is not an actor.
+Note that the class CompoundUndoable is not an actor.
 A compound action may also contain updatable actions.
 """
 
 
-class CompoundAction(Updateable):
+class CompoundUndoable(Updateable):
     def __init__(self, *args):
         self.subactions = args
         for subaction in self.subactions:
@@ -329,9 +343,10 @@ class CompoundAction(Updateable):
             subaction._undo(session)
 
     def _update(self, session, *args):
+        """Update the next updateable subaction."""
         for subaction in self.subactions:
             if isinstance(subaction, Updateable) and not subaction.finished:
-                subaction.update(session, *args)
+                subaction._update(session, *args)
                 return
 
     def finish(self):
@@ -351,18 +366,18 @@ class CompoundAction(Updateable):
 
 
 """
-In order to be able to conveniently chain actors, we provide a
-function that composes a sequence of actors into a single actor.
+In order to be able to conveniently chain undoable actors, we provide a
+function that composes a sequence of undoable actors into a single undoable actor.
 """
 
 
 def compose(*args):
     def compoundactor(session):
         subactions = [subactor(session) for subactor in args]
-        return CompoundAction(*subactions)
+        return CompoundUndoable(*subactions)
     return compoundactor
 my_chained_actor = compose(SelectEverything,  # create the compound actor
-                           select_somepattern,
+                           SelectIndent,
                            set_extend_mode)
 my_chained_action = my_chained_actor(mysession)  # create compound action
 my_chained_action(mysession)  # execute the compound action on a session
