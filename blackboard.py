@@ -224,6 +224,7 @@ last operation is an unfinished updateable operation.
 
 
 class Updateable(Undoable):
+    """Interactive action."""
     finished = False
 
     def update(self, session, *args):
@@ -256,22 +257,24 @@ class InsertOperation(Operation, Updateable):
         self.insert(session, string)
 
     def insert(self, session, string):
-        """Insert a string (typically a char) in the operation."""
-        for char in string:
-            indent = SelectIndent(session, self.new_selection)
-            for i in range(len(self.new_selection)):
-                if char == '\b':
-                    # remove char
-                    if self.insertions[i]:
-                        self.insertions[i] = self.insertions[i][:-1]
-                    else:
-                        self.deletions[i] += 1
-                elif char == '\n':
-                    # add indent after \n
-                    self.insertions[i] += char + indent.content[i]
+        """
+        Insert a string (typically a char) in the operation.
+        By only autoindenting on a single \n, we potentially allow proper pasting.
+        """
+        indent = SelectIndent(session, self.new_selection)
+        for i in range(len(self.new_selection)):
+            if string == '\b':
+                # remove string
+                if self.insertions[i]:
+                    self.insertions[i] = self.insertions[i][:-1]
                 else:
-                    # add char
-                    self.insertions[i] += char
+                    self.deletions[i] += 1
+            elif string == '\n':
+                # add indent after \n
+                self.insertions[i] += string + indent.content[i]
+            else:
+                # add string
+                self.insertions[i] += string
 
 
 class ChangeAround(InsertOperation):
@@ -316,6 +319,42 @@ class ChangeAfter(Completeable):
         return [self.old_content[i][self.deletions[i]:]
                 + self.insertions[i]
                 for i in range(len(self.old_content))]
+
+
+"""
+Snippet expansion should be trivial due to our abstract machinery.
+There are several possibilities.
+Do we want to make it a single action, or do we want to have an action for each placeholder?
+In the first case we have to make it a CompoundAction.
+In the second case we can either store the actions in advance (annoying to implement)
+or store a snippet object in the session which is updateable and subsequently stores
+placeholder actions in the actiontree.
+This requires a seperate field for updateable actions.
+Updateable actions are then no longer determined from the last action in the history,
+but have a separate field.
+
+Generally speaking, we want to interact with a general object/action (that is not undoable).
+In this case, a snippet object.
+While interacting with the snippet object, we get multiple other interactions with ChangeInPlace operations.
+
+TODO: So we need to think about how to implement interaction in the most general way.
+"""
+
+#class Snippet(Updateable):
+    #def __init__(self, snippet, selection_list):
+        #self.snippet = snippet
+        #self.selection_list = selection_list
+        #self.current_selection = 0
+
+    #def _call(self, session):
+        #ChangeInPlace(session)(session).update(snippet) # Should be shorter
+        #if not self.selection_list:
+            #self.finish()
+
+    #def _update(self, session, string='', next=False):
+        #"""Insert or switch to next placeholder."""
+        #if next:
+            #self.current_selection += 1
 
 
 """
