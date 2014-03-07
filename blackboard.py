@@ -63,11 +63,11 @@ of the undo method to the concrete subclasses.
 
 class Undoable:
     def __call__(self, session):
-        session.actiontree.add(self)
+        session.undotree.add(self)
         self._call(session)
 
     def undo(self, session):
-        session.actiontree.undo()
+        session.undotree.undo()
         self._undo(session)
 
     def _call(self, session):
@@ -223,27 +223,31 @@ last operation is an unfinished updateable operation.
 """
 
 
-class Updateable(Undoable):
-    """Interactive action."""
+class Interactive:
     finished = False
 
-    def update(self, session, *args):
-        """
-        Calls the _update method to update self,
-        and makes sure to apply the update to the session.
-        """
-        self._update(session, *args)
-        session.actiontree.hard_undo()
-        self(session)
+    def __call__(self, session):
+        session.interaction_stack.push(self)
+        self._call(session)
 
-    def _update(self, session, *args):
-        """
-        Abstract method that should modify self based on the given arguments.
-        """
-        raise Exception('An abstract method is not callable.')
-
-    def finish(self):
+    def finish(self, session):
+        # TODO maybe add optional callback function for after the interaction
         self.finished = True
+        session.interaction_stack.pop()
+
+    def _call(self, session):
+        raise Exception("An abstract method is not callable.")
+
+
+class Updateable(Undoable, Interactive):
+    """Updateable action."""
+
+    def update(self, session):
+        """
+        Makes sure to apply the update to the session.
+        """
+        session.undotree.hard_undo()
+        self(session)
 
 
 class InsertOperation(Operation, Updateable):
@@ -252,9 +256,6 @@ class InsertOperation(Operation, Updateable):
         Operation.__init__(self, selection, None)
         self.insertions = ['' for _ in selection]
         self.deletions = [0 for _ in selection]
-
-    def _update(self, session, string):
-        self.insert(session, string)
 
     def insert(self, session, string):
         """
@@ -275,6 +276,8 @@ class InsertOperation(Operation, Updateable):
             else:
                 # add string
                 self.insertions[i] += string
+
+        self.update(session)
 
 
 class ChangeAround(InsertOperation):
@@ -303,14 +306,15 @@ Let us introduce a subclass of InsertOperation named Completeable.
 
 class Completeable(InsertOperation):
     """Abstract class for insert operations that can be completed."""
-    def _update(self, session, string, complete):
-        if complete:
-            if session.completer.current_completion:
-                self.insertions = session.completer.current_completion
-        elif string:
-            self.insert(session, string)
-            # Notify the completer that the insertions have changed
-            session.completer.need_refresh = True
+    def complete(self, session):
+        if session.completer.current_completion:
+            self.insertions = session.completer.current_completion
+            self.update(session)
+
+    def insert(self, session, string):
+        super().insert(session, string)
+        # Notify the completer that the insertions have changed
+        session.completer.need_refresh = True
 
 
 class ChangeAfter(Completeable):
@@ -321,6 +325,11 @@ class ChangeAfter(Completeable):
                 for i in range(len(self.old_content))]
 
 
+class ChangeInPlace(Completeable):
+    @property
+    def new_content(self):
+        return [self.insertions[i] for i in range(len(self.old_content))]
+
 """
 Snippet expansion should be trivial due to our abstract machinery.
 There are several possibilities.
@@ -328,45 +337,65 @@ Do we want to make it a single action, or do we want to have an action for each 
 In the first case we have to make it a CompoundAction.
 In the second case we can either store the actions in advance (annoying to implement)
 or store a snippet object in the session which is updateable and subsequently stores
-placeholder actions in the actiontree.
+placeholder actions in the undotree.
 This requires a seperate field for updateable actions.
 Updateable actions are then no longer determined from the last action in the history,
 but have a separate field.
 
-Generally speaking, we want to interact with a general object/action (that is not undoable).
+Generally speaking, we want to interact with a general object/action (that is not necessarily undoable).
 In this case, a snippet object.
 While interacting with the snippet object, we get multiple other interactions with ChangeInPlace operations.
 
-TODO: So we need to think about how to implement interaction in the most general way.
+So we need to think about how to implement interaction in the most general way.
+We can introduce an interaction stack, such that we can nest interactions.
+If we then finish an interaction, we are dropped into the previous interaction.
+By default we must interact through characters that are typed by the user.
+This is not very configurable, so for some interactive actions we must use other interaction data.
+In those cases, support by the user interface is needed, to translate the users insertions to the data of choice.
+An alternative is to move this part to the fate core, but that kind of denies the design statement of splitting the user interface from the core.
+To generalize ui support for the interactions, we maybe could have dictionaries for the different types of interactions.
+
+SOLUTION:
+The UI must have knowledge about subclasses of Interactive, like InsertOperation, en have interpretation functions for them. That can be a
+dict: key -> func, but also a function that translates keys to characters and passes them to the insert method of InsertOperation
 """
 
-#class Snippet(Updateable):
-    #def __init__(self, snippet, selection_list):
-        #self.snippet = snippet
-        #self.selection_list = selection_list
-        #self.current_selection = 0
 
-    #def _call(self, session):
-        #ChangeInPlace(session)(session).update(snippet) # Should be shorter
-        #if not self.selection_list:
-            #self.finish()
+class Snippet(Interactive):
+    def __init__(self, snippet_text, selection_list):
+        self.snippet_text = snippet_text
+        self.selection_list = selection_list
+        self.current_selection = 0
 
-    #def _update(self, session, string='', next=False):
-        #"""Insert or switch to next placeholder."""
-        #if next:
-            #self.current_selection += 1
+    def _call(self, session):
+        selection = session.selection
+        snippet_insertions = [self.snippet_text for _ in selection]
+        insert_snippet = Operation(selection, snippet_insertions)
+        insert_snippet(session)
+
+    def next_placeholder(self, session):
+        # TODO update selectionlist after previous modifications
+        # Selection needs method to compute itself after an Operation
+        if self.current_selection < len(self.selection_list):
+            self.current_selection += 1
+            session.selection = self.selection_list[self.current_selection]
+            fill_placeholder = ChangeInPlace(session)
+            fill_placeholder(session)
+        else:
+            self.finish(session)
 
 
 """
-To be able to compose undoable actions together, we define the class
-Compound.
+To be able to compose actions together, we define the class Compound.
 A sequence of actions is undoable iff all sub actions are undoable.
+A sequence of actions is interactive iff some sub actions are interactive.
 Note that the class CompoundUndoable is not an actor.
-A compound action may also contain updatable actions.
+A compound action should be transparent to classes such as Completeable,
+such that arbitrary actions can be composed together.
 """
 
 
-class CompoundUndoable(Updateable):
+class Compound(Interactive, Undoable):
     def __init__(self, *args):
         self.subactions = args
         for subaction in self.subactions:
@@ -381,7 +410,7 @@ class CompoundUndoable(Updateable):
         for subaction in self.subactions:
             subaction._undo(session)
 
-    def _update(self, session, *args):
+    def update(self, session, *args):
         """Update the next updateable subaction."""
         for subaction in self.subactions:
             if isinstance(subaction, Updateable) and not subaction.finished:
@@ -413,7 +442,7 @@ function that composes a sequence of undoable actors into a single undoable acto
 def compose(*args):
     def compoundactor(session):
         subactions = [subactor(session) for subactor in args]
-        return CompoundUndoable(*subactions)
+        return Compound(*subactions)
     return compoundactor
 my_chained_actor = compose(SelectEverything,  # create the compound actor
                            SelectIndent,
