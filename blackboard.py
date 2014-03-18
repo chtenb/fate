@@ -205,6 +205,13 @@ Now we can call any function that takes a session and returns an
 action an 'actor'. So in the above, select_somepattern is an actor,
 which resulted from partially applying SelectPattern.
 Note that Selection and Operation are not actors.
+
+To improve selection/interval arithmetic, we should override basic operators
+for the classes Selection and Interval.
+(a,b)+(c,d)=(min(a,b),max(c,d))
+s+t=s.extend(t)
+Note that interval selector behaviour follows from these definitions.
+
 """
 
 
@@ -387,15 +394,106 @@ class Snippet(Interactive):
 
 """
 To be able to compose actions together, we define the class Compound.
-A sequence of actions is undoable iff all sub actions are undoable.
-A sequence of actions is interactive iff some sub actions are interactive.
+
+A sequence of actions is Undoable iff all sub actions are undoable.
+A sequence of actions is Interactive iff at least one sub action is interactive.
+
+#A sequence of actions is Updateable iff all sub actions are undoable.
+
 Note that the class CompoundUndoable is not an actor.
 A compound action should be transparent to classes such as Completeable,
+Interactive, Undoable, etc
 such that arbitrary actions can be composed together.
+
+If a new action class is written that needs explicit support from Compound
+to be able to be composed, you have to subclass Compound, modify it to
+your needs, and use that subclass for your stuff.
 """
 
+# For reference:
+import sys
 
-class Compound(Interactive, Undoable):
+class FooBase(object):
+    def __new__(cls, *arguments, **keyword):
+        for subclass in FooBase.__subclasses__():
+            if subclass.platform == sys.platform:
+                return super(cls, subclass).__new__(subclass, *arguments, **keyword)
+        raise Exception('Platform not supported')
+
+    def say_foo(self):
+        print 'foo'
+
+    def say_platform_foo(self):
+        raise NotImplementedError
+
+class WindowsFoo(FooBase):
+    platform = 'win32'
+
+    def say_platform_foo(self):
+        print 'win32 foo'
+
+class LinuxFoo(FooBase):
+    platform = 'linux2'
+
+    def say_platform_foo(self):
+        print 'linux foo'
+
+def factory(*subactions):
+    class CompoundUndoable(Undoable):
+        def _undo(self, session):
+            for subaction in reversed(self.subactions):
+                if isinstance(subaction, Undoable):
+                    subaction._undo(session)
+
+    class CompoundInteractive(Interactive):
+        def finish(self):
+            """Finish the next updateable subaction."""
+            for subaction in self.subactions:
+                if isinstance(subaction, Interactive) and not subaction.finished:
+                    subaction.finish()
+                    return
+
+        @property
+        def finished(self):
+            """We are finished if all our subactions are finished."""
+            for subaction in self.subactions:
+                if isinstance(subaction, Interactive) and not subaction.finished:
+                    return True
+            return False
+
+    bases = []
+    for subaction in subactions:
+        if isinstance(subaction, Undoable):
+            bases.append(Undoable)
+            break
+
+    for subaction in subactions:
+        if isinstance(subaction, Interactive) and not subaction.finished:
+            bases.append(Interactive)
+            break
+
+    class Compound(*bases):
+        def __init__(self, *subactions):
+            self.subactions = subactions
+
+        def _call(self, session):
+            for subaction in self.subactions:
+                subaction._call(session)
+
+# The compound action must be undoable as a whole if is has undoable subactions,
+# and it must be interactive if it has interactive subactions
+class CompoundInner:
+    #def __init__(self, *args):
+        #self.subactions = args
+        #potential_bases = [(Interactive, [CompoundInner.finish]), (Undoable, [CompoundInner._undo])]
+        #bases = []
+        #for base in potential_superclasses:
+            #superclass, _ = base
+            #if all([isinstance(subaction, superclass) for subaction in self.subactions]):
+                #bases.append(base)
+
+        #factory = type('Compound', bases, 
+
     def __init__(self, *args):
         self.subactions = args
         for subaction in self.subactions:
@@ -406,11 +504,8 @@ class Compound(Interactive, Undoable):
         for subaction in self.subactions:
             subaction._call(session)
 
-    def _undo(self, session):
-        for subaction in self.subactions:
-            subaction._undo(session)
 
-    def update(self, session, *args):
+    def _update(self, session, *args):
         """Update the next updateable subaction."""
         for subaction in self.subactions:
             if isinstance(subaction, Updateable) and not subaction.finished:

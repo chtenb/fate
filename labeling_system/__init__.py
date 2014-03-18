@@ -16,6 +16,9 @@ def load_filetype_syntax(session):
             import_module(__name__ + '.' + session.filetype)
         except ImportError:
             logging.info('No labeling script found for filetype ' + session.filetype)
+        else:
+            session.OnTextChanged.add(generate_labeling)
+            session.OnRead.add(generate_labeling)
 
 
 def generate_labeling(session, *args):
@@ -24,7 +27,5 @@ def generate_labeling(session, *args):
     session.OnGenerateLabeling.fire(session)
 
 Session.OnSessionInit.add(load_filetype_syntax)
-Session.OnTextChanged.add(generate_labeling)
-Session.OnRead.add(generate_labeling)
 
 logging.info('labeling system loaded')

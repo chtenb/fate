@@ -17,23 +17,24 @@ session_list = []
 class Session():
     """Contains all objects of one file editing session"""
     OnSessionInit = Event()
-    OnTextChanged = Event()
-    OnRead = Event()
-    OnWrite = Event()
-
-    clipboard = Clipboard()
-    actiontree = ActionTree()
-
-    selection = None
-    selection_mode = modes.SELECT_MODE
-    saved = True
-    text_changed = False
-
-    # To allow building operations incrementally whilst getting
-    # realtime feedback we facilitate a insertoperation attribute
-    insertoperation = None
 
     def __init__(self, filename=""):
+        self.OnTextChanged = Event()
+        self.OnRead = Event()
+        self.OnWrite = Event()
+
+        self.clipboard = Clipboard()
+        self.actiontree = ActionTree()
+
+        self.selection = None
+        self.selection_mode = modes.SELECT_MODE
+        self.saved = True
+        self.text_changed = False
+
+        # To allow building operations incrementally whilst getting
+        # realtime feedback we facilitate a insertoperation attribute
+        self.insertoperation = None
+
         self.text = ""
         self.filename = filename
         self.selection = Selection(self)
