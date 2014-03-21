@@ -1,22 +1,50 @@
 """This module contains the Selection class."""
-from .action import Action
-from copy import copy
-
-# TODO create an Interval class to make selections on intervals easy
 
 
-class Selection(Action):
+class Interval:
+    def __init__(self, beg, end):
+        self.beg = beg
+        self.end = end
+
+    def __getitem__(self, index):
+        return (self.beg, self.end)[index]
+
+    def __str__(self):
+        return 'Interval({}, {})'.format(self.beg, self.end)
+
+    def __eq__(self, interval):
+        return (self.beg, self.end) == (interval.beg, interval.end)
+
+    def __add__(self, obj):
+        """Add second interval to first interval."""
+        if isinstance(obj, Interval):
+            return Interval(min(self.beg, obj.beg), max(self.end, obj.end))
+        else:
+            return NotImplemented
+
+    def __sub__(self, obj):
+        """Substract second interval from first interval."""
+        if isinstance(obj, Interval):
+            beg, end = self
+            nbeg, nend = self
+            mbeg, mend = obj
+            if mbeg <= beg:
+                nbeg = max(beg, mend)
+            if mend >= end:
+                nend = min(end, mbeg)
+
+            if nbeg <= nend:
+                return Interval(nbeg, nend)
+        else:
+            return NotImplemented
+
+
+class Selection:
     """Sorted list of disjoint non-adjacent intervals."""
-    def __init__(self, session, intervals=None):
-        Action.__init__(self, session)
-        self.previous_selection = session.selection
-
+    def __init__(self, intervals=None):
         self._intervals = []
         if intervals:
-            for interval in intervals:
-                self.add(interval)
-        else:
-            self.add((0, 0))
+            self.add(intervals)
 
     def __getitem__(self, index):
         return self._intervals[index]
@@ -31,23 +59,15 @@ class Selection(Action):
         return (selection.__class__ == Selection
                 and self._intervals == selection._intervals)
 
-    def __deepcopy__(self, memo):
-        result = copy(self)
-        result._intervals = self._intervals[:]
-        return result
-
-    def _do(self):
+    def __call__(self, session):
         """Set self to be the current selection of the session."""
-        self.session.selection = self
-
-    def _undo(self):
-        """Set current selection to previous selection."""
-        self.session.selection = self.previous_selection
+        session.selection = self
 
     @property
-    def content(self):
+    def content(self, session):
         """Return the content of self."""
-        return [self.session.text[max(0, beg):min(len(self.session.text), end)] for beg, end in self]
+        return [session.text[max(0, beg):min(len(session.text), end)]
+                for beg, end in self]
 
     def index(self, interval):
         """Return the index of given interval."""
@@ -55,20 +75,28 @@ class Selection(Action):
 
     def contains(self, pos):
         """Check if given position is contained in self."""
-        for beg, end in self:
+        for interval in self:
+            beg, end = interval
             if beg <= pos < end:
-                return (beg, end)
+                return interval
 
-    def add(self, interval):
+    def add(self, obj):
         """
-        Add interval to the selection. If interval is overlapping
+        Add one or more intervals to the selection. If interval is overlapping
         with or adjacent to some existing interval, they are merged.
+        obj must be an interval or a sequence of intervals.
         """
-        nbeg, nend = interval
+        if not isinstance(obj, Interval):
+            for interval in obj:
+                self.add(interval)
+            return
+
+
+        nbeg, nend = obj
         assert nbeg <= nend
 
         # First merge overlapping or adjacent existing intervals into the new interval
-        for (beg, end) in self._intervals:
+        for beg, end in self._intervals:
             # [  ]  existing interval
             #  (    new interval
             if beg < nbeg <= end:
@@ -81,29 +109,47 @@ class Selection(Action):
         # Then insert the new interval at the right index
         result = []
         added = False
-        for (beg, end) in self._intervals:
+        for beg, end in self._intervals:
             #  []    existing interval
             # (  )   new interval
             if not (nbeg <= beg and end <= nend):
                 # [ ]
                 #     ( )
                 if end <= nbeg:
-                    result.append((beg, end))
+                    result.append(Interval(beg, end))
                 #     [ ]
                 # ( )
                 elif nend <= beg:
                     if not added:
-                        result.append((nbeg, nend))
+                        result.append(Interval(nbeg, nend))
                         added = True
-                    result.append((beg, end))
+                    result.append(Interval(beg, end))
         if not added:
-            result.append((nbeg, nend))
+            result.append(Interval(nbeg, nend))
 
         self._intervals = result
 
-    def remove(self, interval):
-        """Remove interval from the selection."""
-        nbeg, nend = interval
+    def __add__(self, obj):
+        """
+        Return the selection obtained by adding obj to self.
+        obj can be an interval or a sequence of intervals.
+        """
+        result = Selection()
+        result.add(self)
+        result.add(obj)
+        return result
+
+    def __radd__(self, obj):
+        return self + obj
+
+    def substract(self, obj):
+        """Remove one or more intervals from the selection."""
+        if not isinstance(obj, Interval):
+            for interval in obj:
+                self.substract(interval)
+            return
+
+        nbeg, nend = obj
         assert nbeg <= nend
 
         result = []
@@ -112,63 +158,56 @@ class Selection(Action):
             #   [  ]   existing interval
             # )      ( given interval
             if nend <= beg or end <= nbeg:
-                result.append((beg, end))
+                result.append(Interval(beg, end))
             else:
                 # [  ]
                 #  (
                 if beg < nbeg < end:
-                    result.append((beg, nbeg))
+                    result.append(Interval(beg, nbeg))
                 # [  ]
                 #   )
                 if beg < nend < end:
-                    result.append((nend, end))
+                    result.append(Interval(nend, end))
 
         self._intervals = result
 
-    def extend(self, selection):
-        """Return the selection obtained by extending self with the selector's return."""
-        result = Selection(self.session, self._intervals)
-        for interval in selection:
-            result.add(interval)
+    def __sub__(self, obj):
+        """
+        Return the selection obtained by adding obj to self.
+        obj can be an interval or a sequence of intervals.
+        """
+        result = Selection()
+        result.substract(self)
+        result.substract(obj)
         return result
 
-    def reduce(self, selection):
-        """Return the selection obtained by reducing self with the selector's return."""
-        result = Selection(self.session, self._intervals)
-        for interval in selection:
-            result.remove(interval)
-        return result
+    def __rsub__(self, obj):
+        return self - obj
 
-    def complement(self):
+    def complement(self, session):
         """Return the complementary selection of self."""
-        intervals = [interval for in_selection, interval in self.partition()
+        intervals = [interval for in_selection, interval in self.partition(session)
                      if not in_selection]
-        return Selection(self.session, intervals)
+        return Selection(intervals)
 
-    def bound(self, lower_bound=None, upper_bound=None):
+    def bound(self, lower_bound, upper_bound):
         """Return the selection obtained by bounding self."""
-        if not lower_bound:
-            lower_bound = 0
-        if not upper_bound:
-            upper_bound = len(self.session.text)
-
-        result = Selection(self.session)
+        result = Selection()
         for beg, end in self:
             beg = max(beg, lower_bound)
             end = min(end, upper_bound)
             if not beg > end:
-                result.add((beg, end))
+                result.add(Interval(beg, end))
         return result
 
-    def partition(self):
+    def partition(self, session):
         """
         Return a sorted list containing all intervals in self
         together with all complementary intervals.
         """
-        text = self.session.text
         positions = [pos for interval in self for pos in interval]
         positions.insert(0, 0)
-        positions.append(len(text))
+        positions.append(len(session.text))
         in_selection = False
 
         result = []

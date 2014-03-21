@@ -5,7 +5,7 @@ the action history.
 from copy import deepcopy
 
 
-class ActionTree:
+class UndoTree:
     """
     Stores the action history as a tree with undo/redo functionality.
     """
@@ -27,9 +27,6 @@ class ActionTree:
 
     def add(self, action):
         """Perform a new action."""
-        #import logging
-        #logging.debug(str(action.__dict__))
-        #logging.debug(str(action.__class__.__dict__))
         node = Node(deepcopy(action), self.current_node)
         self.current_node.add_child(node)
         self.current_node = node
@@ -41,9 +38,6 @@ class ActionTree:
         """
         if self.current_node.parent:
             current_node = self.current_node
-            # import logging
-            # logging.debug(str(current_node.action))
-            # logging.debug(str(current_node.action.inverse()))
             self.undo()
             self.current_node.children.remove(current_node)
 

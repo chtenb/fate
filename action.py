@@ -2,6 +2,54 @@
 This module exposes the basic action machinery.
 """
 
+class Undoable:
+    def __call__(self, session):
+        session.undotree.add(self)
+        self._call(session)
+
+    def undo(self, session):
+        self._undo(session)
+
+    def redo(self, session):
+        """Redo action."""
+        self._call(session)
+
+    def _call(self, session):
+        raise Exception("An abstract method is not callable.")
+
+    def _undo(self, session):
+        raise Exception("An abstract method is not callable.")
+
+
+class Interactive:
+    finished = False
+
+    def __call__(self, session):
+        session.interaction_stack.push(self)
+        self._call(session)
+
+    def finish(self, session):
+        # TODO maybe add optional callback function for after the interaction
+        self.finished = True
+        session.interaction_stack.pop()
+
+    def _call(self, session):
+        raise Exception("An abstract method is not callable.")
+
+
+class Updateable(Undoable, Interactive):
+    """Updateable action."""
+
+    def update(self, session):
+        """
+        Makes sure to apply the update to the session.
+        """
+        session.undotree.hard_undo()
+        self(session)
+
+#
+# ----------- OLD PART --------------
+#
 
 class Action:
     """Base class for actions."""

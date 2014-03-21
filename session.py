@@ -2,7 +2,7 @@
 from .event import Event
 from .selection import Selection
 from .clipboard import Clipboard
-from .actiontree import ActionTree
+from .undotree import UndoTree
 from . import modes
 
 import logging
@@ -24,7 +24,7 @@ class Session():
         self.OnWrite = Event()
 
         self.clipboard = Clipboard()
-        self.actiontree = ActionTree()
+        self.actiontree = UndoTree()
 
         self.selection = None
         self.selection_mode = modes.SELECT_MODE

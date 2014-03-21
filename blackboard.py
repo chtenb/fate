@@ -7,8 +7,8 @@ and call this object a session.
 
 To make modifications to a session, we define actions.
 An action is an abstract object that can make a modification to a
-session. An action must therefore be callable and accept a session
-as argument.
+session. An action must therefore be executable (read: callable)
+and accept a session as argument.
 """
 from . import modes
 from .session import Session
@@ -211,7 +211,6 @@ for the classes Selection and Interval.
 (a,b)+(c,d)=(min(a,b),max(c,d))
 s+t=s.extend(t)
 Note that interval selector behaviour follows from these definitions.
-
 """
 
 
@@ -221,12 +220,17 @@ user while getting feedback, like an insertion operation?
 We will introduce the class Updateable for this.
 We can update an updateable action by calling the update method on it
 with custom arguments.
+
+
+More generally speaking, we want to interact with a general object/action (that is not necessarily undoable).
+So we need to think about how to implement interaction in the most general way.
+We can introduce an interaction stack, such that we can nest interactions.
+If we then finish an interaction, we can pop it from the stack and be dropped into the parent interaction.
+
+
 The finished flag is used to indicate that we finished updating the action.
 This is needed for a possible container action to know which subaction the
 update information should currectly be redirected to.
-
-The UserInterface can know that we are in insert mode by checking if the
-last operation is an unfinished updateable operation.
 """
 
 
@@ -393,107 +397,21 @@ class Snippet(Interactive):
 
 
 """
-To be able to compose actions together, we define the class Compound.
+To be able to do sequences of actions as a whole, we introduce the Compound class.
+All its subactions must be Undoable, and may be Updateable.
 
-A sequence of actions is Undoable iff all sub actions are undoable.
-A sequence of actions is Interactive iff at least one sub action is interactive.
+When an interaction is composed into an undoable sequence, we want the tail of the sequence to wait until an earlier interaction has finished.
 
-#A sequence of actions is Updateable iff all sub actions are undoable.
-
-Note that the class CompoundUndoable is not an actor.
-A compound action should be transparent to classes such as Completeable,
-Interactive, Undoable, etc
-such that arbitrary actions can be composed together.
-
+A compound action should be transparent to classes such as Completeable, Interactive, Undoable, etc such that arbitrary actions can be composed together.
 If a new action class is written that needs explicit support from Compound
 to be able to be composed, you have to subclass Compound, modify it to
 your needs, and use that subclass for your stuff.
 """
-
-# For reference:
-import sys
-
-class FooBase(object):
-    def __new__(cls, *arguments, **keyword):
-        for subclass in FooBase.__subclasses__():
-            if subclass.platform == sys.platform:
-                return super(cls, subclass).__new__(subclass, *arguments, **keyword)
-        raise Exception('Platform not supported')
-
-    def say_foo(self):
-        print 'foo'
-
-    def say_platform_foo(self):
-        raise NotImplementedError
-
-class WindowsFoo(FooBase):
-    platform = 'win32'
-
-    def say_platform_foo(self):
-        print 'win32 foo'
-
-class LinuxFoo(FooBase):
-    platform = 'linux2'
-
-    def say_platform_foo(self):
-        print 'linux foo'
-
-def factory(*subactions):
-    class CompoundUndoable(Undoable):
-        def _undo(self, session):
-            for subaction in reversed(self.subactions):
-                if isinstance(subaction, Undoable):
-                    subaction._undo(session)
-
-    class CompoundInteractive(Interactive):
-        def finish(self):
-            """Finish the next updateable subaction."""
-            for subaction in self.subactions:
-                if isinstance(subaction, Interactive) and not subaction.finished:
-                    subaction.finish()
-                    return
-
-        @property
-        def finished(self):
-            """We are finished if all our subactions are finished."""
-            for subaction in self.subactions:
-                if isinstance(subaction, Interactive) and not subaction.finished:
-                    return True
-            return False
-
-    bases = []
-    for subaction in subactions:
-        if isinstance(subaction, Undoable):
-            bases.append(Undoable)
-            break
-
-    for subaction in subactions:
-        if isinstance(subaction, Interactive) and not subaction.finished:
-            bases.append(Interactive)
-            break
-
-    class Compound(*bases):
-        def __init__(self, *subactions):
-            self.subactions = subactions
-
-        def _call(self, session):
-            for subaction in self.subactions:
-                subaction._call(session)
-
-# The compound action must be undoable as a whole if is has undoable subactions,
-# and it must be interactive if it has interactive subactions
-class CompoundInner:
-    #def __init__(self, *args):
-        #self.subactions = args
-        #potential_bases = [(Interactive, [CompoundInner.finish]), (Undoable, [CompoundInner._undo])]
-        #bases = []
-        #for base in potential_superclasses:
-            #superclass, _ = base
-            #if all([isinstance(subaction, superclass) for subaction in self.subactions]):
-                #bases.append(base)
-
-        #factory = type('Compound', bases, 
-
+# TODO: Problem
+# How can we let the compound actions know that a child has been finished?
+# Option 1: give the child a callback function
+# Option 2: make all updates go through parents
+class Compound(Updateable):
     def __init__(self, *args):
         self.subactions = args
         for subaction in self.subactions:
@@ -503,21 +421,23 @@ class CompoundInner:
     def _call(self, session):
         for subaction in self.subactions:
             subaction._call(session)
-
-
-    def _update(self, session, *args):
-        """Update the next updateable subaction."""
-        for subaction in self.subactions:
             if isinstance(subaction, Updateable) and not subaction.finished:
-                subaction._update(session, *args)
                 return
 
-    def finish(self):
-        """Finish the next updateable subaction."""
-        for subaction in self.subactions:
-            if isinstance(subaction, Updateable) and not subaction.finished:
-                subaction.finish()
-                return
+
+    #def _update(self, session, *args):
+        #"""Update the next updateable subaction."""
+        #for subaction in self.subactions:
+            #if isinstance(subaction, Updateable) and not subaction.finished:
+                #subaction._update(session, *args)
+                #return
+
+    #def finish(self):
+        #"""Finish the next updateable subaction."""
+        #for subaction in self.subactions:
+            #if isinstance(subaction, Updateable) and not subaction.finished:
+                #subaction.finish()
+                #return
 
     @property
     def finished(self):
