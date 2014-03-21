@@ -1,9 +1,8 @@
 """This module defines the class Operation."""
 from .selection import Selection
 from .action import Undoable, Updateable
-from .selectors import select_indent
+from .selectors import SelectIndent
 from . import modes
-from copy import copy, deepcopy
 import logging
 
 
@@ -103,52 +102,3 @@ class InsertOperation(Operation, Updateable):
                 self.insertions[i] += string
 
         self.update(session)
-
-
-#
-# ----------- OLD PART --------------
-#
-
-class InsertOperationOld(Operation):
-    """An operation for the change_before operator."""
-    def __init__(self, session):
-        selection = session.selection
-        Operation.__init__(self, selection)
-        self.insertions = ['' for _ in selection]
-        self.deletions = [0 for _ in selection]
-        self.feed('')
-
-    def __str__(self):
-        return ('insertions: ' + str(self.insertions) + '\n'
-                + 'deletions: ' + str(self.deletions) + '\n'
-                + Operation.__str__(self))
-
-    def feed(self, string):
-        """Feed a string (typically a char) to the operation."""
-        for i in range(len(self.new_selection)):
-            for char in string:
-                if char == '\b':
-                    # remove char
-                    if self.insertions[i]:
-                        self.insertions[i] = self.insertions[i][:-1]
-                    else:
-                        self.deletions[i] += 1
-                elif char == '\n':
-                    # get indent
-                    indent = select_indent(self.session, preview=True, selection=Selection(self.session, intervals=[self.new_selection[i]]))
-                    indent = indent.content[0]
-                    # add indent after \n
-                    self.insertions[i] += char + indent
-                else:
-                    # add char
-                    self.insertions[i] += char
-
-        # Undo the previous version of self
-        self.session.actiontree.hard_undo()
-        # And apply the current version of self
-        self.do()
-
-    def done(self):
-        """Finish constructing this operation."""
-        self.session.insertoperation = None
-

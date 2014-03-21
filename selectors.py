@@ -26,7 +26,7 @@ class SelectSingleInterval(Selection):
         Selection.__init__(self, selection[0])
 
 
-class EmptyInterval(Selection):
+class Empty(Selection):
     """Reduce the selection to a single uppermost empty interval."""
     def __init__(self, session, selection=None, selection_mode=None):
         selection = selection or session.selection
@@ -178,10 +178,10 @@ def pattern_pair(pattern, **kwargs):
     return (SelectLocalPattern(pattern, **kwargs),
             SelectLocalPattern(pattern, reverse=True, **kwargs))
 
-next_char, previous_char = pattern_pair(r'(?s).')
-next_word, previous_word = pattern_pair(r'\b\w+\b')
-next_line, previous_line = pattern_pair(r'\s*([^\n]*)', group=1)
-next_full_line, previous_full_line = pattern_pair(r'[^\n]*\n?')
-next_paragraph, previous_paragraph = pattern_pair(r'(?s)((?:[^\n][\n]?)+)')
-next_white_space, previous_white_space = pattern_pair(r'\s')
+NextChar, PreviousChar = pattern_pair(r'(?s).')
+NextWord, PreviousWord = pattern_pair(r'\b\w+\b')
+NextLine, PreviousLine = pattern_pair(r'\s*([^\n]*)', group=1)
+NextFullLine, PreviousFullLine = pattern_pair(r'[^\n]*\n?')
+NextParagraph, PreviousParagraph = pattern_pair(r'(?s)((?:[^\n][\n]?)+)')
+NextWhiteSpace, PreviousWhiteSpace = pattern_pair(r'\s')
 
