@@ -3,6 +3,7 @@
 
 class Interval:
     def __init__(self, beg, end):
+        assert 0 <= beg <= end
         self.beg = beg
         self.end = end
 
@@ -10,7 +11,7 @@ class Interval:
         return (self.beg, self.end)[index]
 
     def __str__(self):
-        return 'Interval({}, {})'.format(self.beg, self.end)
+        return '({},{})'.format(self.beg, self.end)
 
     def __eq__(self, interval):
         return (self.beg, self.end) == (interval.beg, interval.end)
@@ -53,7 +54,7 @@ class Selection:
         return len(self._intervals)
 
     def __str__(self):
-        return str(self._intervals)
+        return ', '.join(str(i) for i in self._intervals)
 
     def __eq__(self, selection):
         return (selection.__class__ == Selection
@@ -61,9 +62,14 @@ class Selection:
 
     def __call__(self, session):
         """Set self to be the current selection of the session."""
-        session.selection = self
+        if not self.isempty:
+            session.selection = self
 
     @property
+    def isempty(self):
+        """Check if we have intervals."""
+        return not bool(self._intervals)
+
     def content(self, session):
         """Return the content of self."""
         return [session.text[max(0, beg):min(len(session.text), end)]

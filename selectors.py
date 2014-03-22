@@ -7,10 +7,9 @@ and function that work interval-wise (local selectors).
 Furthermore we have selectors that are based on regular expressions.
 """
 from .selection import Selection, Interval
-from .modes import SELECT_MODE, EXTEND_MODE, REDUCE_MODE
+from .modes import EXTEND_MODE, REDUCE_MODE
 import re
 from functools import partial
-import logging
 
 
 class SelectEverything(Selection):
@@ -73,7 +72,7 @@ def find_pattern(text, pattern, reverse=False, group=0):
     matches = re.finditer(pattern, text)
     if reverse:
         matches = reversed(list(matches))
-    return [(match.start(group), match.end(group))
+    return [Interval(match.start(group), match.end(group))
             for match in matches]
 
 
@@ -111,7 +110,7 @@ class SelectPattern(Selection):
             beg, end = selection[0]
 
         for mbeg, mend in match_intervals:
-            new_selection = Selection([Interval(mbeg, mend)])
+            new_selection = Selection(Interval(mbeg, mend))
             # If match is in the right direction
             if not reverse and mend > beg or reverse and mbeg < end:
                 if selection_mode == EXTEND_MODE:
@@ -163,7 +162,8 @@ class SelectLocalPattern(Selection):
 
             # If the result invalid or the same as old interval, we return None
             if not new_interval or new_interval == interval:
-                return None
+                self._intervals = None
+                return
 
             self.add(new_interval)
 
@@ -175,8 +175,8 @@ def pattern_pair(pattern, **kwargs):
     Return two local pattern selectors for given pattern,
     one matching forward and one matching backward.
     """
-    return (SelectLocalPattern(pattern, **kwargs),
-            SelectLocalPattern(pattern, reverse=True, **kwargs))
+    return (partial(SelectLocalPattern, pattern, **kwargs),
+            partial(SelectLocalPattern, pattern, reverse=True, **kwargs))
 
 NextChar, PreviousChar = pattern_pair(r'(?s).')
 NextWord, PreviousWord = pattern_pair(r'\b\w+\b')

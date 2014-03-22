@@ -1,5 +1,5 @@
 """This module defines the class Operation."""
-from .selection import Selection
+from .selection import Selection, Interval
 from .action import Undoable, Updateable
 from .selectors import SelectIndent
 from . import modes
@@ -12,9 +12,10 @@ class Operation(Undoable):
     Can be inverted such that the operation can be undone by applying the inverse.
     The members are `old_selection`, `old_content`, `new_content` and `new_selection`.
     """
-    def __init__(self, selection, new_content=None):
+    def __init__(self, session, selection=None, new_content=None):
+        selection = selection or session.selection
         self.old_selection = selection
-        self.old_content = selection.content
+        self.old_content = selection.content(session)
         try:
             self.new_content = new_content or self.old_content[:]
         except AttributeError:
@@ -34,11 +35,11 @@ class Operation(Undoable):
         """The selection containing the potential result of the operation."""
         beg = self.old_selection[0][0]
         end = beg + len(self.new_content[0])
-        result = Selection([(beg, end)])
+        result = Selection(Interval(beg, end))
         for i in range(1, len(self.old_selection)):
             beg = end + self.old_selection[i][0] - self.old_selection[i - 1][1]
             end = beg + len(self.new_content[i])
-            result.add((beg, end))
+            result.add(Interval(beg, end))
         return result
 
     def _call(self, session, inverse=False):
@@ -52,7 +53,7 @@ class Operation(Undoable):
             old_selection = self.old_selection
             new_content = self.new_content
 
-        partition = old_selection.partition()
+        partition = old_selection.partition(session)
         partition_content = [(in_selection, session.text[beg:end])
                              for in_selection, (beg, end) in partition]
         count = 0
@@ -76,8 +77,9 @@ class Operation(Undoable):
 
 class InsertOperation(Operation, Updateable):
     """Abstract class for operations dealing with insertion of text."""
-    def __init__(self, selection):
-        Operation.__init__(self, selection)
+    def __init__(self, session, selection=None):
+        selection = selection or session.selection
+        Operation.__init__(self, session, selection)
         self.insertions = ['' for _ in selection]
         self.deletions = [0 for _ in selection]
 

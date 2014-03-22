@@ -1,6 +1,6 @@
 """A session represents the state of an editing session."""
 from .event import Event
-from .selection import Selection
+from .selection import Selection, Interval
 from .clipboard import Clipboard
 from .undotree import UndoTree
 from . import modes
@@ -24,9 +24,8 @@ class Session():
         self.OnWrite = Event()
 
         self.clipboard = Clipboard()
-        self.actiontree = UndoTree()
+        self.undotree = UndoTree(self)
 
-        self.selection = None
         self.selection_mode = modes.SELECT_MODE
         self.saved = True
         self.text_changed = False
@@ -37,7 +36,7 @@ class Session():
 
         self.text = ""
         self.filename = filename
-        self.selection = Selection(self)
+        self.selection = Selection(Interval(0,0))
 
         if filename:
             self.read()

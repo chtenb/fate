@@ -9,21 +9,22 @@ class UndoTree:
     """
     Stores the action history as a tree with undo/redo functionality.
     """
-    def __init__(self):
+    def __init__(self, session):
+        self.session = session
         self.root = Node(None, None)
         self.current_node = self.root
 
     def undo(self):
         """Undo previous action set current_node to its parent."""
         if self.current_node.parent:
-            self.current_node.action.undo()
+            self.current_node.action.undo(self.session)
             self.current_node = self.current_node.parent
 
     def redo(self):
         """Redo most recent next action."""
         if self.current_node and self.current_node.children:
             self.current_node = self.current_node.children[-1]
-            self.current_node.action.redo()
+            self.current_node.action.redo(self.session)
 
     def add(self, action):
         """Perform a new action."""

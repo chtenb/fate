@@ -3,11 +3,13 @@ Sequences of actors are again an actor via the actor decorator."""
 from .selectors import (NextFullLine, PreviousFullLine, Empty,
                         PreviousChar, NextChar, EmptyBefore,
                         SelectIndent)
-from .operators import Insert, Append, ChangeAfter, ChangeBefore, Delete
-from .clipboard import copy, paste_before, clear
+from .operators import Insert, Append, ChangeAfter, Delete
+from .clipboard import copy, PasteBefore, clear
 from .action import compose
 from . import modes
+from functools import partial
 
+# Actions
 
 def escape(session):
     """Escape"""
@@ -19,26 +21,28 @@ def escape(session):
 
 def undo(session):
     """Undo last action."""
-    session.actiontree.undo()
+    session.undotree.undo()
 
 
 def redo(session):
     """Redo last undo."""
-    session.actiontree.redo()
+    session.undotree.redo()
 
-open_line_after = compose(modes.select_mode, PreviousFullLine,
-                          SelectIndent, copy,)
-                          #next_full_line,
-                          #append('\n'),
-                          #previous_char, empty_before, paste_before,
-                          #clear)#, change_after)
-open_line_after.__docs__ = """Open a line after interval."""
+# Actors
 
-open_line_before = compose(modes.select_mode, NextFullLine,
+OpenLineAfter = compose(modes.select_mode, PreviousFullLine,
+                          SelectIndent, copy,
+                          NextFullLine,
+                          partial(Append, '\n'),
+                          PreviousChar, EmptyBefore, PasteBefore,
+                          clear, ChangeAfter)
+#OpenLineAfter.__docs__ = """Open a line after interval."""
+
+OpenLineBefore = compose(modes.select_mode, NextFullLine,
                            SelectIndent, copy,
-                           NextFullLine, Insert('\n'),
-                           NextChar, EmptyBefore, paste_before,
+                           NextFullLine, partial(Insert, '\n'),
+                           NextChar, EmptyBefore, PasteBefore,
                            clear, ChangeAfter)
-open_line_before.__docs__ = """Open a line before interval."""
+#OpenLineBefore.__docs__ = """Open a line before interval."""
 
 cut = compose(copy, Delete)
