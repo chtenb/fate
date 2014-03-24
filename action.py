@@ -1,7 +1,3 @@
-"""
-This module exposes the basic action machinery.
-"""
-
 class Undoable:
     def __call__(self, session):
         session.undotree.add(self)
@@ -20,32 +16,37 @@ class Undoable:
     def _undo(self, session):
         raise Exception("An abstract method is not callable.")
 
-
 class Interactive:
     finished = False
 
     def __call__(self, session):
-        session.interaction_stack.push(self)
+        session.interactionstack.push(self)
         self._call(session)
-
-    def finish(self, session):
-        # TODO maybe add optional callback function for after the interaction
-        self.finished = True
-        session.interaction_stack.pop()
 
     def _call(self, session):
         raise Exception("An abstract method is not callable.")
 
+    def proceed(self, session):
+        self.finished = True
+        parent = session.interactionstack.backtrack()
+        if parent:
+            parent.proceed(session)
+
 
 class Updateable(Undoable, Interactive):
-    """Updateable action."""
+    """An Updateable action is able to update itself by undoing and redoing."""
+
+    def __call__(self, session):
+        session.undotree.add(self)
+        session.interactionstack.push(self)
+        self._call(session)
 
     def update(self, session):
         """
-        Makes sure to apply the update to the session.
+        Make sure we are up to date with possible (interactive) modifications.
         """
         session.undotree.hard_undo()
-        self(session)
+        self._call(session)
 
 def compose(*args):
     return NotImplemented
@@ -74,7 +75,6 @@ def compose(*args):
         #self._undo()
         #self.check_text_changed()
 
-    ## TODO: maybe this should be transformed into __call__
     #def do(self, redo=False):
         #"""Do action."""
         #self._do()
@@ -95,7 +95,6 @@ def compose(*args):
         #self.do(redo=True)
 
 
-## TODO: make sure CompoundActions can deal with InsertOperations
 #class CompoundAction(Action):
     #"""
     #This class can be used to compose multiple actions into a single

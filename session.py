@@ -3,6 +3,7 @@ from .event import Event
 from .selection import Selection, Interval
 from .clipboard import Clipboard
 from .undotree import UndoTree
+from .interactionstack import InteractionStack
 from . import modes
 
 import logging
@@ -25,6 +26,7 @@ class Session():
 
         self.clipboard = Clipboard()
         self.undotree = UndoTree(self)
+        self.interactionstack = InteractionStack()
 
         self.selection_mode = modes.SELECT_MODE
         self.saved = True
@@ -36,7 +38,7 @@ class Session():
 
         self.text = ""
         self.filename = filename
-        self.selection = Selection(Interval(0,0))
+        self.selection = Selection(Interval(0, 0))
 
         if filename:
             self.read()

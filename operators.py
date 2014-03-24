@@ -48,6 +48,7 @@ class ChangeBefore(InsertOperation):
 
 class ChangeAfter(InsertOperation):
     def __init__(self, session):
+        assert 1
         InsertOperation.__init__(self, session)
 
     @property

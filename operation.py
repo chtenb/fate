@@ -104,3 +104,4 @@ class InsertOperation(Operation, Updateable):
                 self.insertions[i] += string
 
         self.update(session)
+
