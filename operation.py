@@ -3,7 +3,6 @@ from .selection import Selection, Interval
 from .action import Undoable, Updateable
 from .selectors import SelectIndent
 from . import modes
-import logging
 
 
 class Operation(Undoable):
@@ -66,7 +65,6 @@ class Operation(Undoable):
                 result.append(string)
 
         session.text = ''.join(result)
-        session.text_changed = True
         session.selection_mode = modes.SELECT_MODE
         session.selection = new_selection
 

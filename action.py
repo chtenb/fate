@@ -1,9 +1,11 @@
 class Undoable:
     def __call__(self, session):
+        """Do action."""
         session.undotree.add(self)
         self._call(session)
 
     def undo(self, session):
+        """Undo action."""
         self._undo(session)
 
     def redo(self, session):
@@ -37,6 +39,7 @@ class Updateable(Undoable, Interactive):
     """An Updateable action is able to update itself by undoing and redoing."""
 
     def __call__(self, session):
+        # TODO: maybe remove duplication from super here
         session.undotree.add(self)
         session.interactionstack.push(self)
         self._call(session)
@@ -46,7 +49,8 @@ class Updateable(Undoable, Interactive):
         Make sure we are up to date with possible (interactive) modifications.
         """
         session.undotree.hard_undo()
-        self._call(session)
+        session.interactionstack.backtrack()
+        self(session)
 
 def compose(*args):
     return NotImplemented
@@ -54,46 +58,6 @@ def compose(*args):
 #
 # ----------- OLD PART --------------
 #
-
-#class Action:
-    #"""Base class for actions."""
-
-    #def __init__(self, session, *args):
-        #"""Every object in args must have an undo and a do function."""
-        #self.session = session
-
-    #def _do(self):
-        #"""Do implemented by subclass."""
-        #pass
-
-    #def _undo(self):
-        #"""Undo implemented by subclass."""
-        #pass
-
-    #def undo(self):
-        #"""Undo action."""
-        #self._undo()
-        #self.check_text_changed()
-
-    #def do(self, redo=False):
-        #"""Do action."""
-        #self._do()
-
-        #if not redo:
-            #self.session.actiontree.add(self)
-        #self.check_text_changed()
-
-    #def check_text_changed(self):
-        #"""Check for changes in text."""
-        #if self.session.text_changed:
-            #self.session.saved = False
-            #self.session.OnTextChanged.fire(self.session)
-            #self.session.text_changed = False
-
-    #def redo(self):
-        #"""Redo action."""
-        #self.do(redo=True)
-
 
 #class CompoundAction(Action):
     #"""
@@ -141,20 +105,6 @@ def compose(*args):
             #if sub_action.__class__ == cls:
                 #return True
         #return False
-
-
-#def actor(function):
-    #"""Base function for actors."""
-    #def wrapper(session, preview=False, **kwargs):
-        #action = function(session, **kwargs)
-        #if action and not preview:
-            #action.do()
-        #else:
-            #return action
-
-    #wrapper.is_actor = True
-    #return wrapper
-
 
 #def compose(*args):
     #"""

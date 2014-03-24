@@ -18,6 +18,9 @@ session_list = []
 class Session():
     """Contains all objects of one file editing session"""
     OnSessionInit = Event()
+    _text = ''
+    saved = True
+    selection_mode = modes.SELECT_MODE
 
     def __init__(self, filename=""):
         self.OnTextChanged = Event()
@@ -28,15 +31,6 @@ class Session():
         self.undotree = UndoTree(self)
         self.interactionstack = InteractionStack()
 
-        self.selection_mode = modes.SELECT_MODE
-        self.saved = True
-        self.text_changed = False
-
-        # To allow building operations incrementally whilst getting
-        # realtime feedback we facilitate a insertoperation attribute
-        self.insertoperation = None
-
-        self.text = ""
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
 
@@ -44,6 +38,15 @@ class Session():
             self.read()
         session_list.append(self)
         self.OnSessionInit.fire(self)
+
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, value):
+        self._text = value
+        self.OnTextChanged.fire(self)
 
     def read(self, filename=None):
         """Read text from file."""
