@@ -96,10 +96,11 @@ class InsertOperation(Operation, Updateable):
                     self.deletions[i] += 1
             elif string == '\n':
                 # add indent after \n
-                self.insertions[i] += string + indent.content[i]
+                self.insertions[i] += string + indent.content(session)[i]
+            elif string == '\t' and session.expandtab:
+                self.insertions[i] += ' ' * session.tabwidth
             else:
                 # add string
                 self.insertions[i] += string
 
         self.update(session)
-

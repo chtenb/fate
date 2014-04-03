@@ -21,6 +21,8 @@ class Session():
     _text = ''
     saved = True
     selection_mode = modes.SELECT_MODE
+    expandtab = False
+    tabwidth = 4
 
     def __init__(self, filename=""):
         self.OnTextChanged = Event()

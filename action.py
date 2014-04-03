@@ -13,10 +13,10 @@ class Undoable:
         self._call(session)
 
     def _call(self, session):
-        raise Exception("An abstract method is not callable.")
+        raise NotImplementedError("An abstract method is not callable.")
 
     def _undo(self, session):
-        raise Exception("An abstract method is not callable.")
+        raise NotImplementedError("An abstract method is not callable.")
 
 class Interactive:
     finished = False
@@ -26,7 +26,7 @@ class Interactive:
         self._call(session)
 
     def _call(self, session):
-        raise Exception("An abstract method is not callable.")
+        raise NotImplementedError("An abstract method is not callable.")
 
     def proceed(self, session):
         self.finished = True

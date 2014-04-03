@@ -11,7 +11,7 @@ class Delete(Operation):
     def __init__(self, session, selection=None):
         selection = selection or session.selection
         new_content = ['' for _ in selection]
-        Operation.__init__(self, selection, new_content)
+        Operation.__init__(self, session, selection, new_content)
 
 
 class Append(Operation):
@@ -19,7 +19,7 @@ class Append(Operation):
     def __init__(self, string, session, selection=None):
         selection = selection or session.selection
         new_content = [content + string for content in selection.content]
-        Operation.__init__(self, selection, new_content)
+        Operation.__init__(self, session, selection, new_content)
 
 
 class Insert(Operation):
@@ -27,7 +27,7 @@ class Insert(Operation):
     def __init__(self, string, session, selection=None):
         selection = selection or session.selection
         new_content = [string + content for content in selection.content]
-        Operation.__init__(self, selection, new_content)
+        Operation.__init__(self, session, selection, new_content)
 
 
 class ChangeBefore(InsertOperation):
