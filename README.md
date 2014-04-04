@@ -2,7 +2,7 @@ NOTE: Still very experimental and not ready for use.
 
 FATE
 ====
-Barely Awesome Text Editor
+Fate is a highly programmable text editor, mainly intended for programming purposes.
 
 VIM
 ---
