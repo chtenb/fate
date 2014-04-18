@@ -3,13 +3,15 @@ add functools.wraps everywhere
 support autoindent
 add select around/inside, switch case,
 implement repeat last selector or operator
+add unit tests
 
 LONG TERM
 implement fixed interval functionality?
-add unit tests
 switch to alternative regex engine?
 improve syntax highlighting, for instance by disregarding quotes in comments
 contextual completion
     For completion it is also needed that the full text can be
     constructed including the pending operation. (No it isn't!! Only filtering is done based on the input, the context is not changed)
-persistent session (using a context manager)
+focus on non-atomic operations
+some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same. If one changes, the other changes with it.
+persistent session (using a context manager?)

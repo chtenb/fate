@@ -84,7 +84,7 @@ class CompoundUndoable(Undoable):
             subaction._call()
 
 
-class CompoundUpdatable(CompoundUndoable, Updateable):
+class CompoundUpdatable(CompoundUndoable):
     """
     This class can be used to compose multiple possible interactive actions
     into a single action.
@@ -111,24 +111,30 @@ class CompoundUpdatable(CompoundUndoable, Updateable):
     # Maybe we don't want to get updated, since only the child changed
     # But then we need to be able to replace the child in the undotree
     # I.e. we must undo the old child, do the new child and place the new child in the undotree
+
     # Or we must not deepcopy undoable actions into the undotree
     # But then we cannot easily update at all, since we have changed, and thus the undo method has been corrupted
-    # Idea: maintain pointer to deepcopied instance to perform undo
-    def update(self, session):
-        """
-        Make sure we are up to date with possible (interactive) modifications to us.
-        """
-        session.undotree.hard_undo()
-        # Backtrack twice, for the pending subaction and for ourselves
-        session.interactionstack.backtrack()
-        session.interactionstack.backtrack()
-        self(session)
+    # I think the latter is the way to go
+    # Because removing code solves the problem here :)
+    #
+    # Done that. Now we don't need to be Updateable anymore.
+    #def update(self, session):
+        #"""
+        #Make sure we are up to date with possible (interactive) modifications to us.
+        #"""
+        #session.undotree.hard_undo()
+        ## Backtrack twice, for the pending subaction and for ourselves
+        #session.interactionstack.backtrack()
+        #session.interactionstack.backtrack()
+        #self(session)
 
 
 
 def compose(*args):
     """Utility function that can be used to compose several undoable actors into one."""
-    return NotImplemented
+    def wrapper(session):
+        return CompoundUpdatable(session, *args)
+    return wrapper
 
 """
 There is a complication with implementing CompoundUndoable.

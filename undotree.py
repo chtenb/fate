@@ -28,7 +28,8 @@ class UndoTree:
 
     def add(self, action):
         """Perform a new action."""
-        node = Node(deepcopy(action), self.current_node)
+        #node = Node(deepcopy(action), self.current_node)
+        node = Node(action, self.current_node)
         self.current_node.add_child(node)
         self.current_node = node
 

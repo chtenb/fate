@@ -9,12 +9,15 @@ class Operation(Undoable):
     """
     A container of modified content of a selection.
     Can be inverted such that the operation can be undone by applying the inverse.
-    The members are `old_selection`, `old_content`, `new_content` and `new_selection`.
+    The members are `old_selection`, `old_content`, `new_content`.
+    The property `new_selection` is only available after the operation
+    has been applied.
     """
     def __init__(self, session, selection=None, new_content=None):
         selection = selection or session.selection
         self.old_selection = selection
         self.old_content = selection.content(session)
+        self.new_selection = None
         try:
             self.new_content = new_content or self.old_content[:]
         except AttributeError:
@@ -24,13 +27,12 @@ class Operation(Undoable):
 
     def __str__(self):
         attributes = [('old_selection', self.old_selection),
-                      ('new_selection', self.new_selection),
+                      #('new_selection', self.new_selection),
                       ('old_content', self.old_content),
                       ('new_content', self.new_content)]
         return '\n'.join([k + ': ' + str(v) for k, v in attributes])
 
-    @property
-    def new_selection(self):
+    def compute_new_selection(self):
         """The selection containing the potential result of the operation."""
         beg = self.old_selection[0][0]
         end = beg + len(self.new_content[0])
@@ -44,10 +46,15 @@ class Operation(Undoable):
     def _call(self, session, inverse=False):
         """Apply self to the session."""
         if inverse:
+            if self.new_selection == None:
+                raise Exception(
+                    'An operation that has not been applied cannot be undone.'
+                )
             old_selection = self.new_selection
             new_selection = self.old_selection
             new_content = self.old_content
         else:
+            self.new_selection = self.compute_new_selection()
             new_selection = self.new_selection
             old_selection = self.old_selection
             new_content = self.new_content
