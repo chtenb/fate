@@ -18,7 +18,7 @@ class Append(Operation):
     """Append to content."""
     def __init__(self, string, session, selection=None):
         selection = selection or session.selection
-        new_content = [content + string for content in selection.content]
+        new_content = [content + string for content in selection.content(session)]
         Operation.__init__(self, session, selection, new_content)
 
 
@@ -26,7 +26,7 @@ class Insert(Operation):
     """Insert before content."""
     def __init__(self, string, session, selection=None):
         selection = selection or session.selection
-        new_content = [string + content for content in selection.content]
+        new_content = [string + content for content in selection.content(session)]
         Operation.__init__(self, session, selection, new_content)
 
 

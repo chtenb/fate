@@ -7,7 +7,7 @@ Fate
 Fate is a highly programmable text editor, mainly intended for programming purposes.
 
 
-VIM
+Vim
 ---
 How is fate related to vim?
 I'm a vim user myself.
