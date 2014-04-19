@@ -1,8 +1,10 @@
 NOTE: Still very experimental and not ready for use.
 
-FATE
+Fate
 ====
 Fate is a highly programmable text editor, mainly intended for programming purposes.
+
+[![Build Status](https://travis-ci.org/Chiel92/fate.png?branch=travis)](https://travis-ci.org/Chiel92/fate)
 
 VIM
 ---
