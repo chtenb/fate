@@ -13,8 +13,9 @@ class Interval:
     def __str__(self):
         return '({},{})'.format(self.beg, self.end)
 
-    def __eq__(self, interval):
-        return (self.beg, self.end) == (interval.beg, interval.end)
+    def __eq__(self, obj):
+        return (isinstance(obj, Interval)
+                and (self.beg, self.end) == (obj.beg, obj.end))
 
     def __add__(self, obj):
         """Add second interval to first interval."""
@@ -56,9 +57,9 @@ class Selection:
     def __str__(self):
         return ', '.join(str(i) for i in self._intervals)
 
-    def __eq__(self, selection):
-        return (selection.__class__ == Selection
-                and self._intervals == selection._intervals)
+    def __eq__(self, obj):
+        return (isinstance(obj, Selection)
+                and self._intervals == obj._intervals)
 
     def __call__(self, session):
         """Set self to be the current selection of the session."""
