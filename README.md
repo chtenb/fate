@@ -6,6 +6,13 @@ Fate
 ====
 Fate is a highly programmable text editor, mainly intended for programming purposes.
 
+Documentation
+-------------
+Available [here][docs].
+
+User Interface
+--------------
+Available [here][fate-tui]
 
 Vim
 ---
@@ -13,14 +20,13 @@ How is fate related to vim?
 I'm a vim user myself.
 Vim is a great text editor.
 However, there are several issues that need to be adressed.
-De code base is old and getting messy.
-It is therefore hard to maintain.
-It is not very extendible, even though vim has its own scripting language.
+De code base is old and getting messy and is therefore hard to maintain.
+It is not very extensible, even though vim has its own scripting language.
 Vim language is neither easy, readable nor fast.
 The architecture needs to be revised, for instance, it should not be restricted to a single thread.
-Another bad thing is that vim tries to be backward compatible with vim.
+Another bad thing is that vim tries to be backward compatible too much (even with vi!).
 This results in all kinds of quirks that only exist for historical reasons.
-We don't want that. Once in a while, backwardscompatibility needs to be broken due to new developments or new insights.
+We don't want that. Once in a while, backward compatibility needs to be broken due to new developments or new insights.
 Python's transition to version 3 is a good example of this.
 Neovim tries to fix some of these problems, which is a good thing in my opinion, but it is not drastically enough.
 So we are not trying to be compatible with vim, let alone vi.
@@ -49,18 +55,15 @@ From an architectural point of view, the new approach is also appealing, as it r
 Secondly, we like to generalize vim's modal approach.
 We want the user to be able to add new modes easily.
 This way things like snippet expansion can be implemented with a snippet mode.
+<<<<<<< HEAD
+=======
 
 Thirdly, we will not invent our own regex language, like vim did, but stick to python's regex language.
 It is a good one, everybody knows it, and we get it for free.
+>>>>>>> master
 
-Documentation
--------------
-Available [here][docs].
-
-User Interface
---------------
-Available [here][fate-tui]
-
+Thirdly, we will not invent our own regex language, like vim did, but stick to python's regex language.
+It is a good one, everybody knows it, and we get it for free.
 
 [docs]: http://chiel92.github.io/fate/
 [fate-tui]: http://github.com/Chiel92/fate-tui
