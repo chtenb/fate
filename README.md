@@ -1,10 +1,11 @@
 NOTE: Still very experimental and not ready for use.
 
+[![Build Status](https://travis-ci.org/Chiel92/fate.svg?branch=action-machinery-rewrite)](https://travis-ci.org/Chiel92/fate)
+
 Fate
 ====
 Fate is a highly programmable text editor, mainly intended for programming purposes.
 
-[![Build Status](https://travis-ci.org/Chiel92/fate.png?branch=travis)](https://travis-ci.org/Chiel92/fate)
 
 VIM
 ---
