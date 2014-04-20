@@ -1,13 +1,25 @@
-"""A class definition for the clipboard and some actors."""
+"""
+This module contains the class definition for the clipboard and some related actions.
+
+Clipboard related actions should not be undoable.
+Suppose the user notices that he made a major mistake
+and wants to undo a bunch of actions.
+However, he may still want to keep some intermediate modifications.
+Then he should be able to copy several things, go back in history,
+and put those modifications where he wants.
+For this to work, the clipboard must be usable cross-history.
+"""
 from .operation import Operation
 
 
 class Clipboard:
+
     """A stackbased clipboard."""
     storage = []
 
     def push(self, content):
         """Push content on the clipboard stack. Content must be a list of strings."""
+        assert isinstance(content, list)
         self.storage.append(content)
 
     def peek(self, offset=0):
@@ -27,7 +39,7 @@ class Clipboard:
 
 def copy(session):
     """Copy current selected content to clipboard."""
-    session.clipboard.push(session.selection.content)
+    session.clipboard.push(session.selection.content(session))
 
 
 def paste(session, before):
@@ -50,12 +62,17 @@ def paste(session, before):
 
 
 class PasteBefore(Operation):
+
     """Paste clipboard before current selection."""
+
     def __init__(self, session):
         Operation.__init__(self, session, paste(session, before=True))
 
+
 class PasteAfter(Operation):
+
     """Paste clipboard after current selection."""
+
     def __init__(self, session):
         Operation.__init__(self, session, paste(session, before=False))
 
@@ -63,4 +80,3 @@ class PasteAfter(Operation):
 def clear(session):
     """Throw away the value on top of the clipboard stack."""
     session.clipboard.pop()
-

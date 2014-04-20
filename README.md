@@ -55,15 +55,9 @@ From an architectural point of view, the new approach is also appealing, as it r
 Secondly, we like to generalize vim's modal approach.
 We want the user to be able to add new modes easily.
 This way things like snippet expansion can be implemented with a snippet mode.
-<<<<<<< HEAD
-=======
 
-Thirdly, we will not invent our own regex language, like vim did, but stick to python's regex language.
-It is a good one, everybody knows it, and we get it for free.
->>>>>>> master
-
-Thirdly, we will not invent our own regex language, like vim did, but stick to python's regex language.
-It is a good one, everybody knows it, and we get it for free.
+Thirdly, we will not invent our own regex language like vim did, but stick to python's regex language.
+It is a good, well documented, well known engine, and we get it for free.
 
 [docs]: http://chiel92.github.io/fate/
 [fate-tui]: http://github.com/Chiel92/fate-tui

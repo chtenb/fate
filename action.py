@@ -1,4 +1,22 @@
+from logging import debug
+from functools import wraps
+from collections import deque
+
+
+def previewable(function):
+    """Utility function that should be used for higher order actions."""
+    @wraps(function)
+    def wrapper(session, preview=False, *args, **kwargs):
+        result = function(session, *args, **kwargs)
+        if preview:
+            return result
+        else:
+            result(session)
+    return wrapper
+
+
 class Undoable:
+
     def __call__(self, session):
         """Do action."""
         session.undotree.add(self)
@@ -37,6 +55,7 @@ class Interactive:
 
 
 class Updateable(Undoable, Interactive):
+
     """An Updateable action is able to update itself by undoing and redoing."""
 
     def __call__(self, session):
@@ -49,92 +68,77 @@ class Updateable(Undoable, Interactive):
         """
         Make sure we are up to date with possible (interactive) modifications to us.
         """
-        session.undotree.hard_undo()
-        session.interactionstack.backtrack()
+        self._undo(session)
         self(session)
 
 
-class CompoundUndoable(Undoable):
+class Compose(Interactive):  # Updatable(CompoundUndoable):
+
     """
-    This class can be used to compose multiple undoable actions
-    into a single undoable action.
+    This class can be used to compose multiple possibly interactive or undoable
+    actions into a single action.
     """
-    def __init__(self, session, *subactions):
-        """Every subaction must be undoable."""
-        for subaction in subactions:
-            if not isinstance(subaction, Undoable):
-                raise TypeError('Subaction {} is not an instance of Undoable.'
-                                .format(repr(subaction)))
-        self.subactions = subactions
 
-    def __str__(self):
-        result = []
-        for subaction in self:
-            result.append(str(subaction))
-        return '(' + ', '.join(result) + ')'
-
-    def _undo(self):
-        """Undo action."""
-        for subaction in reversed(self):
-            subaction._undo()
-
-    def _call(self):
-        """Do action."""
-        for subaction in self.subactions:
-            subaction._call()
-
-
-class CompoundUpdatable(CompoundUndoable):
-    """
-    This class can be used to compose multiple possible interactive actions
-    into a single action.
-    """
-    subactions_called = 0
+    def __init__(self, *subactions):
+        self.todo = deque(subactions)
 
     def _call(self, session):
-        """Do subactions until first non finished subaction."""
-        self.subactions_called = 0
-        for subaction in self.subactions:
-            subaction._call()
-            self.subactions_called += 1
-            if isinstance(subaction, Interactive) and not subaction.finished:
-                # Stop here, this subaction is not yet finished
-                break
+        """
+        Execute subactions, gathering undoable actions into a CompoundUndoable
+        action, until first non finished subaction is encountered.
+        """
+        session.undotree.start_sequence()
+        self.proceed(session)
 
-    def _undo(self):
-        """Undo all subactions that were executed upon last call."""
-        assert len(self[self.subactions_called - 1::-1]) == self.subactions_called
-        for subaction in self[self.subactions_called - 1::-1]:
-            subaction._undo()
+    def proceed(self, session):
+        while self.todo:
+            # Problem: Delete is not Undoable, but its result is
+            # So either we have to require that higher order actions always return lower
+            # order actions (bad) and solve that here with a hacky execution loop (bad)
+            # or we simply call start and end methods of the undotree, indicating the
+            # start and end of a sequence of undoables.
+            #
+            # So lets do the latter
 
-    # TODO: How to make sure that we get updated if a child gets updated?
-    # Maybe we don't want to get updated, since only the child changed
-    # But then we need to be able to replace the child in the undotree
-    # I.e. we must undo the old child, do the new child and place the new child in the undotree
+            subaction = self.todo.popleft()
+            debug(subaction)
+            subaction(session)
 
-    # Or we must not deepcopy undoable actions into the undotree
+            # TODO problem: ChangeInPlace is not instance of Interactive but a subclass
+            if isinstance(subaction, type) and issubclass(subaction, Interactive):
+                # Stop here, this subaction needs interaction
+                return
+        session.undotree.end_sequence()
+        Interactive.proceed(self, session)
+
+
+# TODO: How to make sure that we get updated if a child gets updated?
+# Maybe we don't want to get updated, since only the child changed
+# But then we need to be able to replace the child in the undotree
+# I.e. we must undo the old child, do the new child and place the new child in the undotree
+
+# Or we must not deepcopy undoable actions into the undotree
     # But then we cannot easily update at all, since we have changed, and thus the undo method has been corrupted
     # I think the latter is the way to go
     # Because removing code solves the problem here :)
     #
     # Done that. Now we don't need to be Updateable anymore.
-    #def update(self, session):
+    # def update(self, session):
         #"""
-        #Make sure we are up to date with possible (interactive) modifications to us.
+        # Make sure we are up to date with possible (interactive) modifications to us.
         #"""
-        #session.undotree.hard_undo()
-        ## Backtrack twice, for the pending subaction and for ourselves
-        #session.interactionstack.backtrack()
-        #session.interactionstack.backtrack()
-        #self(session)
+        # session.undotree.hard_undo()
+        # Backtrack twice, for the pending subaction and for ourselves
+        # session.interactionstack.backtrack()
+        # session.interactionstack.backtrack()
+        # self(session)
 
 
-
-def compose(*args):
-    """Utility function that can be used to compose several undoable actors into one."""
-    def wrapper(session):
-        return CompoundUpdatable(session, *args)
-    return wrapper
+# def compose(*args):
+    #"""Utility function that can be used to compose several actors into one."""
+    # def wrapper(session):
+        # return Compose(session, *args)
+    # return wrapper
 
 """
 There is a complication with implementing CompoundUndoable.
@@ -147,68 +151,33 @@ For other situations, extend mode must be passed explicitly.
 To make things simpler, we require all subactions to be undoable.
 """
 
+# class CompoundUndoable(Undoable):
 #
-# ----------- OLD PART --------------
+#     """
+#     This class can be used to compose multiple undoable actions
+#     into a single undoable action.
+#     """
 #
-
-# class CompoundAction(Action):
-    #"""
-    # This class can be used to compose multiple actions into a single
-    # action.
-    #"""
-    # def __init__(self, session, *args):
-        #"""Every object in args must be an Action."""
-        # Action.__init__(self, session)
-        # self.sub_actions = tuple(a for a in args if a)
-
-    # def __str__(self):
-        # result = []
-        # for sub_action in self:
-            # result.append(str(sub_action))
-        # return '(' + ', '.join(result) + ')'
-
-    # def _undo(self):
-        #"""Undo action."""
-        # for sub_action in self:
-            # sub_action._undo()
-
-    # def _do(self):
-        #"""Do action."""
-        # for sub_action in self.sub_actions:
-            # sub_action._do()
-
-    # def __iter__(self):
-        #"""Iterate linearly through all atomic subactions."""
-        # for sub_action in self.sub_actions:
-            # if sub_action.__class__ == CompoundAction:
-                # for sub_sub_action in sub_action:
-                    # if sub_sub_action != None:
-                        # yield sub_sub_action
-            # else:
-                # if sub_action != None:
-                    # yield sub_action
-
-    # def contains_class(self, cls):
-        #"""
-        # Check if an atomic subaction of class _class is contained
-        # in self.
-        #"""
-        # for sub_action in self:
-            # if sub_action.__class__ == cls:
-                # return True
-        # return False
-
-# def compose(*args):
-    #"""
-    # This function returns the compositional actor from the
-    # argument actors, and does the resulting actions upon execution.
-    #"""
-    #@actor
-    # def wrapper(session):
-        # actionlist = [f(session, preview=True)
-                      # if hasattr(f, 'is_actor') else f(session) for f in args]
-        # actionlist = [x for x in actionlist if x]
-        # if not actionlist:
-            # return
-        # return CompoundAction(session, *actionlist)
-    # return wrapper
+#     def __init__(self, session, *subactions):
+#         """Every subaction must be undoable."""
+#         for subaction in subactions:
+#             if not isinstance(subaction, Undoable):
+#                 raise TypeError('Subaction {} is not an instance of Undoable.'
+#                                 .format(repr(subaction)))
+#         self.subactions = subactions
+#
+#     def __str__(self):
+#         result = []
+#         for subaction in self:
+#             result.append(str(subaction))
+#         return '(' + ', '.join(result) + ')'
+#
+#     def _undo(self):
+#         """Undo action."""
+#         for subaction in reversed(self):
+#             subaction._undo()
+#
+#     def _call(self):
+#         """Do action."""
+#         for subaction in self.subactions:
+#             subaction._call()

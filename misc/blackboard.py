@@ -10,8 +10,8 @@ An action is an abstract object that can make a modification to a
 session. An action must therefore be executable (read: callable)
 and accept a session as argument.
 """
-from . import modes
-from .session import Session
+from .. import modes
+from ..session import Session
 mysession = Session()
 
 
@@ -31,6 +31,7 @@ Another equivalent way, using a class, would be:
 
 
 class SetExtendMode:
+
     def __call__(self, session):
         session.selection_mode = modes.extend_mode
 
@@ -62,6 +63,7 @@ of the undo method to the concrete subclasses.
 
 
 class Undoable:
+
     def __call__(self, session):
         session.undotree.add(self)
         self._call(session)
@@ -85,6 +87,7 @@ from Undoable.
 
 
 class UndoableSetExtendMode(Undoable):
+
     def _call(self, session):
         self.previous_mode = session.selection_mode
         session.selection_mode = modes.extend_mode
@@ -104,6 +107,7 @@ by specifying the following __call__ and undo methods.
 
 
 class Selection(Undoable):
+
     def __init__(self, intervals):
         # logic here
         pass
@@ -126,6 +130,7 @@ We will model Operations on text as actions as well.
 
 
 class Operation(Undoable):
+
     def __init__(self, selection, new_content):
         # logic here
         self.old_content = selection.content
@@ -158,23 +163,52 @@ def select_everything(session):
 
 
 """
-Instead of the above, we may want to subclass from Selection,
+Instead of the above, we may want to have it return an action,
 such that we can split the creation of the selection (by __init__)
 and the execution of the selection (by __call__).
 This way we can create selections, and inspect them, without
 having to actually apply them to the session.
 If we wouldn't care about that, we might as well use the above.
+
+Two alternatives. Looks like there are usecases for both of them,
+so we might want to leave this choice open.
+
+Conclusion: an actor is any class, function or callable object that takes a session and returns an action.
+
+Observation: maybe we should not disinguish between actors and actions.
+Just talk about actions and higher order actions. That makes several things easier.
+Higher order actions may return a lower order actions if explicitly asked,
+instead of just being executed.
 """
 
 
-class SelectEverything(Selection):
+def SelectEverything(session, selection=None, selection_mode=None):
+    """
+        Good: - short and clear
+        Bad: - cannot derive from Interactive etc
+    """
+    selection = selection or session.selection
+    selection_mode = selection_mode or session.selection_mode
+    interval = (0, len(session.text))
+    return Selection([interval])
+
+
+class SelectEverything2(Selection):
+
+    """
+        Good: - in case of updateable actions, we may need to be stored as
+            a whole, in order to be able to undo and redo ourselves only
+        Bad: - needs more knowledge of Selection's inner working
+             - compound actors that are only partly undoable are stored completely
+    """
+
     def __init__(self, session, selection=None, selection_mode=None):
         selection = selection or session.selection
         selection_mode = selection_mode or session.selection_mode
         interval = (0, len(session.text))
         Selection.__init__(self, [interval])
 
-my_select_everything = SelectEverything(mysession)  # create selection
+my_select_everything = SelectEverything2(mysession)  # create selection
 my_select_everything(mysession)  # execute the selection on a session
 my_select_everything.undo(mysession)  # undo the selection on a session
 
@@ -186,6 +220,7 @@ only the session, like for instance regex patterns?
 
 
 class SelectPattern(Selection):
+
     def __init__(self, pattern, session, selection=None, selection_mode=None, reverse=False, group=0):
         selection = selection or session.selection
         selection_mode = selection_mode or session.selection_mode
@@ -222,10 +257,12 @@ We can update an updateable action by calling the update method on it
 with custom arguments.
 
 
-More generally speaking, we want to interact with a general object/action (that is not necessarily undoable).
+More generally speaking, we want to interact with a general object/action
+(that is not necessarily undoable).
 So we need to think about how to implement interaction in the most general way.
 We can introduce an interaction stack, such that we can nest interactions.
-If we then finish an interaction, we can pop it from the stack and be dropped into the parent interaction.
+If we then finish an interaction, we can pop it from the stack and be dropped
+into the parent interaction.
 
 
 The finished flag is used to indicate that we finished updating the action.
@@ -251,6 +288,7 @@ class Interactive:
 
 
 class Updateable(Undoable, Interactive):
+
     """Updateable action."""
 
     def update(self, session):
@@ -262,7 +300,9 @@ class Updateable(Undoable, Interactive):
 
 
 class InsertOperation(Operation, Updateable):
+
     """Abstract class for operations dealing with insertion of text."""
+
     def __init__(self, selection):
         Operation.__init__(self, selection, None)
         self.insertions = ['' for _ in selection]
@@ -292,6 +332,7 @@ class InsertOperation(Operation, Updateable):
 
 
 class ChangeAround(InsertOperation):
+
     @property
     def new_content(self):
         character_pairs = [('{', '}'), ('[', ']'), ('(', ')')]
@@ -303,7 +344,9 @@ class ChangeAround(InsertOperation):
                 first_string = first_string.replace(second, first)
                 second_string = second_string.replace(first, second)
             result.append(first_string
-                          + self.old_content[i][self.deletions[i]:-self.deletions[i] or None]
+                          + self.old_content[i][
+                              self.deletions[i]:-self.deletions[i] or None
+                          ]
                           + second_string)
         return result
 
@@ -316,7 +359,9 @@ Let us introduce a subclass of InsertOperation named Completeable.
 
 
 class Completeable(InsertOperation):
+
     """Abstract class for insert operations that can be completed."""
+
     def complete(self, session):
         if session.completer.current_completion:
             self.insertions = session.completer.current_completion
@@ -329,6 +374,7 @@ class Completeable(InsertOperation):
 
 
 class ChangeAfter(Completeable):
+
     @property
     def new_content(self):
         return [self.old_content[i][self.deletions[i]:]
@@ -337,6 +383,7 @@ class ChangeAfter(Completeable):
 
 
 class ChangeInPlace(Completeable):
+
     @property
     def new_content(self):
         return [self.insertions[i] for i in range(len(self.old_content))]
@@ -373,6 +420,7 @@ dict: key -> func, but also a function that translates keys to characters and pa
 
 
 class Snippet(Interactive):
+
     def __init__(self, snippet_text, selection_list):
         self.snippet_text = snippet_text
         self.selection_list = selection_list
@@ -411,7 +459,10 @@ your needs, and use that subclass for your stuff.
 # How can we let the compound actions know that a child has been finished?
 # Option 1: give the child a callback function
 # Option 2: make all updates go through parents
+
+
 class Compound(Updateable):
+
     def __init__(self, *args):
         self.subactions = args
         for subaction in self.subactions:
@@ -424,20 +475,19 @@ class Compound(Updateable):
             if isinstance(subaction, Updateable) and not subaction.finished:
                 return
 
-
-    #def _update(self, session, *args):
+    # def _update(self, session, *args):
         #"""Update the next updateable subaction."""
-        #for subaction in self.subactions:
-            #if isinstance(subaction, Updateable) and not subaction.finished:
+        # for subaction in self.subactions:
+            # if isinstance(subaction, Updateable) and not subaction.finished:
                 #subaction._update(session, *args)
-                #return
+                # return
 
-    #def finish(self):
+    # def finish(self):
         #"""Finish the next updateable subaction."""
-        #for subaction in self.subactions:
-            #if isinstance(subaction, Updateable) and not subaction.finished:
-                #subaction.finish()
-                #return
+        # for subaction in self.subactions:
+            # if isinstance(subaction, Updateable) and not subaction.finished:
+                # subaction.finish()
+                # return
 
     @property
     def finished(self):

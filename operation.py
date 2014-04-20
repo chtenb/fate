@@ -88,6 +88,9 @@ class InsertOperation(Operation, Updateable):
         self.insertions = ['' for _ in selection]
         self.deletions = [0 for _ in selection]
 
+        # Also execute the action immediately
+        self(session)
+
     def insert(self, session, string):
         """
         Insert a string (typically a char) in the operation.
@@ -111,3 +114,5 @@ class InsertOperation(Operation, Updateable):
                 self.insertions[i] += string
 
         self.update(session)
+        from logging import debug
+        debug(self)
