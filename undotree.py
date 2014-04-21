@@ -18,7 +18,7 @@ class UndoTree:
     def undo(self):
         """Undo previous action set current_node to its parent."""
         if self.current_node.parent:
-            for action in self.current_node.actions:
+            for action in reversed(self.current_node.actions):
                 action.undo(self.session)
             self.current_node = self.current_node.parent
 
@@ -27,7 +27,7 @@ class UndoTree:
         if self.current_node and self.current_node.children:
             self.current_node = self.current_node.children[-1]
             for action in self.current_node.actions:
-                action.redo(self.session)
+                action.do(self.session)
 
     def add(self, action):
         """Add a new undoable action."""

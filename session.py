@@ -48,6 +48,7 @@ class Session():
     @text.setter
     def text(self, value):
         self._text = value
+        self.saved = False
         self.OnTextChanged.fire(self)
 
     def read(self, filename=None):
@@ -57,6 +58,7 @@ class Session():
         if self.filename:
             with open(self.filename, 'r') as fd:
                 self.text = fd.read()
+            self.saved = True
             self.OnRead.fire(self)
 
     def write(self, filename=None):

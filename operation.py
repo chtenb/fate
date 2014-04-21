@@ -1,8 +1,9 @@
 """This module defines the class Operation."""
 from .selection import Selection, Interval
-from .action import Undoable, Updateable
+from .action import Undoable, Interactive
 from .selectors import SelectIndent
 from . import modes
+from logging import debug
 
 
 class Operation(Undoable):
@@ -43,7 +44,11 @@ class Operation(Undoable):
             result.add(Interval(beg, end))
         return result
 
-    def _call(self, session, inverse=False):
+    def __call__(self, session):
+        Undoable.call(self, session)
+        self.do(session)
+
+    def do(self, session, inverse=False):
         """Apply self to the session."""
         if inverse:
             if self.new_selection == None:
@@ -75,12 +80,12 @@ class Operation(Undoable):
         session.selection_mode = modes.SELECT_MODE
         session.selection = new_selection
 
-    def _undo(self, session):
+    def undo(self, session):
         """Undo operation."""
-        self._call(session, inverse=True)
+        self.do(session, inverse=True)
 
 
-class InsertOperation(Operation, Updateable):
+class InsertOperation(Operation, Interactive):
     """Abstract class for operations dealing with insertion of text."""
     def __init__(self, session, selection=None):
         selection = selection or session.selection
@@ -88,8 +93,9 @@ class InsertOperation(Operation, Updateable):
         self.insertions = ['' for _ in selection]
         self.deletions = [0 for _ in selection]
 
-        # Also execute the action immediately
-        self(session)
+    def __call__(self, session):
+        Interactive.call(self, session)
+        Operation.__call__(self, session)
 
     def insert(self, session, string):
         """
@@ -113,6 +119,7 @@ class InsertOperation(Operation, Updateable):
                 # add string
                 self.insertions[i] += string
 
-        self.update(session)
-        from logging import debug
+        self.undo(session)
+        self.do(session)
+
         debug(self)

@@ -3,49 +3,26 @@ from functools import wraps
 from collections import deque
 
 
-def previewable(function):
-    """Utility function that should be used for higher order actions."""
-    @wraps(function)
-    def wrapper(session, preview=False, *args, **kwargs):
-        result = function(session, *args, **kwargs)
-        if preview:
-            return result
-        else:
-            result(session)
-    return wrapper
-
-
 class Undoable:
 
-    def __call__(self, session):
+    def call(self, session):
         """Do action."""
         session.undotree.add(self)
-        self._call(session)
 
     def undo(self, session):
         """Undo action."""
-        self._undo(session)
-
-    def redo(self, session):
-        """Redo action."""
-        self._call(session)
-
-    def _call(self, session):
         raise NotImplementedError("An abstract method is not callable.")
 
-    def _undo(self, session):
+    def do(self, session):
+        """Redo action."""
         raise NotImplementedError("An abstract method is not callable.")
 
 
 class Interactive:
     finished = False
 
-    def __call__(self, session):
+    def call(self, session):
         session.interactionstack.push(self)
-        self._call(session)
-
-    def _call(self, session):
-        raise NotImplementedError("An abstract method is not callable.")
 
     def proceed(self, session):
         self.finished = True
@@ -54,22 +31,20 @@ class Interactive:
             parent.proceed(session)
 
 
-class Updateable(Undoable, Interactive):
+#class Updateable(Undoable, Interactive):
 
-    """An Updateable action is able to update itself by undoing and redoing."""
+    #"""An Updateable action is able to update itself by undoing and redoing."""
 
-    def __call__(self, session):
-        # TODO: maybe remove duplication from super here
-        session.undotree.add(self)
-        session.interactionstack.push(self)
-        self._call(session)
+    #def call(self, session):
+        #Undoable.call(self, session)
+        #Interactive.call(self, session)
 
-    def update(self, session):
-        """
-        Make sure we are up to date with possible (interactive) modifications to us.
-        """
-        self._undo(session)
-        self(session)
+    #def update(self, session):
+        #"""
+        #Make sure we are up to date with possible (interactive) modifications to us.
+        #"""
+        #self.undo(session)
+        #self.do(session)
 
 
 class Compose(Interactive):  # Updatable(CompoundUndoable):
@@ -82,11 +57,13 @@ class Compose(Interactive):  # Updatable(CompoundUndoable):
     def __init__(self, *subactions):
         self.todo = deque(subactions)
 
-    def _call(self, session):
+    def __call__(self, session):
         """
         Execute subactions, gathering undoable actions into a CompoundUndoable
         action, until first non finished subaction is encountered.
         """
+        Interactive.call(self, session)
+        # TODO: allow nested compositions
         session.undotree.start_sequence()
         self.proceed(session)
 
@@ -100,16 +77,34 @@ class Compose(Interactive):  # Updatable(CompoundUndoable):
             #
             # So lets do the latter
 
+            # Let us not only allow actions to be composed, but also action constructors
+            # that only take a session.
+            # ChangeAfter is a constructor that needs this.
             subaction = self.todo.popleft()
+            while isinstance(subaction, type):
+                subaction = subaction(session)
+
             debug(subaction)
             subaction(session)
 
-            # TODO problem: ChangeInPlace is not instance of Interactive but a subclass
-            if isinstance(subaction, type) and issubclass(subaction, Interactive):
+
+            if isinstance(subaction, Interactive):
                 # Stop here, this subaction needs interaction
                 return
         session.undotree.end_sequence()
         Interactive.proceed(self, session)
+
+
+def previewable(function):
+    """Utility function that could be used for higher order actions."""
+    @wraps(function)
+    def wrapper(session, preview=False, *args, **kwargs):
+        result = function(session, *args, **kwargs)
+        if preview:
+            return result
+        else:
+            result(session)
+    return wrapper
 
 
 # TODO: How to make sure that we get updated if a child gets updated?

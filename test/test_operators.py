@@ -2,6 +2,7 @@ from unittest import TestCase, main
 from ..session import Session
 from ..selectors import NextWord
 from ..operators import Insert, ChangeAround
+from ..actors import undo
 
 TEXT = """\
 import sys
@@ -23,10 +24,13 @@ class OperatorTest(TestCase):
         NextWord(self.session)(self.session)
 
     def test_insert(self):
-        action = Insert('Foo ', self.session)
+        action = Insert('Foo ')
         action(self.session)
         expected = 'Foo import sys'
         self.assertEqual(expected, self.session.text[:14])
+
+        undo(self.session)
+        self.assertEqual('import sys', self.session.text[:10])
 
     def test_change_around(self):
         action = ChangeAround(self.session)
@@ -40,6 +44,9 @@ class OperatorTest(TestCase):
 
         self.assertEqual(expected, self.session.text[:14])
         self.assertTrue(self.session.interactionstack.isempty)
+
+        undo(self.session)
+        self.assertEqual('import sys', self.session.text[:10])
 
 if __name__ == '__main__':
     main()
