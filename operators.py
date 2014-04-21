@@ -9,7 +9,7 @@ def delete(session, selection=None):
     """Delete content."""
     selection = selection or session.selection
     new_content = ['' for _ in selection]
-    operation = Operation(session, selection, new_content)
+    operation = Operation(session, new_content, selection)
     operation(session)
 
 #class DeleteOld(Operation):
@@ -29,7 +29,7 @@ class Append:
     def __call__(self, session, selection=None):
         selection = selection or session.selection
         new_content = [content + self.string for content in selection.content(session)]
-        operation = Operation(session, selection, new_content)
+        operation = Operation(session, new_content, selection)
         operation(session)
 
 class Insert:
@@ -40,7 +40,7 @@ class Insert:
     def __call__(self, session, selection=None):
         selection = selection or session.selection
         new_content = [self.string + content for content in selection.content(session)]
-        operation = Operation(session, selection, new_content)
+        operation = Operation(session, new_content, selection)
         operation(session)
 
 

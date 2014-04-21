@@ -35,7 +35,7 @@ class OperatorTest(TestCase):
     def test_change_around(self):
         action = ChangeAround(self.session)
         action(self.session)
-        action.insert(self.session, '({')
+        action.interact(self.session, '({')
 
         self.assertFalse(self.session.interactionstack.isempty)
 

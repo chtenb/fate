@@ -14,7 +14,7 @@ class Operation(Undoable):
     The property `new_selection` is only available after the operation
     has been applied.
     """
-    def __init__(self, session, selection=None, new_content=None):
+    def __init__(self, session, new_content=None, selection=None):
         selection = selection or session.selection
         self.old_selection = selection
         self.old_content = selection.content(session)
@@ -94,10 +94,10 @@ class InsertOperation(Operation, Interactive):
         self.deletions = [0 for _ in selection]
 
     def __call__(self, session):
-        Interactive.call(self, session)
+        Interactive.__call__(self, session)
         Operation.__call__(self, session)
 
-    def insert(self, session, string):
+    def interact(self, session, string):
         """
         Insert a string (typically a char) in the operation.
         By only autoindenting on a single \n, we potentially allow proper pasting.

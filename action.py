@@ -21,33 +21,23 @@ class Undoable:
 class Interactive:
     finished = False
 
-    def call(self, session):
+    def __call__(self, session):
+        """Push ourselves on the interactionstack."""
         session.interactionstack.push(self)
 
+    def interact(self, session, string):
+        """Interact with this action."""
+        raise NotImplementedError("An abstract method is not callable.")
+
     def proceed(self, session):
+        """Proceed by finishing ourselves."""
         self.finished = True
         parent = session.interactionstack.backtrack()
         if parent:
             parent.proceed(session)
 
 
-#class Updateable(Undoable, Interactive):
-
-    #"""An Updateable action is able to update itself by undoing and redoing."""
-
-    #def call(self, session):
-        #Undoable.call(self, session)
-        #Interactive.call(self, session)
-
-    #def update(self, session):
-        #"""
-        #Make sure we are up to date with possible (interactive) modifications to us.
-        #"""
-        #self.undo(session)
-        #self.do(session)
-
-
-class Compose(Interactive):  # Updatable(CompoundUndoable):
+class Compound(Interactive):  # Updatable(CompoundUndoable):
 
     """
     This class can be used to compose multiple possibly interactive or undoable
@@ -62,7 +52,7 @@ class Compose(Interactive):  # Updatable(CompoundUndoable):
         Execute subactions, gathering undoable actions into a CompoundUndoable
         action, until first non finished subaction is encountered.
         """
-        Interactive.call(self, session)
+        Interactive.__call__(self, session)
         # TODO: allow nested compositions
         session.undotree.start_sequence()
         self.proceed(session)
@@ -81,24 +71,42 @@ class Compose(Interactive):  # Updatable(CompoundUndoable):
             # that only take a session.
             # ChangeAfter is a constructor that needs this.
             subaction = self.todo.popleft()
-            while isinstance(subaction, type):
-                subaction = subaction(session)
+            while 1:
+                result = subaction(session)
+                if not callable(result):
+                    break
+                subaction = result
 
-            debug(subaction)
-            subaction(session)
+            #while isinstance(subaction, type):
+                #debug(subaction)
+                #subaction = subaction(session)
 
+            #debug(subaction)
+            #subaction(session)
 
-            if isinstance(subaction, Interactive):
+            if isinstance(subaction, Interactive) and not subaction.finished:
                 # Stop here, this subaction needs interaction
                 return
         session.undotree.end_sequence()
         Interactive.proceed(self, session)
 
 
+def Compose(*subactions, name='', docs=''):
+    """
+    Function that composes several actions or constructors into a single constructor.
+    """
+    def wrapper(session):
+        compound = Compound(*subactions)
+        compound.__name__ = name
+        compound.__docs__ = docs
+        return compound
+    return wrapper
+
+
 def previewable(function):
     """Utility function that could be used for higher order actions."""
     @wraps(function)
-    def wrapper(session, preview=False, *args, **kwargs):
+    def wrapper(session, *args, preview=False, **kwargs):
         result = function(session, *args, **kwargs)
         if preview:
             return result
@@ -106,6 +114,7 @@ def previewable(function):
             result(session)
     return wrapper
 
+# OLD ------------------
 
 # TODO: How to make sure that we get updated if a child gets updated?
 # Maybe we don't want to get updated, since only the child changed
@@ -119,20 +128,20 @@ def previewable(function):
     #
     # Done that. Now we don't need to be Updateable anymore.
     # def update(self, session):
-        #"""
-        # Make sure we are up to date with possible (interactive) modifications to us.
-        #"""
-        # session.undotree.hard_undo()
-        # Backtrack twice, for the pending subaction and for ourselves
-        # session.interactionstack.backtrack()
-        # session.interactionstack.backtrack()
-        # self(session)
+    #"""
+    # Make sure we are up to date with possible (interactive) modifications to us.
+    #"""
+    # session.undotree.hard_undo()
+    # Backtrack twice, for the pending subaction and for ourselves
+    # session.interactionstack.backtrack()
+    # session.interactionstack.backtrack()
+    # self(session)
 
 
 # def compose(*args):
     #"""Utility function that can be used to compose several actors into one."""
     # def wrapper(session):
-        # return Compose(session, *args)
+    # return Compose(session, *args)
     # return wrapper
 
 """

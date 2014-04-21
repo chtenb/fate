@@ -47,7 +47,7 @@ def paste(session, before):
     This is not an actor, but serves as helper function for PasteBefore and PasteAfter.
     """
     if session.clipboard:
-        old_content = session.selection.content
+        old_content = session.selection.content(session)
         clipboard_content = session.clipboard.peek()
         if not clipboard_content:
             return
@@ -61,20 +61,16 @@ def paste(session, before):
         return new_content
 
 
-class PasteBefore(Operation):
-
+def paste_before(session):
     """Paste clipboard before current selection."""
+    operation = Operation(session, paste(session, before=True))
+    operation(session)
 
-    def __init__(self, session):
-        Operation.__init__(self, session, paste(session, before=True))
 
-
-class PasteAfter(Operation):
-
+def paste_after(session):
     """Paste clipboard after current selection."""
-
-    def __init__(self, session):
-        Operation.__init__(self, session, paste(session, before=False))
+    operation = Operation(session, paste(session, before=False))
+    operation(session)
 
 
 def clear(session):
