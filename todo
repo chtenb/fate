@@ -1,11 +1,10 @@
 SHORT TERM
-should all operators really subclass from operation? Do we want to store the action, or just the operations involved? For a compound action (containing non-undoable actions): do we want to store the whole thing, or just a list/tuple of operations.
 add functools.wraps everywhere
-support autoindent
-add select around/inside, switch case,
-implement repeat last selector or operator
-add unit tests
+cleanup and turn scratch comments into docs
 put code in seperate directory
+add unit tests
+implement repeat last selector or operator
+add select around/inside, switch case,
 
 LONG TERM
 persistent session (using a context manager?)

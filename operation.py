@@ -105,7 +105,8 @@ class InsertOperation(Operation, Interactive):
         indent = SelectIndent(session, self.new_selection)
         for i in range(len(self.new_selection)):
             if string == '\b':
-                # remove string
+                # TODO remove multiple whitespaces if possible
+                # remove one char
                 if self.insertions[i]:
                     self.insertions[i] = self.insertions[i][:-1]
                 else:
@@ -117,7 +118,7 @@ class InsertOperation(Operation, Interactive):
                 self.insertions[i] += ' ' * session.tabwidth
             else:
                 # add string
-                self.insertions[i] += string
+                self.insertions[i] += str(string)
 
         self.undo(session)
         self.do(session)
