@@ -5,6 +5,7 @@ by operator, either directly or indirectly.
 """
 from .operation import Operation, InsertOperation
 
+
 def delete(session, selection=None):
     """Delete content."""
     selection = selection or session.selection
@@ -12,17 +13,11 @@ def delete(session, selection=None):
     operation = Operation(session, new_content, selection)
     operation(session)
 
-#class DeleteOld(Operation):
-    #"""Delete content."""
-    #def __init__(self, session, selection=None):
-        #selection = selection or session.selection
-        #new_content = ['' for _ in selection]
-        #Operation.__init__(self, session, selection, new_content)
-
-# The following two classes are action constructors
 
 class Append:
+
     """Append to content."""
+
     def __init__(self, string):
         self.string = string
 
@@ -32,8 +27,11 @@ class Append:
         operation = Operation(session, new_content, selection)
         operation(session)
 
+
 class Insert:
+
     """Insert before content."""
+
     def __init__(self, string):
         self.string = string
 
@@ -45,9 +43,11 @@ class Insert:
 
 
 class ChangeInPlace(InsertOperation):
+
     """
     Interactive Operation which adds `insertions` in place of each interval.
     """
+
     def __init__(self, session):
         InsertOperation.__init__(self, session)
 
@@ -57,10 +57,12 @@ class ChangeInPlace(InsertOperation):
 
 
 class ChangeBefore(InsertOperation):
+
     """
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
+
     def __init__(self, session):
         InsertOperation.__init__(self, session)
 
@@ -72,10 +74,12 @@ class ChangeBefore(InsertOperation):
 
 
 class ChangeAfter(InsertOperation):
+
     """
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
+
     def __init__(self, session):
         InsertOperation.__init__(self, session)
 
@@ -87,10 +91,12 @@ class ChangeAfter(InsertOperation):
 
 
 class ChangeAround(InsertOperation):
+
     """
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
+
     def __init__(self, session):
         InsertOperation.__init__(self, session)
 

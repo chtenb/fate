@@ -5,6 +5,7 @@ the action history.
 
 
 class UndoTree:
+
     """
     Stores the action history as a tree with undo/redo functionality.
     """
@@ -67,7 +68,9 @@ class UndoTree:
 
 
 class Node:
+
     """Node of an ActionTree."""
+
     def __init__(self, parent):
         self.parent = parent
         self.actions = []
@@ -80,4 +83,3 @@ class Node:
     def add_child(self, node):
         """Add a child to node."""
         self.children.append(node)
-

@@ -1,8 +1,8 @@
-"""This module contains the Selection class."""
-from logging import debug
+"""This module contains the Interval and the Selection class."""
 
 
 class Interval:
+
     def __init__(self, beg, end):
         assert 0 <= beg <= end
         self.beg = beg
@@ -43,7 +43,9 @@ class Interval:
 
 
 class Selection:
+
     """Sorted list of disjoint non-adjacent intervals."""
+
     def __init__(self, intervals=None):
         self._intervals = []
         if intervals:
@@ -98,7 +100,6 @@ class Selection:
             for interval in obj:
                 self.add(interval)
             return
-
 
         nbeg, nend = obj
         assert nbeg <= nend

@@ -1,5 +1,3 @@
-"""Actors are functions that act on a session.
-Sequences of actors are again an actor via the actor decorator."""
 from .selectors import (NextFullLine, PreviousFullLine, Empty,
                         PreviousChar, NextChar, EmptyBefore,
                         SelectIndent)
@@ -7,11 +5,8 @@ from .operators import Insert, Append, ChangeAfter, delete, ChangeInPlace
 from .clipboard import copy, paste_before, clear
 from .action import Compose, Interactive
 from . import modes
-from functools import partial
 
 # TODO: decide upon naming convention for actions
-# Actions can be function, regular objects or classes
-# Let's say
 # Action constructors: CamelCase
 # Actions: camelcase or camel_case
 

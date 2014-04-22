@@ -16,6 +16,7 @@ session_list = []
 
 
 class Session():
+
     """Contains all objects of one file editing session"""
     OnSessionInit = Event()
     _text = ''
@@ -70,4 +71,3 @@ class Session():
                 fd.write(self.text)
             self.saved = True
             self.OnWrite.fire(self)
-

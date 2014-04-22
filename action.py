@@ -1,9 +1,36 @@
-from logging import debug
+"""
+The goal of a text editor is to make modifications to a text.
+More generally, the user should also be able to modify things other
+than text, such as options or other meta stuff.
+We store all relevant data for editing a text in a single object,
+and call this object a session.
+
+To make modifications to a session, we define actions.
+An action is an abstract object that can make a modification to a session.
+An action must therefore be callable and accept a session as argument.
+
+In many cases it is useful to create actions on the fly.
+Callable objects that create and return actions are called 'action constructors'.
+
+A special type of action constructors are those that require a session as argument.
+Let us call these 'actors'.
+"""
 from functools import wraps
 from collections import deque
 
 
 class Undoable:
+
+    """
+    For some actions, we want to be able to undo them.
+    Let us define the class Undoable for that.
+
+    Note that, all actions can be made trivially undoable,
+    by storing the session before and after applying the action.
+    This is however not desirable for reasons of space.
+    Therefore we leave the specific implementation
+    of the undo method to the concrete subclasses.
+    """
 
     def call(self, session):
         """Do action."""
@@ -19,6 +46,30 @@ class Undoable:
 
 
 class Interactive:
+
+    """
+    Can we also make actions which are incrementally constructed by the
+    user while getting feedback, like an insertion operation?
+    We introduce the class Interactive for this.
+    We can interact with an interactive action by
+    calling the interact method on it.
+    Thus, essentially an interaction is somewhat like a Vim mode.
+
+    More generally speaking, we want to be able to interact with
+    a general action, that is not necessarily undoable.
+    So we need to think about how to implement interaction in the most general way.
+    To know which action are currently wating for interaction, we introduce
+    an interaction stack with the top action being the current active one.
+    This way we can nest interactions.
+
+    If we then finish an interaction, we can pop it from the stack and be dropped
+    into the parent interaction.
+    The finished flag is used to indicate that we finished updating the action.
+    This is needed for a possible container action to know which subaction the
+    update information should currectly be redirected to.
+    """
+    # TODO: think about how interactions can have their own keymap
+
     finished = False
 
     def __call__(self, session):
@@ -37,12 +88,25 @@ class Interactive:
             parent.proceed(session)
 
 
-class Compound(Interactive):  # Updatable(CompoundUndoable):
+class Compound(Interactive):
 
     """
     This class can be used to compose multiple possibly interactive or undoable
     actions into a single action.
+    When an the composed action sequence contains interactive action,
+    we want the tail of the sequence to wait until an earlier interaction has finished.
     """
+    # There is a complication with implementing CompoundUndoable.
+    # Suppose we want to create a compound selection which involves a the mode
+    # of the session to change to extend mode at some point.
+    # Then extend mode must be executed at creation time,
+    # in order to create the intended selection.
+    # However, this violates the principle that the session must not be
+    # touched while only creating an action.
+    #
+    # The solution must be to state that extend mode only affects selectors
+    # that are done live by the user.
+    # For other situations, extend mode must be passed explicitly.
 
     def __init__(self, *subactions):
         self.todo = deque(subactions)
@@ -54,35 +118,21 @@ class Compound(Interactive):  # Updatable(CompoundUndoable):
         """
         Interactive.__call__(self, session)
         # TODO: allow nested compositions
+
+        # We call start and end methods of the undotree, indicating the
+        # start and end of a sequence of undoables.
         session.undotree.start_sequence()
         self.proceed(session)
 
     def proceed(self, session):
         while self.todo:
-            # Problem: Delete is not Undoable, but its result is
-            # So either we have to require that higher order actions always return lower
-            # order actions (bad) and solve that here with a hacky execution loop (bad)
-            # or we simply call start and end methods of the undotree, indicating the
-            # start and end of a sequence of undoables.
-            #
-            # So lets do the latter
-
-            # Let us not only allow actions to be composed, but also action constructors
-            # that only take a session.
-            # ChangeAfter is a constructor that needs this.
+            # We allow actions as well as actors to be composed
             subaction = self.todo.popleft()
             while 1:
                 result = subaction(session)
                 if not callable(result):
                     break
                 subaction = result
-
-            #while isinstance(subaction, type):
-                #debug(subaction)
-                #subaction = subaction(session)
-
-            #debug(subaction)
-            #subaction(session)
 
             if isinstance(subaction, Interactive) and not subaction.finished:
                 # Stop here, this subaction needs interaction
@@ -93,7 +143,8 @@ class Compound(Interactive):  # Updatable(CompoundUndoable):
 
 def Compose(*subactions, name='', docs=''):
     """
-    Function that composes several actions or constructors into a single constructor.
+    In order to be able to conveniently chain actions or actors, we provide a
+    function that composes a sequence of actions/actors into a single undoable actor.
     """
     def wrapper(session):
         compound = Compound(*subactions)
@@ -104,6 +155,7 @@ def Compose(*subactions, name='', docs=''):
 
 
 def previewable(function):
+    # TODO: not sure if this one is needed
     """Utility function that could be used for higher order actions."""
     @wraps(function)
     def wrapper(session, *args, preview=False, **kwargs):
@@ -113,75 +165,3 @@ def previewable(function):
         else:
             result(session)
     return wrapper
-
-# OLD ------------------
-
-# TODO: How to make sure that we get updated if a child gets updated?
-# Maybe we don't want to get updated, since only the child changed
-# But then we need to be able to replace the child in the undotree
-# I.e. we must undo the old child, do the new child and place the new child in the undotree
-
-# Or we must not deepcopy undoable actions into the undotree
-    # But then we cannot easily update at all, since we have changed, and thus the undo method has been corrupted
-    # I think the latter is the way to go
-    # Because removing code solves the problem here :)
-    #
-    # Done that. Now we don't need to be Updateable anymore.
-    # def update(self, session):
-    #"""
-    # Make sure we are up to date with possible (interactive) modifications to us.
-    #"""
-    # session.undotree.hard_undo()
-    # Backtrack twice, for the pending subaction and for ourselves
-    # session.interactionstack.backtrack()
-    # session.interactionstack.backtrack()
-    # self(session)
-
-
-# def compose(*args):
-    #"""Utility function that can be used to compose several actors into one."""
-    # def wrapper(session):
-    # return Compose(session, *args)
-    # return wrapper
-
-"""
-There is a complication with implementing CompoundUndoable.
-Suppose we want to create a compound selection which involves a change to extend mode at some point.
-Then extend mode must be executed at creation time, in order to create the intended selection.
-However, this violates the principle that the session must not be touched while only creating an action.
-
-The solution must be to state that extend mode only affects selectors that are done live by the user.
-For other situations, extend mode must be passed explicitly.
-To make things simpler, we require all subactions to be undoable.
-"""
-
-# class CompoundUndoable(Undoable):
-#
-#     """
-#     This class can be used to compose multiple undoable actions
-#     into a single undoable action.
-#     """
-#
-#     def __init__(self, session, *subactions):
-#         """Every subaction must be undoable."""
-#         for subaction in subactions:
-#             if not isinstance(subaction, Undoable):
-#                 raise TypeError('Subaction {} is not an instance of Undoable.'
-#                                 .format(repr(subaction)))
-#         self.subactions = subactions
-#
-#     def __str__(self):
-#         result = []
-#         for subaction in self:
-#             result.append(str(subaction))
-#         return '(' + ', '.join(result) + ')'
-#
-#     def _undo(self):
-#         """Undo action."""
-#         for subaction in reversed(self):
-#             subaction._undo()
-#
-#     def _call(self):
-#         """Do action."""
-#         for subaction in self.subactions:
-#             subaction._call()

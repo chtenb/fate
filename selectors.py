@@ -1,7 +1,5 @@
 """
-A selector is a special type of action that is used to modify the selection of a session.
-Strictly speaking, a selector is a function that is decorated by `selector`,
-either directly or indirectly.
+This module contains all kinds of actions and actors related to make selections.
 We distinguish between functions that work selection-wise (global selectors)
 and function that work interval-wise (local selectors).
 Furthermore we have selectors that are based on regular expressions.

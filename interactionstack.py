@@ -1,7 +1,9 @@
-"""A class definition for the clipboard and some actors."""
+"""A class definition the interaction stack."""
 from .action import Interactive
 
+
 class InteractionStack:
+
     """Stack-like datastructure for storing and handling interactive actions."""
     storage = []
 
@@ -25,4 +27,3 @@ class InteractionStack:
         self.storage.pop()
         if not self.isempty:
             return self.storage[-1]
-

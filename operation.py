@@ -3,10 +3,10 @@ from .selection import Selection, Interval
 from .action import Undoable, Interactive
 from .selectors import SelectIndent
 from . import modes
-from logging import debug
 
 
 class Operation(Undoable):
+
     """
     A container of modified content of a selection.
     Can be inverted such that the operation can be undone by applying the inverse.
@@ -14,6 +14,7 @@ class Operation(Undoable):
     The property `new_selection` is only available after the operation
     has been applied.
     """
+
     def __init__(self, session, new_content=None, selection=None):
         selection = selection or session.selection
         self.old_selection = selection
@@ -86,7 +87,9 @@ class Operation(Undoable):
 
 
 class InsertOperation(Operation, Interactive):
+
     """Abstract class for operations dealing with insertion of text."""
+
     def __init__(self, session, selection=None):
         selection = selection or session.selection
         Operation.__init__(self, session, selection)
@@ -120,7 +123,6 @@ class InsertOperation(Operation, Interactive):
                 # add string
                 self.insertions[i] += str(string)
 
+        # Make the changes to the session
         self.undo(session)
         self.do(session)
-
-        debug(self)

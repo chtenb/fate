@@ -1,7 +1,7 @@
 """
 This module contains the class definition for the clipboard and some related actions.
 
-Clipboard related actions should not be undoable.
+Clipboard related actions (copy, paste) should not be undoable.
 Suppose the user notices that he made a major mistake
 and wants to undo a bunch of actions.
 However, he may still want to keep some intermediate modifications.
