@@ -1,0 +1,11 @@
+misc Package
+============
+
+:mod:`blackboard` Module
+------------------------
+
+.. automodule:: fate.misc.blackboard
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

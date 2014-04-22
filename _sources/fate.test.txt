@@ -1,0 +1,27 @@
+test Package
+============
+
+:mod:`test_clipboard` Module
+----------------------------
+
+.. automodule:: fate.test.test_clipboard
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`test_operators` Module
+----------------------------
+
+.. automodule:: fate.test.test_operators
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`test_selectors` Module
+----------------------------
+
+.. automodule:: fate.test.test_selectors
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

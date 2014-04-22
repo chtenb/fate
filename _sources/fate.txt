@@ -1,6 +1,38 @@
 fate Package
 ============
 
+:mod:`fate` Package
+-------------------
+
+.. automodule:: fate.__init__
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`action` Module
+--------------------
+
+.. automodule:: fate.action
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`actors` Module
+--------------------
+
+.. automodule:: fate.actors
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+:mod:`clipboard` Module
+-----------------------
+
+.. automodule:: fate.clipboard
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`event` Module
 -------------------
 
@@ -9,10 +41,10 @@ fate Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`macros` Module
---------------------
+:mod:`interactionstack` Module
+------------------------------
 
-.. automodule:: fate.macros
+.. automodule:: fate.interactionstack
     :members:
     :undoc-members:
     :show-inheritance:
@@ -41,10 +73,10 @@ fate Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`plugins` Module
+:mod:`runtest` Module
 ---------------------
 
-.. automodule:: fate.plugins
+.. automodule:: fate.runtest
     :members:
     :undoc-members:
     :show-inheritance:
@@ -73,13 +105,21 @@ fate Package
     :undoc-members:
     :show-inheritance:
 
+:mod:`undotree` Module
+----------------------
+
+.. automodule:: fate.undotree
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Subpackages
 -----------
 
 .. toctree::
 
-    fate.clipboard_system
     fate.filetype_system
     fate.labeling_system
-    fate.undo_system
+    fate.misc
+    fate.test
 
