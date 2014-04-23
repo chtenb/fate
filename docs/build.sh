@@ -1,2 +1,2 @@
-sphinx-apidoc --full -H 'fate' -A 'Chiel ten Brinke' -V '0.2' -e -o ./ ../
+sphinx-apidoc --full -e -f -H 'fate' -A 'Chiel ten Brinke' -V '0.2' -o ./ ../
 make html

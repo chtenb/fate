@@ -26,6 +26,7 @@ class Session():
     tabwidth = 4
 
     def __init__(self, filename=""):
+        session_list.append(self)
         self.OnTextChanged = Event()
         self.OnRead = Event()
         self.OnWrite = Event()
@@ -37,10 +38,9 @@ class Session():
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
 
+        self.OnSessionInit.fire(self)
         if filename:
             self.read()
-        session_list.append(self)
-        self.OnSessionInit.fire(self)
 
     @property
     def text(self):
