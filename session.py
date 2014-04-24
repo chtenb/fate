@@ -42,6 +42,9 @@ class Session():
         if filename:
             self.read()
 
+    def exit(self):
+        session_list.remove(self)
+
     @property
     def text(self):
         return self._text
@@ -54,20 +57,30 @@ class Session():
 
     def read(self, filename=None):
         """Read text from file."""
+        filename = filename or self.filename
+
         if filename:
-            self.filename = filename
-        if self.filename:
-            with open(self.filename, 'r') as fd:
-                self.text = fd.read()
-            self.saved = True
-            self.OnRead.fire(self)
+            try:
+                with open(filename, 'r') as fd:
+                    self.text = fd.read()
+                self.saved = True
+                self.OnRead.fire(self)
+            except (FileNotFoundError, PermissionError) as e:
+                logging.error(str(e))
+        else:
+            logging.error('No filename')
 
     def write(self, filename=None):
         """Write current text to file."""
+        filename = filename or self.filename
+
         if filename:
-            self.filename = filename
-        if self.filename:
-            with open(self.filename, 'w') as fd:
-                fd.write(self.text)
-            self.saved = True
-            self.OnWrite.fire(self)
+            try:
+                with open(filename, 'w') as fd:
+                    fd.write(self.text)
+                self.saved = True
+                self.OnWrite.fire(self)
+            except (FileNotFoundError, PermissionError) as e:
+                logging.error(str(e))
+        else:
+            logging.error('No filename')
