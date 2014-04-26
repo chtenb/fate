@@ -15,3 +15,10 @@ some sort of semantic snippet recognition, e.g. two identifiers that always need
 implement fix interval/selection functionality?
 switch to alternative regex engine?
 focus on non-atomic operations
+idea: jumplist of lines of changes
+
+RESEARCH
+optimal configurable datastructure for text editing
+    optimize it for linenumber queries as well, not only for char numbers
+optimal configurable datastructure for labeling/syntax highlighting
+

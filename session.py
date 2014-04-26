@@ -30,6 +30,7 @@ class Session():
         self.OnTextChanged = Event()
         self.OnRead = Event()
         self.OnWrite = Event()
+        self.OnQuit = Event()
 
         self.clipboard = Clipboard()
         self.undotree = UndoTree(self)
@@ -42,7 +43,9 @@ class Session():
         if filename:
             self.read()
 
-    def exit(self):
+    def quit(self):
+        """Quit session."""
+        self.OnQuit.fire(self)
         session_list.remove(self)
 
     @property
