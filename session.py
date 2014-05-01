@@ -47,6 +47,8 @@ class Session():
         """Quit session."""
         self.OnQuit.fire(self)
         session_list.remove(self)
+        if not session_list:
+            exit()
 
     @property
     def text(self):

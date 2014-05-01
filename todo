@@ -1,8 +1,7 @@
 SHORT TERM
 add functools.wraps everywhere
-cleanup and turn scratch comments into docs
 put code in seperate directory
-add unit tests
+add tests
 implement repeat last selector or operator
 add select around/inside, switch case,
 

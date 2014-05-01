@@ -43,39 +43,35 @@ def previous_session(session):
     next_session.activate()
 
 
-def local_find(ui):
-    char = chr(ui.stdscr.getch())
-    selectors.SelectLocalPattern(re.escape(char), ui.session)(ui.session)
+def local_find(session):
+    char = session.ui.getchar()
+    selectors.SelectLocalPattern(re.escape(char), session)(session)
 
 
-def local_find_backwards(ui):
-    char = chr(ui.stdscr.getch())
-    selectors.SelectLocalPattern(re.escape(char), ui.session, reverse=True)(ui.session)
+def local_find_backwards(session):
+    char = session.ui.getchar()
+    selectors.SelectLocalPattern(re.escape(char), session, reverse=True)(session)
 
 
-def search(ui):
-    s = ui.session
-    s.search_pattern = ui.prompt('/')
+def search(session):
+    session.search_pattern = session.ui.prompt('/')
     try:
-        selectors.SelectPattern(s.search_pattern, s)(s)
+        selectors.SelectPattern(session.search_pattern, session)(session)
     except Exception as e:
-        ui.status_win.draw_status(str(e))
-        ui.stdscr.getch()
+        session.ui.status_win.draw_status(str(e))
+        session.ui.getchar()
 
 
-def search_current_content(ui):
-    s = ui.session
-    s.search_pattern = re.escape(s.content(s.selection)[-1])
-    selectors.SelectPattern(s.search_pattern, s)(s)
+def search_current_content(session):
+    session.search_pattern = re.escape(session.content(session.selection)[-1])
+    selectors.SelectPattern(session.search_pattern, session)(session)
 
 
-def search_next(ui):
-    s = ui.session
-    if s.search_pattern:
-        selectors.SelectPattern(s.search_pattern, s)(s)
+def search_next(session):
+    if session.search_pattern:
+        selectors.SelectPattern(session.search_pattern, session)(session)
 
 
-def search_previous(ui):
-    s = ui.session
-    if s.search_pattern:
-        selectors.SelectPattern(s.search_pattern, s, reverse=True)(s)
+def search_previous(session):
+    if session.search_pattern:
+        selectors.SelectPattern(session.search_pattern, session, reverse=True)(session)
