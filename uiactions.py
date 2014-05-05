@@ -2,7 +2,7 @@
 This module contains functions which act on the user interface.
 We shall call them ui actors.
 """
-from fate import actors, selectors, operators
+from fate import selectors
 from .session import Session, session_list
 import re
 
@@ -12,7 +12,7 @@ import re
 def open_session(session):
     """Open a new session."""
     filename = session.ui.prompt('Filename: ')
-    new_session = Session(filename)
+    Session(filename)
 
 
 def quit_session(session):
@@ -26,23 +26,23 @@ def quit_session(session):
             if char == 'n':
                 break
     else:
-        from logging import debug
-        debug('asdf')
         session.quit()
 
 
 def next_session(session):
     """Go to the next session."""
     index = session_list.index(session)
-    next_session = session_list[(index + 1) % len(session_list)]
-    next_session.ui.activate()
+    nsession = session_list[(index + 1) % len(session_list)]
+    session.ui.deactivate()
+    nsession.ui.activate()
 
 
 def previous_session(session):
     """Go to the previous session."""
     index = session_list.index(session)
-    next_session = session_list[(index - 1) % len(session_list)]
-    next_session.ui.activate()
+    nsession = session_list[(index - 1) % len(session_list)]
+    session.ui.deactivate()
+    nsession.ui.activate()
 
 
 def local_find(session):
@@ -59,9 +59,10 @@ def search(session):
     session.search_pattern = session.ui.prompt('/')
     try:
         selectors.SelectPattern(session.search_pattern, session)(session)
-    except Exception as e:
-        session.ui.status_win.draw_status(str(e))
+    except re.error as e:
+        session.ui.status_win.set_status(str(e))
         session.ui.getchar()
+        session.ui.status_win.set_default_status()
 
 
 def search_current_content(session):

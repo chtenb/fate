@@ -47,7 +47,7 @@ class Session():
 
     def quit(self):
         """Quit session."""
-        logging.info('Quitting buffer.')
+        logging.info('Quitting session.')
         self.OnQuit.fire(self)
         session_list.remove(self)
         if not session_list:

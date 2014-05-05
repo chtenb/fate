@@ -1,20 +1,20 @@
 """
 This module contains the key mapping as two dictionaries from chars to functions.
 The first one, `actions`, maps chars to actions.
-The second one, `ui_actions`, maps chars to ui actions,
+The second one, `uiactions`, maps chars to ui actions,
 i.e. functions which take an UserInterface object.
 """
 from . import selectors, actors, operators, modes, clipboard
 from .session import Session
-from . import ui_actions
+from . import uiactions
 
 
 default = {
     'Ctrl-S': Session.write,
     'Ctrl-Q': Session.quit,
-    'Ctrl-O': ui_actions.open_session,
-    'Ctrl-N': ui_actions.next_session,
-    'Ctrl-P': ui_actions.previous_session,
+    'Ctrl-O': uiactions.open_session,
+    'Ctrl-N': uiactions.next_session,
+    'Ctrl-P': uiactions.previous_session,
     'j': selectors.NextLine,
     'k': selectors.PreviousLine,
     'J': selectors.NextFullLine,
@@ -46,12 +46,12 @@ default = {
     'c': operators.ChangeInPlace,
     'o': actors.OpenLineAfter,
     'O': actors.OpenLineBefore,
-    'f': ui_actions.local_find,
-    'F': ui_actions.local_find_backwards,
-    '/': ui_actions.search,
-    '*': ui_actions.search_current_content,
-    'n': ui_actions.search_next,
-    'N': ui_actions.search_previous,
+    'f': uiactions.local_find,
+    'F': uiactions.local_find_backwards,
+    '/': uiactions.search,
+    '*': uiactions.search_current_content,
+    'n': uiactions.search_next,
+    'N': uiactions.search_previous,
 }
 
 
