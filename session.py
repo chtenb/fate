@@ -20,6 +20,7 @@ class Session():
     selection_mode = modes.SELECT_MODE
     expandtab = False
     tabwidth = 4
+    search_pattern = ''
 
     def __init__(self, filename=""):
         session_list.append(self)
@@ -34,6 +35,11 @@ class Session():
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
+
+        # Load the default key map
+        from .keymap import default
+        self.keymap = {}
+        self.keymap.update(default)
 
         self.OnSessionInit.fire(self)
         if filename:
