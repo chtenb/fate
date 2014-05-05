@@ -1,5 +1,6 @@
 SHORT TERM
 add functools.wraps everywhere
+make labeling generation asynchronous
 put code in seperate directory
 add tests
 implement repeat last selector or operator

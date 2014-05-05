@@ -7,10 +7,6 @@ from .interactionstack import InteractionStack
 from . import modes
 
 import logging
-import tempfile
-
-logfilename = tempfile.gettempdir() + '/fate.log'
-logging.basicConfig(filename=logfilename, level=logging.DEBUG)
 
 session_list = []
 
@@ -45,6 +41,7 @@ class Session():
 
     def quit(self):
         """Quit session."""
+        logging.info('Quitting buffer.')
         self.OnQuit.fire(self)
         session_list.remove(self)
         if not session_list:

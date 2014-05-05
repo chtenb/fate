@@ -26,6 +26,8 @@ def quit_session(session):
             if char == 'n':
                 break
     else:
+        from logging import debug
+        debug('asdf')
         session.quit()
 
 
@@ -33,14 +35,14 @@ def next_session(session):
     """Go to the next session."""
     index = session_list.index(session)
     next_session = session_list[(index + 1) % len(session_list)]
-    next_session.activate()
+    next_session.ui.activate()
 
 
 def previous_session(session):
     """Go to the previous session."""
     index = session_list.index(session)
     next_session = session_list[(index - 1) % len(session_list)]
-    next_session.activate()
+    next_session.ui.activate()
 
 
 def local_find(session):

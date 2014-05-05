@@ -6,7 +6,15 @@ from os.path import expanduser
 from sys import path
 from importlib import find_loader
 import logging
+import tempfile
 
+LOGFILENAME = tempfile.gettempdir() + '/fate.log'
+logging.basicConfig(filename=LOGFILENAME,
+                    level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s:%(message)s',
+                    datefmt='%H:%M:%S')
+
+logging.info('Starting fate.')
 
 # Load standard plugins
 from . import filetype_system
@@ -27,4 +35,3 @@ else:
         logging.info('User script loaded.')
     else:
         logging.info('No user script is present in .fate directory.')
-
