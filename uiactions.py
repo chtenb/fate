@@ -78,3 +78,6 @@ def search_next(session):
 def search_previous(session):
     if session.search_pattern:
         selectors.SelectPattern(session.search_pattern, session, reverse=True)(session)
+
+def command_mode(session):
+    session.ui.command_win.prompt()

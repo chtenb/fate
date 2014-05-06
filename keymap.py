@@ -52,6 +52,7 @@ default = {
     '*': uiactions.search_current_content,
     'n': uiactions.search_next,
     'N': uiactions.search_previous,
+    ':': uiactions.command_mode,
 }
 
 

@@ -35,6 +35,7 @@ class Session():
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
+        self.ui = None
 
         # Load the default key map
         from .keymap import default
@@ -44,6 +45,26 @@ class Session():
         self.OnSessionInit.fire(self)
         if filename:
             self.read()
+
+    def main(self):
+        """Main input loop."""
+        char = self.ui.getchar()
+
+        if not self.interactionstack.isempty:
+            self.interact(char)
+        elif char in self.keymap:
+            action = self.keymap[char]
+            while callable(action):
+                action = action(self)
+
+    def interact(self, char):
+        """We are in interactive mode."""
+        interaction = self.interactionstack.peek()
+
+        if char == 'Esc':
+            interaction.proceed(self)
+        else:
+            interaction.interact(self, char)
 
     def quit(self):
         """Quit session."""
