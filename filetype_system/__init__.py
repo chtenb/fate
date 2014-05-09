@@ -10,7 +10,7 @@ def detect_filetype(session):
     for extension, filetype in extension_filetype.items():
         if session.filename.endswith('.' + extension):
             session.filetype = filetype
-    session.OnFileTypeLoaded.fire()
+    session.OnFileTypeLoaded.fire(session)
 
 Session.OnFileTypeLoaded = Event()
 Session.OnSessionInit.add(detect_filetype)

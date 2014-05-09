@@ -4,6 +4,7 @@ session. Strictly speaking, an operator is a function that is decorated
 by operator, either directly or indirectly.
 """
 from .operation import Operation, InsertOperation
+from . import actions
 
 
 def delete(session, selection=None):
@@ -12,6 +13,7 @@ def delete(session, selection=None):
     new_content = ['' for _ in selection]
     operation = Operation(session, new_content, selection)
     operation(session)
+actions.delete = delete
 
 
 class Append:
@@ -26,6 +28,7 @@ class Append:
         new_content = [content + self.string for content in selection.content(session)]
         operation = Operation(session, new_content, selection)
         operation(session)
+actions.Append = Append
 
 
 class Insert:
@@ -40,6 +43,7 @@ class Insert:
         new_content = [self.string + content for content in selection.content(session)]
         operation = Operation(session, new_content, selection)
         operation(session)
+actions.Insert = Insert
 
 
 class ChangeInPlace(InsertOperation):
@@ -54,6 +58,7 @@ class ChangeInPlace(InsertOperation):
     @property
     def new_content(self):
         return [self.insertions[i] for i in range(len(self.old_content))]
+actions.ChangeInPlace = ChangeInPlace
 
 
 class ChangeBefore(InsertOperation):
@@ -71,6 +76,8 @@ class ChangeBefore(InsertOperation):
         return [self.insertions[i]
                 + self.old_content[i][self.deletions[i]:]
                 for i in range(len(self.old_content))]
+actions.ChangeBefore = ChangeBefore
+
 
 
 class ChangeAfter(InsertOperation):
@@ -88,6 +95,7 @@ class ChangeAfter(InsertOperation):
         return [self.old_content[i][:-self.deletions[i] or None]
                 + self.insertions[i]
                 for i in range(len(self.old_content))]
+actions.ChangeAfter = ChangeAfter
 
 
 class ChangeAround(InsertOperation):
@@ -115,3 +123,4 @@ class ChangeAround(InsertOperation):
                           + self.old_content[i][beg:end]
                           + second_string)
         return result
+actions.ChangeAround = ChangeAround

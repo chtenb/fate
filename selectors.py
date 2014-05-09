@@ -6,6 +6,7 @@ Furthermore we have selectors that are based on regular expressions.
 """
 from .selection import Selection, Interval
 from .modes import EXTEND_MODE, REDUCE_MODE
+from . import actions
 import re
 from functools import partial
 
@@ -14,6 +15,7 @@ class SelectEverything(Selection):
     """Select the entire text."""
     def __init__(self, session, selection=None, selection_mode=None):
         Selection.__init__(self, Interval(0, len(session.text)))
+actions.SelectEverything = SelectEverything
 
 
 class SelectSingleInterval(Selection):
@@ -21,6 +23,7 @@ class SelectSingleInterval(Selection):
     def __init__(self, session, selection=None, selection_mode=None):
         selection = selection or session.selection
         Selection.__init__(self, selection[0])
+actions.SelectSingleInterval = SelectSingleInterval
 
 
 class Empty(Selection):
@@ -29,6 +32,7 @@ class Empty(Selection):
         selection = selection or session.selection
         beg = selection[0][0]
         Selection.__init__(self, Interval(beg, beg))
+actions.Empty = Empty
 
 
 class Join(Selection):
@@ -36,6 +40,7 @@ class Join(Selection):
     def __init__(self, session, selection=None, selection_mode=None):
         selection = selection or session.selection
         Selection.__init__(self, Interval(selection[0][0], selection[-1][1]))
+actions.Join = Join
 
 
 class Complement(Selection):
@@ -43,6 +48,7 @@ class Complement(Selection):
     def __init__(self, session, selection=None, selection_mode=None):
         selection = selection or session.selection
         Selection.__init__(self, selection.complement())
+actions.Complement = Complement
 
 
 class EmptyBefore(Selection):
@@ -53,6 +59,7 @@ class EmptyBefore(Selection):
         for interval in selection:
             beg, _ = interval
             self.add(Interval(beg, beg))
+actions.EmptyBefore = EmptyBefore
 
 
 class EmptyAfter(Selection):
@@ -63,6 +70,7 @@ class EmptyAfter(Selection):
         for interval in selection:
             _, end = interval
             self.add(Interval(end, end))
+actions.EmptyAfter = EmptyAfter
 
 
 def find_pattern(text, pattern, reverse=False, group=0):
@@ -165,7 +173,7 @@ class SelectLocalPattern(Selection):
 
             self.add(new_interval)
 
-SelectIndent = partial(SelectLocalPattern, r'(?m)^([ \t]*)', reverse=True, group=1)
+actions.SelectIndent = partial(SelectLocalPattern, r'(?m)^([ \t]*)', reverse=True, group=1)
 
 
 def pattern_pair(pattern, **kwargs):
@@ -176,10 +184,10 @@ def pattern_pair(pattern, **kwargs):
     return (partial(SelectLocalPattern, pattern, **kwargs),
             partial(SelectLocalPattern, pattern, reverse=True, **kwargs))
 
-NextChar, PreviousChar = pattern_pair(r'(?s).')
-NextWord, PreviousWord = pattern_pair(r'\b\w+\b')
-NextLine, PreviousLine = pattern_pair(r'\s*([^\n]*)', group=1)
-NextFullLine, PreviousFullLine = pattern_pair(r'[^\n]*\n?')
-NextParagraph, PreviousParagraph = pattern_pair(r'(?s)((?:[^\n][\n]?)+)')
-NextWhiteSpace, PreviousWhiteSpace = pattern_pair(r'\s')
+actions.NextChar, actions.PreviousChar = pattern_pair(r'(?s).')
+actions.NextWord, actions.PreviousWord = pattern_pair(r'\b\w+\b')
+actions.NextLine, actions.PreviousLine = pattern_pair(r'\s*([^\n]*)', group=1)
+actions.NextFullLine, actions.PreviousFullLine = pattern_pair(r'[^\n]*\n?')
+actions.NextParagraph, actions.PreviousParagraph = pattern_pair(r'(?s)((?:[^\n][\n]?)+)')
+actions.NextWhiteSpace, actions.PreviousWhiteSpace = pattern_pair(r'\s')
 

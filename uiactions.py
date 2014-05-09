@@ -4,15 +4,15 @@ We shall call them ui actors.
 """
 from fate import selectors
 from .session import Session, session_list
+from . import actions
 import re
-
-# The following actions have to be converted to interactive actions or something else
 
 
 def open_session(session):
     """Open a new session."""
     filename = session.ui.prompt('Filename: ')
     Session(filename)
+actions.open_session = open_session
 
 
 def quit_session(session):
@@ -27,6 +27,7 @@ def quit_session(session):
                 break
     else:
         session.quit()
+actions.quit_session = quit_session
 
 
 def next_session(session):
@@ -35,6 +36,7 @@ def next_session(session):
     nsession = session_list[(index + 1) % len(session_list)]
     session.ui.deactivate()
     nsession.ui.activate()
+actions.next_session = next_session
 
 
 def previous_session(session):
@@ -43,16 +45,19 @@ def previous_session(session):
     nsession = session_list[(index - 1) % len(session_list)]
     session.ui.deactivate()
     nsession.ui.activate()
+actions.previous_session = previous_session
 
 
 def local_find(session):
     char = session.ui.getchar()
     selectors.SelectLocalPattern(re.escape(char), session)(session)
+actions.local_find = local_find
 
 
 def local_find_backwards(session):
     char = session.ui.getchar()
     selectors.SelectLocalPattern(re.escape(char), session, reverse=True)(session)
+actions.local_find_backwards = local_find_backwards
 
 
 def search(session):
@@ -63,21 +68,27 @@ def search(session):
         session.ui.status_win.set_status(str(e))
         session.ui.getchar()
         session.ui.status_win.set_default_status()
+actions.search = search
 
 
 def search_current_content(session):
     session.search_pattern = re.escape(session.content(session.selection)[-1])
     selectors.SelectPattern(session.search_pattern, session)(session)
+actions.search_current_content = search_current_content
 
 
 def search_next(session):
     if session.search_pattern:
         selectors.SelectPattern(session.search_pattern, session)(session)
+actions.search_next = search_next
 
 
 def search_previous(session):
     if session.search_pattern:
         selectors.SelectPattern(session.search_pattern, session, reverse=True)(session)
+actions.search_previous = search_previous
+
 
 def command_mode(session):
     session.ui.command_win.prompt()
+actions.command_mode = command_mode

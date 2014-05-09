@@ -1,5 +1,5 @@
 """A class definition the interaction stack."""
-from .action import Interactive
+from .actions import Interactive
 
 
 class InteractionStack:
