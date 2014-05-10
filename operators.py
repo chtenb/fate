@@ -110,7 +110,7 @@ class ChangeAround(InsertOperation):
 
     @property
     def new_content(self):
-        character_pairs = [('{', '}'), ('[', ']'), ('(', ')')]
+        character_pairs = [('{', '}'), ('[', ']'), ('(', ')'), ('<', '>')]
         result = []
         for i in range(len(self.old_content)):
             first_string = self.insertions[i][::-1]

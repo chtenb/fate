@@ -13,14 +13,18 @@ from .modes import EXTEND_MODE, REDUCE_MODE
 
 
 class SelectEverything(Selection):
+
     """Select the entire text."""
+
     def __init__(self, session, selection=None, selection_mode=None):
         Selection.__init__(self, Interval(0, len(session.text)))
 actions.SelectEverything = SelectEverything
 
 
 class SelectSingleInterval(Selection):
+
     """Reduce the selection to the single uppermost interval."""
+
     def __init__(self, session, selection=None, selection_mode=None):
         selection = selection or session.selection
         Selection.__init__(self, selection[0])
@@ -28,7 +32,9 @@ actions.SelectSingleInterval = SelectSingleInterval
 
 
 class Empty(Selection):
+
     """Reduce the selection to a single uppermost empty interval."""
+
     def __init__(self, session, selection=None, selection_mode=None):
         selection = selection or session.selection
         beg = selection[0][0]
@@ -37,7 +43,9 @@ actions.Empty = Empty
 
 
 class Join(Selection):
+
     """Join all intervals together."""
+
     def __init__(self, session, selection=None, selection_mode=None):
         selection = selection or session.selection
         Selection.__init__(self, Interval(selection[0][0], selection[-1][1]))
@@ -45,7 +53,9 @@ actions.Join = Join
 
 
 class Complement(Selection):
+
     """Return the complement."""
+
     def __init__(self, session, selection=None, selection_mode=None):
         selection = selection or session.selection
         Selection.__init__(self, selection.complement())
@@ -53,7 +63,9 @@ actions.Complement = Complement
 
 
 class EmptyBefore(Selection):
+
     """Return the empty interval before each interval."""
+
     def __init__(self, session, selection=None, selection_mode=None):
         Selection.__init__(self)
         selection = selection or session.selection
@@ -64,7 +76,9 @@ actions.EmptyBefore = EmptyBefore
 
 
 class EmptyAfter(Selection):
+
     """Return the empty interval after each interval."""
+
     def __init__(self, session, selection=None, selection_mode=None):
         Selection.__init__(self)
         selection = selection or session.selection
@@ -72,6 +86,31 @@ class EmptyAfter(Selection):
             _, end = interval
             self.add(Interval(end, end))
 actions.EmptyAfter = EmptyAfter
+
+
+class SelectAround(Selection):
+
+    """Select around next surrounding character pair."""
+
+    def __init__(self, session, selection=None, selection_mode=None):
+        Selection.__init__(self)
+        selection = selection or session.selection
+        character_pairs = [('{', '}'), ('[', ']'), ('(', ')'), ('<', '>'),
+                           ('\'', '\''), ('"', '"')]#, (' ', ' '), ('\n', '\n')]
+        for beg, end in selection:
+            # TODO: make this work for nested pairs as well
+            candidates = []
+            for fst, snd in character_pairs:
+                nend = session.text.find(snd, end)
+                nbeg = session.text.rfind(fst, 0, beg)
+                if nend != -1 and nbeg != -1:
+                    candidates.append(Interval(nbeg, nend + 1))
+            if candidates:
+                # Select smallest enclosing candidate
+                def length(interval):
+                    return interval.end - interval.beg
+                self.add(min(candidates, key=length))
+actions.SelectAround = SelectAround
 
 
 def find_pattern(text, pattern, reverse=False, group=0):
@@ -84,6 +123,7 @@ def find_pattern(text, pattern, reverse=False, group=0):
 
 
 class SelectPattern(Selection):
+
     def __init__(self, pattern, session, selection=None, selection_mode=None,
                  reverse=False, group=0):
         Selection.__init__(self)
@@ -131,6 +171,7 @@ class SelectPattern(Selection):
 
 
 class SelectLocalPattern(Selection):
+
     def __init__(self, pattern, session, selection=None, selection_mode=None,
                  reverse=False, group=0, only_within=False):
         Selection.__init__(self)
@@ -204,4 +245,3 @@ actions.PreviousParagraph = PreviousParagraph
 NextWhiteSpace, PreviousWhiteSpace = pattern_pair(r'\s')
 actions.NextWhiteSpace = NextWhiteSpace
 actions.PreviousWhiteSpace = PreviousWhiteSpace
-
