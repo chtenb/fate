@@ -3,8 +3,8 @@ An operator is a special type of action, that applies an operation to a
 session. Strictly speaking, an operator is a function that is decorated
 by operator, either directly or indirectly.
 """
-from .operation import Operation, InsertOperation
 from . import actions
+from .operation import Operation, InsertOperation
 
 
 def delete(session, selection=None):

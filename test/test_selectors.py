@@ -1,5 +1,4 @@
 from unittest import TestCase, main
-#import fate
 from ..session import Session
 from ..selection import Interval, Selection
 from ..selectors import SelectEverything, NextWord

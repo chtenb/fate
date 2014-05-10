@@ -4,11 +4,12 @@ We distinguish between functions that work selection-wise (global selectors)
 and function that work interval-wise (local selectors).
 Furthermore we have selectors that are based on regular expressions.
 """
-from .selection import Selection, Interval
-from .modes import EXTEND_MODE, REDUCE_MODE
-from . import actions
 import re
 from functools import partial
+
+from . import actions
+from .selection import Selection, Interval
+from .modes import EXTEND_MODE, REDUCE_MODE
 
 
 class SelectEverything(Selection):
@@ -173,7 +174,8 @@ class SelectLocalPattern(Selection):
 
             self.add(new_interval)
 
-actions.SelectIndent = partial(SelectLocalPattern, r'(?m)^([ \t]*)', reverse=True, group=1)
+SelectIndent = partial(SelectLocalPattern, r'(?m)^([ \t]*)', reverse=True, group=1)
+actions.SelectIndent = SelectIndent
 
 
 def pattern_pair(pattern, **kwargs):
@@ -184,10 +186,22 @@ def pattern_pair(pattern, **kwargs):
     return (partial(SelectLocalPattern, pattern, **kwargs),
             partial(SelectLocalPattern, pattern, reverse=True, **kwargs))
 
-actions.NextChar, actions.PreviousChar = pattern_pair(r'(?s).')
-actions.NextWord, actions.PreviousWord = pattern_pair(r'\b\w+\b')
-actions.NextLine, actions.PreviousLine = pattern_pair(r'\s*([^\n]*)', group=1)
-actions.NextFullLine, actions.PreviousFullLine = pattern_pair(r'[^\n]*\n?')
-actions.NextParagraph, actions.PreviousParagraph = pattern_pair(r'(?s)((?:[^\n][\n]?)+)')
-actions.NextWhiteSpace, actions.PreviousWhiteSpace = pattern_pair(r'\s')
+NextChar, PreviousChar = pattern_pair(r'(?s).')
+actions.NextChar = NextChar
+actions.PreviousChar = PreviousChar
+NextWord, PreviousWord = pattern_pair(r'\b\w+\b')
+actions.NextWord = NextWord
+actions.PreviousWord = PreviousWord
+NextLine, PreviousLine = pattern_pair(r'\s*([^\n]*)', group=1)
+actions.NextLine = NextLine
+actions.PreviousLine = PreviousLine
+NextFullLine, PreviousFullLine = pattern_pair(r'[^\n]*\n?')
+actions.NextFullLine = NextFullLine
+actions.PreviousFullLine = PreviousFullLine
+NextParagraph, PreviousParagraph = pattern_pair(r'(?s)((?:[^\n][\n]?)+)')
+actions.NextParagraph = NextParagraph
+actions.PreviousParagraph = PreviousParagraph
+NextWhiteSpace, PreviousWhiteSpace = pattern_pair(r'\s')
+actions.NextWhiteSpace = NextWhiteSpace
+actions.PreviousWhiteSpace = PreviousWhiteSpace
 

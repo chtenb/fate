@@ -10,6 +10,7 @@ and put those modifications where he wants.
 For this to work, the clipboard must be usable cross-history.
 """
 from .operation import Operation
+from . import actions
 
 
 class Clipboard:
@@ -40,6 +41,7 @@ class Clipboard:
 def copy(session):
     """Copy current selected content to clipboard."""
     session.clipboard.push(session.selection.content(session))
+actions.copy = copy
 
 
 def paste(session, before):
@@ -65,14 +67,17 @@ def paste_before(session):
     """Paste clipboard before current selection."""
     operation = Operation(session, paste(session, before=True))
     operation(session)
+actions.paste_before = paste_before
 
 
 def paste_after(session):
     """Paste clipboard after current selection."""
     operation = Operation(session, paste(session, before=False))
     operation(session)
+actions.paste_after = paste_after
 
 
 def clear(session):
     """Throw away the value on top of the clipboard stack."""
     session.clipboard.pop()
+actions.clear = clear

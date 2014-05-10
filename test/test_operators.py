@@ -2,7 +2,7 @@ from unittest import TestCase, main
 from ..session import Session
 from ..selectors import NextWord
 from ..operators import Insert, ChangeAround
-from ..actors import undo
+from ..actions import undo
 
 TEXT = """\
 import sys

@@ -2,10 +2,11 @@
 This module contains functions which act on the user interface.
 We shall call them ui actors.
 """
-from fate import selectors
+import re
+
 from .session import Session, session_list
 from . import actions
-import re
+from .selectors import SelectPattern, SelectLocalPattern
 
 
 def open_session(session):
@@ -50,20 +51,20 @@ actions.previous_session = previous_session
 
 def local_find(session):
     char = session.ui.getchar()
-    selectors.SelectLocalPattern(re.escape(char), session)(session)
+    SelectLocalPattern(re.escape(char), session)(session)
 actions.local_find = local_find
 
 
 def local_find_backwards(session):
     char = session.ui.getchar()
-    selectors.SelectLocalPattern(re.escape(char), session, reverse=True)(session)
+    SelectLocalPattern(re.escape(char), session, reverse=True)(session)
 actions.local_find_backwards = local_find_backwards
 
 
 def search(session):
     session.search_pattern = session.ui.prompt('/')
     try:
-        selectors.SelectPattern(session.search_pattern, session)(session)
+        SelectPattern(session.search_pattern, session)(session)
     except re.error as e:
         session.ui.status_win.set_status(str(e))
         session.ui.getchar()
@@ -73,19 +74,19 @@ actions.search = search
 
 def search_current_content(session):
     session.search_pattern = re.escape(session.content(session.selection)[-1])
-    selectors.SelectPattern(session.search_pattern, session)(session)
+    SelectPattern(session.search_pattern, session)(session)
 actions.search_current_content = search_current_content
 
 
 def search_next(session):
     if session.search_pattern:
-        selectors.SelectPattern(session.search_pattern, session)(session)
+        SelectPattern(session.search_pattern, session)(session)
 actions.search_next = search_next
 
 
 def search_previous(session):
     if session.search_pattern:
-        selectors.SelectPattern(session.search_pattern, session, reverse=True)(session)
+        SelectPattern(session.search_pattern, session, reverse=True)(session)
 actions.search_previous = search_previous
 
 

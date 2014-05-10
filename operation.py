@@ -1,8 +1,8 @@
 """This module defines the class Operation."""
-from .selection import Selection, Interval
-from . import selectors
-from .actions import Undoable, Interactive, SelectIndent
 from . import modes
+from .actiontools import Undoable, Interactive
+from .selection import Selection, Interval
+from .selectors import SelectIndent
 
 
 class Operation(Undoable):

@@ -16,6 +16,9 @@ logging.basicConfig(filename=LOGFILENAME,
 
 logging.info('Starting fate.')
 
+# Load modules exposing actions
+from . import actions, selectors, operators, clipboard, compoundactions, uiactions, modes
+
 # Load standard plugins
 from . import filetype_system
 from . import labeling_system

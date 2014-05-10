@@ -1,7 +1,7 @@
 from unittest import TestCase, main
 from ..session import Session
 from ..selectors import NextWord
-from ..actors import undo
+from ..actions import undo
 from ..clipboard import copy, paste_before
 
 TEXT = """\
