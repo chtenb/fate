@@ -87,29 +87,91 @@ class EmptyAfter(Selection):
             self.add(Interval(end, end))
 actions.EmptyAfter = EmptyAfter
 
+def find_matching_pair(string, pos, fst, snd):
+    """Find matching pair of characters fst and snd w.r.t. position pos."""
+    level = 0
+    i = pos
+    beg = None
+    while i >= 0:
+        if string[i] == fst:
+            if level > 0:
+                level -= 1
+            else:
+                beg = i
+        if string[i] == snd:
+            level += 1
+        i -= 1
 
-class SelectAround(Selection):
+    level = 0
+    i = pos
+    end = None
+    while i < len(string):
+        if string[i] == snd:
+            if level > 0:
+                level -= 1
+            else:
+                end = i + 1
+        if string[i] == fst:
+            level += 1
+        i += 1
 
-    """Select around next surrounding character pair."""
+    if beg != None and end != None:
+        return Interval(beg, end)
 
-    def __init__(self, session, selection=None, selection_mode=None):
-        Selection.__init__(self)
-        selection = selection or session.selection
-        character_pairs = [('{', '}'), ('[', ']'), ('(', ')'), ('<', '>'),
-                           ('\'', '\''), ('"', '"')]#, (' ', ' '), ('\n', '\n')]
-        for beg, end in selection:
-            # TODO: make this work for nested pairs as well
-            candidates = []
-            for fst, snd in character_pairs:
-                nend = session.text.find(snd, end)
-                nbeg = session.text.rfind(fst, 0, beg)
-                if nend != -1 and nbeg != -1:
-                    candidates.append(Interval(nbeg, nend + 1))
-            if candidates:
-                # Select smallest enclosing candidate
-                def length(interval):
-                    return interval.end - interval.beg
-                self.add(min(candidates, key=length))
+def interval_length(interval):
+    return interval.end - interval.beg
+
+def avg_interval_length(selection):
+    return sum(end - beg for beg, end in selection) / len(selection)
+
+def SelectAroundChar(session, char=None, selection=None):
+    """
+    Select around given character. If not character given, get it from user.
+    Return None if not all intervals are surrounded.
+    """
+    selection = selection or session.selection
+    char = char or session.ui.getchar()
+    result = Selection()
+
+    # Check if we should check for a matching pair
+    character_pairs = [('{', '}'), ('[', ']'), ('(', ')'), ('<', '>')]
+    for fst, snd in character_pairs:
+        if char == fst or char == snd:
+            # For each interval find the smallest surrounding pair
+            for beg, end in selection:
+                match1 = find_matching_pair(session.text, beg, fst, snd)
+                match2 = find_matching_pair(session.text, end, fst, snd)
+                if match1 == None or match2 == None:
+                    return None
+                else:
+                    match = max([match1, match2], key=interval_length)
+                    result.add(match)
+            return result
+
+
+    # If not, we simple find the first surrounding occurances
+    for beg, end in selection:
+        nend = session.text.find(char, end)
+        nbeg = session.text.rfind(char, 0, beg)
+        if nend != -1 and nbeg != -1:
+            result.add(Interval(nbeg, nend + 1))
+        else:
+            return None
+    return result
+actions.SelectAroundChar = SelectAroundChar
+
+def SelectAround(session, selection=None):
+    """Select around common surrounding character pair."""
+    selection = selection or session.selection
+    default_chars = ['{', '[', '(', '<', '\'', '"']
+    candidates = []
+    for char in default_chars:
+        candidate = SelectAroundChar(session, char, selection)
+        if candidate != None:
+            candidates.append(candidate)
+    if candidates:
+        # Select smallest enclosing candidate
+        return min(candidates, key=avg_interval_length)
 actions.SelectAround = SelectAround
 
 
