@@ -7,6 +7,24 @@ from . import actions
 from .operation import Operation, InsertOperation
 
 
+def uppercase(session, selection=None):
+    """Delete content."""
+    selection = selection or session.selection
+    new_content = [s.upper() for s in selection.content(session)]
+    operation = Operation(session, new_content, selection)
+    operation(session)
+actions.uppercase = uppercase
+
+
+def lowercase(session, selection=None):
+    """Lowercase content."""
+    selection = selection or session.selection
+    new_content = [s.lower() for s in selection.content(session)]
+    operation = Operation(session, new_content, selection)
+    operation(session)
+actions.lowercase = lowercase
+
+
 def delete(session, selection=None):
     """Delete content."""
     selection = selection or session.selection
@@ -77,7 +95,6 @@ class ChangeBefore(InsertOperation):
                 + self.old_content[i][self.deletions[i]:]
                 for i in range(len(self.old_content))]
 actions.ChangeBefore = ChangeBefore
-
 
 
 class ChangeAfter(InsertOperation):

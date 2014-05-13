@@ -221,7 +221,7 @@ class Selection:
 
         result = []
         for i in range(1, len(positions)):
-            interval = positions[i - 1], positions[i]
+            interval = Interval(positions[i - 1], positions[i])
             result.append((in_selection, interval))
             in_selection = not in_selection
         return result

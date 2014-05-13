@@ -58,7 +58,7 @@ class Complement(Selection):
 
     def __init__(self, session, selection=None, selection_mode=None):
         selection = selection or session.selection
-        Selection.__init__(self, selection.complement())
+        Selection.__init__(self, selection.complement(session))
 actions.Complement = Complement
 
 
@@ -86,6 +86,7 @@ class EmptyAfter(Selection):
             _, end = interval
             self.add(Interval(end, end))
 actions.EmptyAfter = EmptyAfter
+
 
 def find_matching_pair(string, pos, fst, snd):
     """Find matching pair of characters fst and snd w.r.t. position pos."""
@@ -118,15 +119,40 @@ def find_matching_pair(string, pos, fst, snd):
     if beg != None and end != None:
         return Interval(beg, end)
 
+
 def interval_length(interval):
     return interval.end - interval.beg
+
 
 def avg_interval_length(selection):
     return sum(end - beg for beg, end in selection) / len(selection)
 
+
+def select_around_interval(string, beg, end, fst, snd):
+    match1 = find_matching_pair(string, beg, fst, snd)
+    match2 = find_matching_pair(string, max(0, end - 1), fst, snd)
+    if match1 == None or match2 == None:
+        return None
+    nbeg, nend = max([match1, match2], key=interval_length)
+
+    # If interval remains the same try selecting one level higher
+    if (beg, end) == (nbeg, nend):
+        if beg > 0:
+            return select_around_interval(string, beg - 1, end, fst, snd)
+        elif end < len(string):
+            return select_around_interval(string, beg, end + 1, fst, snd)
+
+    # Decide whether to select exclusive or remain inclusive
+    if beg > nbeg + 1 or end < nend - 1:
+        # Select exclusive
+        nbeg += 1
+        nend -= 1
+    return Interval(nbeg, nend)
+
+
 def SelectAroundChar(session, char=None, selection=None):
     """
-    Select around given character. If not character given, get it from user.
+    Select around given character. If no character given, get it from user.
     Return None if not all intervals are surrounded.
     """
     selection = selection or session.selection
@@ -139,26 +165,23 @@ def SelectAroundChar(session, char=None, selection=None):
         if char == fst or char == snd:
             # For each interval find the smallest surrounding pair
             for beg, end in selection:
-                match1 = find_matching_pair(session.text, beg, fst, snd)
-                match2 = find_matching_pair(session.text, end, fst, snd)
-                if match1 == None or match2 == None:
-                    return None
-                else:
-                    match = max([match1, match2], key=interval_length)
-                    result.add(match)
+                match = select_around_interval(session.text, beg, end, fst, snd)
+                if match == None:
+                    return
+                result.add(match)
             return result
-
 
     # If not, we simple find the first surrounding occurances
     for beg, end in selection:
         nend = session.text.find(char, end)
         nbeg = session.text.rfind(char, 0, beg)
         if nend != -1 and nbeg != -1:
-            result.add(Interval(nbeg, nend + 1))
+            result.add(Interval(nbeg - 1, nend))
         else:
             return None
     return result
 actions.SelectAroundChar = SelectAroundChar
+
 
 def SelectAround(session, selection=None):
     """Select around common surrounding character pair."""
