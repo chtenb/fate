@@ -182,11 +182,11 @@ class Selection:
 
     def __sub__(self, obj):
         """
-        Return the selection obtained by adding obj to self.
+        Return the selection obtained by substracting obj to self.
         obj can be an interval or a sequence of intervals.
         """
         result = Selection()
-        result.substract(self)
+        result.add(self)
         result.substract(obj)
         return result
 

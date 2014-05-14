@@ -330,3 +330,30 @@ actions.PreviousParagraph = PreviousParagraph
 NextWhiteSpace, PreviousWhiteSpace = pattern_pair(r'\s')
 actions.NextWhiteSpace = NextWhiteSpace
 actions.PreviousWhiteSpace = PreviousWhiteSpace
+
+
+def lock_selection(session):
+    """Lock current selection."""
+    if session.locked_selection == None:
+        session.locked_selection = Selection()
+    session.locked_selection += session.selection
+    assert not session.locked_selection.isempty
+actions.lock = lock_selection
+
+
+def unlock_selection(session):
+    """Remove current selection from locked selection."""
+    locked = session.lock_selection
+    if locked != None:
+        nselection = locked - session.selection
+        if not nselection.isempty:
+            session.locked_selection = nselection
+    assert not session.locked_selection.isempty
+actions.unlock = unlock_selection
+
+
+def release_locked_selection(session):
+    """Release locked selection."""
+    session.selection = session.locked_selection
+    session.locked_selection = None
+actions.release = release_locked_selection

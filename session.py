@@ -35,6 +35,7 @@ class Session():
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
+        self.locked_selection = None
         self.ui = None
 
         # Load the default key map
