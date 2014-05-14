@@ -1,9 +1,8 @@
 from unittest import TestCase, main
-from ..session import Session
 from .. import actions
-from .randomuserinterface import RandomUserInterface
+from . import randomized_userinterface
+from ..session import Session
 from random import choice
-from logging import debug
 
 TEXT = """\
 import sys
@@ -20,10 +19,9 @@ class Foo(Bar):
 
 action_names = list(vars(actions).keys())
 
-class RandomTest(TestCase):
+class RandomizedActionTest(TestCase):
     def setUp(self):
-        ui = RandomUserInterface()
-        self.session = ui.session
+        self.session = Session()
         self.session.text = TEXT
 
     def get_random_action(self):

@@ -34,7 +34,6 @@ def next_session(session):
     """Go to the next session."""
     index = session_list.index(session)
     nsession = session_list[(index + 1) % len(session_list)]
-    session.ui.deactivate()
     nsession.ui.activate()
 actions.next_session = next_session
 
@@ -43,7 +42,6 @@ def previous_session(session):
     """Go to the previous session."""
     index = session_list.index(session)
     nsession = session_list[(index - 1) % len(session_list)]
-    session.ui.deactivate()
     nsession.ui.activate()
 actions.previous_session = previous_session
 
@@ -90,5 +88,5 @@ actions.search_previous = search_previous
 
 
 def command_mode(session):
-    session.ui.command_win.prompt()
+    session.ui.command_mode()
 actions.command_mode = command_mode
