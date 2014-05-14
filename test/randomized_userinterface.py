@@ -22,6 +22,9 @@ class RandomizedUserInterface(UserInterface):
     def command_mode(self):
         pass
 
+    def notify(self, message):
+        pass
+
     def prompt(self, prompt_string='>'):
         length = random.randint(1, 5)
         return ''.join(self.getchar() for i in range(length))

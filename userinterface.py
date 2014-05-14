@@ -13,6 +13,9 @@ class UserInterface:
         self.session.ui = self
         self.session.OnQuit.add(self.quit)
 
+    def notify(self, message):
+        raise NotImplementedError("An abstract method is not callable.")
+
     def quit(self):
         raise NotImplementedError("An abstract method is not callable.")
 

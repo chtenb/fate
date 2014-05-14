@@ -63,9 +63,7 @@ def search(session):
     try:
         SelectPattern(session.search_pattern, session)(session)
     except re.error as e:
-        session.ui.status_win.set_status(str(e))
-        session.ui.getchar()
-        session.ui.status_win.set_default_status()
+        session.ui.notify(str(e))
 actions.search = search
 
 

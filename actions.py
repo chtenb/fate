@@ -16,8 +16,6 @@ A special type of action constructors are those that require a session as argume
 Let us call these 'actors'.
 """
 
-from .actiontools import Interactive
-
 # TODO: decide upon naming convention for actions
 # Action constructors: CamelCase
 # Actions: camelcase or camel_case
@@ -33,13 +31,3 @@ def redo(session):
     """Redo last undo."""
     session.undotree.redo()
 
-
-class Pause(Interactive):
-
-    """Don't do anything, until we proceed."""
-
-    def __init__(self, session):
-        pass
-
-    def interact(self, session, string):
-        pass

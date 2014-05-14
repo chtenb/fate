@@ -33,6 +33,8 @@ def delete(session, selection=None):
     operation(session)
 actions.delete = delete
 
+# The following two classes are action constructors
+
 
 class Append:
 
@@ -46,7 +48,6 @@ class Append:
         new_content = [content + self.string for content in selection.content(session)]
         operation = Operation(session, new_content, selection)
         operation(session)
-actions.Append = Append
 
 
 class Insert:
@@ -61,7 +62,6 @@ class Insert:
         new_content = [self.string + content for content in selection.content(session)]
         operation = Operation(session, new_content, selection)
         operation(session)
-actions.Insert = Insert
 
 
 class ChangeInPlace(InsertOperation):

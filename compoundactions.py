@@ -2,12 +2,20 @@
 
 from . import modes
 from . import actions
-from .actiontools import Compose
+from .actiontools import Compose, Interactive
 from .selectors import (Empty, EmptyBefore, PreviousFullLine,
                         SelectIndent, NextFullLine, NextChar, PreviousChar)
 from .operators import (Append, ChangeAfter, Insert, ChangeInPlace, delete)
 from .clipboard import copy, clear, paste_before
 
+
+class Pause(Interactive):
+    """Don't do anything, until we proceed."""
+    def __init__(self, session):
+        pass
+
+    def interact(self, session, string):
+        pass
 
 def escape(session):
     """Escape"""

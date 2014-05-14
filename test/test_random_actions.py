@@ -3,6 +3,7 @@ from .. import actions
 from . import randomized_userinterface
 from ..session import Session
 from random import choice
+from ..command import publics, call_action
 
 TEXT = """\
 import sys
@@ -17,7 +18,8 @@ class Foo(Bar):
         return 1
 """
 
-action_names = list(vars(actions).keys())
+action_dict = publics(actions)
+action_names = list(action_dict.keys())
 
 class RandomizedActionTest(TestCase):
     def setUp(self):
@@ -25,15 +27,17 @@ class RandomizedActionTest(TestCase):
         self.session.text = TEXT
 
     def get_random_action(self):
-        name = choice(action_names)
+        while 1:
+            name = choice(action_names)
+            if name != 'quit_session':
+                break
         print('Executing ' + name)
-        return vars(actions)[name]
+        return action_dict[name]
 
     def test_actions(self):
         for _ in range(100):
-            result = self.get_random_action()
-            while callable(result):
-                result = result(self.session)
+            action = self.get_random_action()
+            call_action(action, self.session)
 
 if __name__ == '__main__':
     main()
