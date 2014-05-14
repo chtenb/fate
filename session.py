@@ -45,6 +45,7 @@ class Session():
         self.OnSessionInit.fire(self)
         if filename:
             self.read()
+        logging.critical('No userinterface loaded.')
 
     def main(self):
         """Main input loop."""

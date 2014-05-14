@@ -19,12 +19,11 @@ actions.open_session = open_session
 def quit_session(session):
     """Close current session."""
     if not session.saved:
-        session.ui.status_win.draw_status('Unsaved changes! Really quit? (y/n)')
         while 1:
-            char = session.ui.getchar()
-            if char == 'y':
+            answer = session.ui.prompt('Unsaved changes! Really quit? (y/n)')
+            if answer == 'y':
                 session.quit()
-            if char == 'n':
+            if answer == 'n':
                 break
     else:
         session.quit()
@@ -73,7 +72,7 @@ actions.search = search
 
 
 def search_current_content(session):
-    session.search_pattern = re.escape(session.content(session.selection)[-1])
+    session.search_pattern = re.escape(session.selection.content(session)[-1])
     SelectPattern(session.search_pattern, session)(session)
 actions.search_current_content = search_current_content
 

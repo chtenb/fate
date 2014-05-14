@@ -1,6 +1,7 @@
 from unittest import TestCase, main
 from ..session import Session
 from .. import actions
+from .randomuserinterface import RandomUserInterface
 from random import choice
 from logging import debug
 
@@ -21,12 +22,13 @@ action_names = list(vars(actions).keys())
 
 class RandomTest(TestCase):
     def setUp(self):
-        self.session = Session()
+        ui = RandomUserInterface()
+        self.session = ui.session
         self.session.text = TEXT
 
     def get_random_action(self):
         name = choice(action_names)
-        debug(name)
+        print('Executing ' + name)
         return vars(actions)[name]
 
     def test_actions(self):
