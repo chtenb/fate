@@ -65,6 +65,21 @@ class Insert:
 
 
 class ChangeInPlace(InsertOperation):
+    def __call__(self, session):
+        InsertOperation.__call__(self, session)
+        while 1:
+            session.ui.touch()
+            char = session.ui.getchar()
+            if char == 'Esc':
+                break
+            self.insert(session, char)
+
+    @property
+    def new_content(self):
+        return [self.insertions[i] for i in range(len(self.old_content))]
+
+
+class ChangeInPlaceOld(InsertOperation):
 
     """
     Interactive Operation which adds `insertions` in place of each interval.

@@ -86,7 +86,7 @@ class Operation(Undoable):
         self.do(session, inverse=True)
 
 
-class InsertOperation(Operation, Interactive):
+class InsertOperation(Operation):
 
     """Abstract class for operations dealing with insertion of text."""
 
@@ -96,11 +96,11 @@ class InsertOperation(Operation, Interactive):
         self.insertions = ['' for _ in selection]
         self.deletions = [0 for _ in selection]
 
-    def __call__(self, session):
-        Interactive.__call__(self, session)
-        Operation.__call__(self, session)
+    #def __call__(self, session):
+        #Operation.__call__(self, session)
+        #Interactive.__call__(self, session)
 
-    def interact(self, session, string):
+    def insert(self, session, string):
         """
         Insert a string (typically a char) in the operation.
         By only autoindenting on a single \n, we potentially allow proper pasting.

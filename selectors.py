@@ -343,7 +343,7 @@ actions.lock = lock_selection
 
 def unlock_selection(session):
     """Remove current selection from locked selection."""
-    locked = session.lock_selection
+    locked = session.locked_selection
     if locked != None:
         nselection = locked - session.selection
         if not nselection.isempty:
