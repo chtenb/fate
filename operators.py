@@ -64,6 +64,7 @@ class Insert:
         operation(session)
 
 
+# TODO Improve this refactoring
 class ChangeInPlace(InsertOperation):
     def __call__(self, session):
         InsertOperation.__call__(self, session)
