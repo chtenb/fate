@@ -66,15 +66,6 @@ class Insert:
 
 # TODO Improve this refactoring
 class ChangeInPlace(InsertOperation):
-    def __call__(self, session):
-        InsertOperation.__call__(self, session)
-        while 1:
-            session.ui.touch()
-            char = session.ui.getchar()
-            if char == 'Esc':
-                break
-            self.insert(session, char)
-
     @property
     def new_content(self):
         return [self.insertions[i] for i in range(len(self.old_content))]
@@ -101,10 +92,6 @@ class ChangeBefore(InsertOperation):
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
-
-    def __init__(self, session):
-        InsertOperation.__init__(self, session)
-
     @property
     def new_content(self):
         return [self.insertions[i]
@@ -119,10 +106,6 @@ class ChangeAfter(InsertOperation):
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
-
-    def __init__(self, session):
-        InsertOperation.__init__(self, session)
-
     @property
     def new_content(self):
         return [self.old_content[i][:-self.deletions[i] or None]
@@ -137,10 +120,6 @@ class ChangeAround(InsertOperation):
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
-
-    def __init__(self, session):
-        InsertOperation.__init__(self, session)
-
     @property
     def new_content(self):
         character_pairs = [('{', '}'), ('[', ']'), ('(', ')'), ('<', '>')]

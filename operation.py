@@ -96,9 +96,14 @@ class InsertOperation(Operation):
         self.insertions = ['' for _ in selection]
         self.deletions = [0 for _ in selection]
 
-    #def __call__(self, session):
-        #Operation.__call__(self, session)
-        #Interactive.__call__(self, session)
+    def __call__(self, session):
+        Operation.__call__(self, session)
+        while 1:
+            session.ui.touch()
+            char = session.ui.getchar()
+            if char == 'Esc':
+                break
+            self.insert(session, char)
 
     def insert(self, session, string):
         """
