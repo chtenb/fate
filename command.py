@@ -58,10 +58,10 @@ def evaluate(session, command):
     except Exception as e:
         return command + ' : ' + str(e)
     else:
-        call_action(result, session)
+        return call_action(result, session)
 
-def call_action(action, session):
-    """Call action recursively while callable."""
-    while callable(action):
-        action = action(session)
-    return action
+def call_action(obj, session):
+    """Call obj as an action recursively while callable."""
+    while callable(obj):
+        obj = obj(session)
+    return obj
