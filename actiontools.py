@@ -31,50 +31,7 @@ class Undoable:
         raise NotImplementedError("An abstract method is not callable.")
 
 
-class Interactive:
-
-    """
-    Can we also make actions which are incrementally constructed by the
-    user while getting feedback, like an insertion operation?
-    We introduce the class Interactive for this.
-    We can interact with an interactive action by
-    calling the interact method on it.
-    Thus, essentially an interaction is somewhat like a Vim mode.
-
-    More generally speaking, we want to be able to interact with
-    a general action, that is not necessarily undoable.
-    So we need to think about how to implement interaction in the most general way.
-    To know which action are currently wating for interaction, we introduce
-    an interaction stack with the top action being the current active one.
-    This way we can nest interactions.
-
-    If we then finish an interaction, we can pop it from the stack and be dropped
-    into the parent interaction.
-    The finished flag is used to indicate that we finished updating the action.
-    This is needed for a possible container action to know which subaction the
-    update information should currectly be redirected to.
-    """
-    # TODO: think about how interactions can have their own keymap
-
-    finished = False
-
-    def __call__(self, session):
-        """Push ourselves on the interactionstack."""
-        session.interactionstack.push(self)
-
-    def interact(self, session, string):
-        """Interact with this action."""
-        raise NotImplementedError("An abstract method is not callable.")
-
-    def proceed(self, session):
-        """Proceed by finishing ourselves."""
-        self.finished = True
-        parent = session.interactionstack.backtrack()
-        if parent:
-            parent.proceed(session)
-
-
-class Compound(Interactive):
+class Compound:
 
     """
     This class can be used to compose multiple possibly interactive or undoable
@@ -102,15 +59,12 @@ class Compound(Interactive):
         Execute subactions, gathering undoable actions into a CompoundUndoable
         action, until first non finished subaction is encountered.
         """
-        Interactive.__call__(self, session)
         # TODO: allow nested compositions
 
         # We call start and end methods of the undotree, indicating the
         # start and end of a sequence of undoables.
         session.undotree.start_sequence()
-        self.proceed(session)
 
-    def proceed(self, session):
         while self.todo:
             # We allow actions as well as actors to be composed
             subaction = self.todo.popleft()
@@ -120,11 +74,7 @@ class Compound(Interactive):
                     break
                 subaction = result
 
-            if isinstance(subaction, Interactive) and not subaction.finished:
-                # Stop here, this subaction needs interaction
-                return
         session.undotree.end_sequence()
-        Interactive.proceed(self, session)
 
 
 def Compose(*subactions, name='', docs=''):

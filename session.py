@@ -3,7 +3,6 @@ from .event import Event
 from .selection import Selection, Interval
 from .clipboard import Clipboard
 from .undotree import UndoTree
-from .interactionstack import InteractionStack
 from . import modes
 
 import logging
@@ -31,7 +30,6 @@ class Session():
 
         self.clipboard = Clipboard()
         self.undotree = UndoTree(self)
-        self.interactionstack = InteractionStack()
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
@@ -46,27 +44,20 @@ class Session():
         self.OnSessionInit.fire(self)
         if filename:
             self.read()
-        logging.critical('No userinterface loaded.')
+
+        if self.ui == None:
+            logging.critical('No userinterface loaded.')
 
     def main(self):
         """Main input loop."""
         char = self.ui.getchar()
 
-        if not self.interactionstack.isempty:
-            self.interact(char)
-        elif char in self.keymap:
+        if char in self.keymap:
             action = self.keymap[char]
             while callable(action):
                 action = action(self)
 
-    def interact(self, char):
-        """We are in interactive mode."""
-        interaction = self.interactionstack.peek()
-
-        if char == 'Esc':
-            interaction.proceed(self)
-        else:
-            interaction.interact(self, char)
+        self.ui.touch()
 
     def quit(self):
         """Quit session."""
