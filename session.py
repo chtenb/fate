@@ -48,17 +48,6 @@ class Session():
         if self.ui == None:
             logging.critical('No userinterface loaded.')
 
-    def main(self):
-        """Main input loop."""
-        char = self.ui.getchar()
-
-        if char in self.keymap:
-            action = self.keymap[char]
-            while callable(action):
-                action = action(self)
-
-        self.ui.touch()
-
     def quit(self):
         """Quit session."""
         logging.info('Quitting session.' + str(self))
