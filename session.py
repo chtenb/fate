@@ -50,7 +50,7 @@ class Session():
 
     def quit(self):
         """Quit session."""
-        logging.info('Quitting session.' + str(self))
+        logging.info('Quitting session ' + str(self))
         self.OnQuit.fire(self)
         session_list.remove(self)
         if not session_list:
