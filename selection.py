@@ -178,7 +178,8 @@ class Selection:
                 if beg < nend < end:
                     result.append(Interval(nend, end))
 
-        self._intervals = result
+        if result:
+            self._intervals = result
 
     def __sub__(self, obj):
         """

@@ -110,7 +110,17 @@ class InsertOperation(Operation):
         Insert a string (typically a char) in the operation.
         By only autoindenting on a single \n, we potentially allow proper pasting.
         """
-        indent = SelectIndent(session, self.new_selection)
+        self.new_selection = self.compute_new_selection()
+
+        # Very ugly way to get a indent string for each interval in the selection
+        indent = [SelectIndent(session, Selection([interval])).content(session)[0]
+                for interval in self.new_selection]
+
+        assert (len(self.new_selection)
+                == len(indent)
+                == len(self.insertions)
+                == len(self.deletions))
+
         for i in range(len(self.new_selection)):
             if string == '\b':
                 # TODO remove multiple whitespaces if possible
@@ -121,7 +131,7 @@ class InsertOperation(Operation):
                     self.deletions[i] += 1
             elif string == '\n':
                 # add indent after \n
-                self.insertions[i] += string + indent.content(session)[i]
+                self.insertions[i] += string + indent[i]
             elif string == '\t' and session.expandtab:
                 self.insertions[i] += ' ' * session.tabwidth
             else:

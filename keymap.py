@@ -36,6 +36,7 @@ default = {
     'm': selectors.Join,
     'z': selectors.Complement,
     'A': selectors.SelectEverything,
+    'I': selectors.SelectIndent,
     'v': selectors.lock_selection,
     'V': selectors.unlock_selection,
     'R': selectors.release_locked_selection,

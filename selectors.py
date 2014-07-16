@@ -293,9 +293,9 @@ class SelectLocalPattern(Selection):
                     if new_interval and new_interval != interval:
                         break
 
-            # If the result invalid or the same as old interval, we return None
-            if not new_interval or new_interval == interval:
-                self._intervals = None
+            # If the result invalid, return original selection
+            if not new_interval:
+                self._intervals = selection._intervals
                 return
 
             self.add(new_interval)
@@ -348,12 +348,13 @@ def unlock_selection(session):
         nselection = locked - session.selection
         if not nselection.isempty:
             session.locked_selection = nselection
-    assert not session.locked_selection.isempty
+        assert not session.locked_selection.isempty
 actions.unlock = unlock_selection
 
 
 def release_locked_selection(session):
     """Release locked selection."""
-    session.selection = session.locked_selection
-    session.locked_selection = None
+    if session.locked_selection != None:
+        session.selection = session.locked_selection
+        session.locked_selection = None
 actions.release = release_locked_selection

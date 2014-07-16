@@ -1,9 +1,11 @@
 from unittest import TestCase, main
 from .. import actions
-from . import randomized_userinterface
 from ..session import Session
 from random import choice
 from ..command import publics, call_action
+
+# importing RandomizedUserInterface will take care of creating a userinterface
+from . import randomized_userinterface
 
 TEXT = """\
 import sys
@@ -31,13 +33,16 @@ class RandomizedActionTest(TestCase):
             name = choice(action_names)
             if name != 'quit_session':
                 break
-        print('Executing ' + name)
-        return action_dict[name]
+        return name, action_dict[name]
 
     def test_actions(self):
-        for _ in range(100):
-            action = self.get_random_action()
-            call_action(action, self.session)
-
+        for run in range(10):
+            print('Run ' + str(run + 1))
+            for i in range(100):
+                name, action = self.get_random_action()
+                print(str(i + 1) + ': executing ' + name)
+                call_action(action, self.session)
+            print('Result: ')
+            print(self.session.text)
 if __name__ == '__main__':
     main()
