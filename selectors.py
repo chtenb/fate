@@ -3,6 +3,10 @@ This module contains all kinds of actions and actors related to make selections.
 We distinguish between functions that work selection-wise (global selectors)
 and function that work interval-wise (local selectors).
 Furthermore we have selectors that are based on regular expressions.
+
+Selectors may return None, in which case the session should not be affected.
+Selectors may also return a result which is identical to the previous selection.
+The code that executes the action may want to check if this is the case, before applying.
 """
 import re
 from functools import partial

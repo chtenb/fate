@@ -1,3 +1,11 @@
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('-r', '--rerun', help='rerun the latest test batch',
+        action='store_true')
+args = parser.parse_args()
+
+RERUN = args.rerun
+
 import os
 import sys
 from unittest import defaultTestLoader as loader, TextTestRunner

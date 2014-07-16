@@ -5,11 +5,11 @@ This makes sure that all code that depends on these won't have to import them ma
 from os.path import expanduser
 from sys import path
 from importlib import find_loader
-import logging
-import tempfile
+from tempfile import gettempdir
 from queue import Queue
+import logging
 from logging.handlers import QueueHandler, QueueListener
-from logging import FileHandler
+from logging import FileHandler, info
 
 # We provide internal access to the logs through a queue
 # To be accessed by a QueueListener
@@ -17,7 +17,7 @@ LOG_QUEUE = Queue()
 queue_handler = QueueHandler(LOG_QUEUE)
 
 # We provide external access to the logs through a logfile
-LOG_FILENAME = tempfile.gettempdir() + '/fate.log'
+LOG_FILENAME = gettempdir() + '/fate.log'
 file_handler = FileHandler(LOG_FILENAME)
 
 logging.basicConfig(level=logging.DEBUG,
@@ -26,7 +26,7 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt='%H:%M:%S')
 
 
-logging.info('Starting fate.')
+info('Starting fate.')
 
 # Load modules exposing actions, to make sure the actions module contains all actions
 from . import actions, selectors, operators, clipboard, compoundactions, uiactions, modes
@@ -35,7 +35,7 @@ from . import actions, selectors, operators, clipboard, compoundactions, uiactio
 from . import filetype_system
 from . import labeling_system
 
-logging.info('All standard plugins are loaded.')
+info('All standard plugins are loaded.')
 
 
 # Load user script if existent
@@ -43,10 +43,10 @@ path_to_user = expanduser('~') + '/.fate/'
 try:
     path.insert(0, path_to_user)
 except IOError:
-    logging.info('No .fate directory is present.')
+    info('No .fate directory is present.')
 else:
     if find_loader('user'):
         import user
-        logging.info('User script loaded.')
+        info('User script loaded.')
     else:
-        logging.info('No user script is present in .fate directory.')
+        info('No user script is present in .fate directory.')
