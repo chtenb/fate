@@ -1,23 +1,15 @@
 from unittest import TestCase, main
 from ..session import Session
-
-TEXT = """\
-import sys
-
-class Foo(Bar):
-    def __init__(self):
-        pass
-        pass
-
-    def start(self):
-        print('Start!')
-        return 1
-"""
+from tempfile import gettempdir
+from shutil import copyfile
+from os.path import dirname, abspath
 
 class BaseTestCase(TestCase):
     def setUp(self):
-        self.session = Session()
-        self.session.text = TEXT
+        source = dirname(abspath(__file__)) + '/sample.py'
+        destination = gettempdir() + '/test.py'
+        copyfile(source, destination)
+        self.session = Session(destination)
 
     def tearDown(self):
         self.session.quit()

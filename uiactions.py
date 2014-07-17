@@ -34,8 +34,6 @@ def next_session(session):
     """Go to the next session."""
     index = session_list.index(session)
     nsession = session_list[(index + 1) % len(session_list)]
-    print(session_list)
-    print(nsession)
     nsession.ui.activate()
 actions.next_session = next_session
 

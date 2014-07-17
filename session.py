@@ -55,6 +55,16 @@ class Session():
         session_list.remove(self)
 
     @property
+    def selection(self):
+        return self._selection
+
+    @selection.setter
+    def selection(self, value):
+        # Make sure only valid selections are applied
+        assert isinstance(value, Selection) and value.isvalid(self)
+        self._selection = value
+
+    @property
     def text(self):
         return self._text
 

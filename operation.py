@@ -65,7 +65,6 @@ class Operation(Undoable):
             old_selection = self.old_selection
             new_content = self.new_content
 
-        #print(self)
         partition = old_selection.partition(session)
         partition_content = [(in_selection, session.text[beg:end])
                              for in_selection, (beg, end) in partition]

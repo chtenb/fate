@@ -31,13 +31,21 @@ class RandomizedActionTest(BaseTestCase):
         else:
             for run in range(10):
                 print('Run ' + str(run + 1))
+
+                # Make sure to create a new session for each run
+                self.setUp()
                 seed = urandom(10)
                 batch = [self.get_random_action() for _ in range(100)]
+
                 self.run_batch(seed, batch)
 
     def run_batch(self, seed, batch):
         savefile = gettempdir() + '/last_test_batch_fate.py'
+
         print('Saving run into ' + savefile)
+        print('Seed: ' + str(seed))
+        print('Text:\n' + str(self.session.text))
+        print('Selection: ' + str(self.session.selection))
 
         with open(savefile, 'w') as f:
             f.write('seed = {}\n'.format(seed))

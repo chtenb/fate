@@ -74,6 +74,10 @@ class Selection:
         """Check if we have intervals."""
         return not bool(self._intervals)
 
+    def isvalid(self, session):
+        """Return False if selection is not valid, True otherwise."""
+        return not self.isempty and self._intervals[-1][1] <= len(session.text)
+
     def content(self, session):
         """Return the content of self."""
         return [session.text[max(0, beg):min(len(session.text), end)]
@@ -218,7 +222,6 @@ class Selection:
         positions = [pos for interval in self for pos in interval]
         positions.insert(0, 0)
         positions.append(len(session.text))
-        #print(positions)
         in_selection = False
 
         result = []

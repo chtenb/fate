@@ -1,4 +1,7 @@
 """
+This is a singleton which should contain all actions that are available to the user.
+A completion engine can use this to compute completions.
+
 The goal of a text editor is to make modifications to a text.
 More generally, the user should also be able to modify things other
 than text, such as options or other meta stuff.
@@ -19,7 +22,6 @@ Let us call these 'actors'.
 # TODO: decide upon naming convention for actions
 # Action constructors: CamelCase
 # Actions: camelcase or camel_case
-
 
 
 def undo(session):

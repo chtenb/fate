@@ -12,7 +12,7 @@ character_space = list(
 !@#$%&*()
 \n\t\b
 """
-) + 4 * ['Esc']
+) + 10 * ['Esc']
 
 class RandomizedUserSimulator(UserInterface):
 

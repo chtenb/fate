@@ -352,13 +352,14 @@ def unlock_selection(session):
         nselection = locked - session.selection
         if not nselection.isempty:
             session.locked_selection = nselection
-        assert not session.locked_selection.isempty
 actions.unlock = unlock_selection
 
 
 def release_locked_selection(session):
     """Release locked selection."""
     if session.locked_selection != None:
-        session.selection = session.locked_selection
+        # The text length may be changed after the locked selection was first created
+        # So we must bound it to the current text length
+        session.selection = session.locked_selection.bound(0, len(session.text))
         session.locked_selection = None
 actions.release = release_locked_selection

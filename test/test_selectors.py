@@ -1,7 +1,7 @@
 from unittest import main
 from ..selection import Interval, Selection
 from ..selectors import SelectEverything, NextWord, find_matching_pair
-from .basetestcase import BaseTestCase, TEXT
+from .basetestcase import BaseTestCase
 
 class SelectorTest(BaseTestCase):
     def setUp(self):
@@ -10,7 +10,7 @@ class SelectorTest(BaseTestCase):
     def test_select_everything(self):
         action = SelectEverything(self.session)
         action(self.session)
-        expected = Selection([Interval(0, len(TEXT))])
+        expected = Selection([Interval(0, len(self.session.text))])
         self.assertEqual(expected, self.session.selection)
 
     def test_next_word(self):
