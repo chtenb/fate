@@ -5,6 +5,8 @@ from random import choice
 from ..command import publics, call_action
 from tempfile import gettempdir
 from sys import path
+from os import urandom
+import random
 from ..runtest import RERUN
 
 # importing RandomizedUserInterface will take care of creating a userinterface
@@ -35,30 +37,32 @@ class RandomizedActionTest(TestCase):
         if RERUN:
             path.insert(0, gettempdir())
             try:
-                import last_test_batch_fate
+                from last_test_batch_fate import seed, batch
             except ImportError:
                 raise Exception('Can\'t rerun batch: no previous batch exists.')
             else:
-                self.run_batch(last_test_batch_fate.batch)
+                self.run_batch(seed, batch)
         else:
             for run in range(10):
                 print('Run ' + str(run + 1))
-
+                seed = urandom(10)
                 batch = [self.get_random_action() for _ in range(100)]
-                self.run_batch(batch)
+                self.run_batch(seed, batch)
 
-    def run_batch(self, batch):
-                path = gettempdir() + '/last_test_batch_fate.py'
-                print('Saving run into ' + path)
+    def run_batch(self, seed, batch):
+        path = gettempdir() + '/last_test_batch_fate.py'
+        print('Saving run into ' + path)
 
-                with open(path, 'w') as f:
-                    f.write('batch = ' + str(batch))
+        with open(path, 'w') as f:
+            f.write('seed = {}\n'.format(seed))
+            f.write('batch = {}\n'.format(batch))
 
-                for i, name in enumerate(batch):
-                    print(str(i + 1) + ': executing ' + name)
-                    call_action(action_dict[name], self.session)
+        random.seed(seed)
+        for i, name in enumerate(batch):
+            print(str(i + 1) + ': executing ' + name)
+            call_action(action_dict[name], self.session)
 
-                #print('Result:\n' + self.session.text)
+        #print('Result:\n' + self.session.text)
 
     def get_random_action(self):
         while 1:

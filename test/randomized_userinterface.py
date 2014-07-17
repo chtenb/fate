@@ -13,9 +13,9 @@ character_space = list(
 """
 ) + 4 * ['Esc']
 
-class RandomizedUserInterface(UserInterface):
+class RandomizedUserSimulator(UserInterface):
 
-    """Docstring for TestUserInterface. """
+    """UserInterface which simulates some random behaviour for testing purposes."""
 
     def __init__(self, session):
         UserInterface.__init__(self, session)
@@ -42,4 +42,4 @@ class RandomizedUserInterface(UserInterface):
         length = random.randint(1, 5)
         return escape(''.join(self.getchar() for _ in range(length)))
 
-Session.OnSessionInit.add(RandomizedUserInterface)
+Session.OnSessionInit.add(RandomizedUserSimulator)

@@ -1,3 +1,4 @@
+#!python3
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--rerun', help='rerun the latest test batch',
