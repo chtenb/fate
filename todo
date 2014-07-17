@@ -2,7 +2,7 @@ SHORT TERM
 Incorporate testing with multiple sessions
 Check if we can specify multiple testruns more easily in the unittest framework
 repeat last selector or operator
-select around/inside
+select around/inside (not done yet)
 add functools.wraps everywhere
 make labeling generation asynchronous
 

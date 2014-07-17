@@ -29,7 +29,7 @@ class RandomizedActionTest(BaseTestCase):
             else:
                 self.run_batch(seed, batch)
         else:
-            for run in range(10):
+            for run in range(100):
                 print('Run ' + str(run + 1))
 
                 # Make sure to create a new session for each run

@@ -33,6 +33,7 @@ default = {
     '}': selectors.NextParagraph,
     '{': selectors.PreviousParagraph,
     ')': selectors.SelectAround,
+    ']': selectors.SelectAroundChar,
     'm': selectors.Join,
     'z': selectors.Complement,
     'A': selectors.SelectEverything,

@@ -94,8 +94,6 @@ actions.EmptyAfter = EmptyAfter
 
 def find_matching_pair(string, pos, fst, snd):
     """Find matching pair of characters fst and snd around (inclusive) position pos."""
-    print("pos: " + repr(pos))
-    print("len: " + str(len(string)))
     assert 0 <= pos < len(string)
     level = 0
     i = pos
@@ -136,6 +134,7 @@ def avg_interval_length(selection):
 
 
 def select_around_interval(string, beg, end, fst, snd):
+    """Find matching pair of characters fst and snd around (inclusive) beg and end."""
     assert 0 <= beg <= end <= len(string)
 
     # These edge cases should not yield a result
@@ -189,7 +188,7 @@ def SelectAroundChar(session, char=None, selection=None):
         nend = session.text.find(char, end)
         nbeg = session.text.rfind(char, 0, beg)
         if nend != -1 and nbeg != -1:
-            result.add(Interval(nbeg - 1, nend))
+            result.add(Interval(nbeg, nend + 1))
         else:
             return None
     return result
@@ -198,9 +197,6 @@ actions.SelectAroundChar = SelectAroundChar
 
 def SelectAround(session, selection=None):
     """Select around common surrounding character pair."""
-    print(session.text)
-    print(len(session.text))
-    print(session.selection)
     selection = selection or session.selection
     default_chars = ['{', '[', '(', '<', '\'', '"']
     candidates = []
@@ -373,8 +369,7 @@ def release_locked_selection(session):
         # The text length may be changed after the locked selection was first created
         # So we must bound it to the current text length
         newselection = session.locked_selection.bound(0, len(session.text))
-        # TODO: bugfix here
-        print(newselection)
-        session.selection = newselection
+        if not newselection.isempty:
+            session.selection = newselection
         session.locked_selection = None
 actions.release = release_locked_selection
