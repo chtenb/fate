@@ -24,8 +24,8 @@ class RandomizedUserSimulator(UserInterface):
     def touch(self):
         pass
 
-    def quit(self):
-        pass
+    def quit(self, session):
+        assert session is self.session
 
     def activate(self):
         pass
