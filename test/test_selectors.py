@@ -1,25 +1,11 @@
-from unittest import TestCase, main
-from ..session import Session
+from unittest import main
 from ..selection import Interval, Selection
 from ..selectors import SelectEverything, NextWord, find_matching_pair
+from .basetestcase import BaseTestCase, TEXT
 
-TEXT = """\
-import sys
-
-class Foo(Bar):
-    def __init__(self):
-        pass
-        pass
-
-    def start(self):
-        print('Start!')
-        return 1
-"""
-
-class SelectorTest(TestCase):
+class SelectorTest(BaseTestCase):
     def setUp(self):
-        self.session = Session()
-        self.session.text = TEXT
+        BaseTestCase.setUp(self)
 
     def test_select_everything(self):
         action = SelectEverything(self.session)
@@ -59,9 +45,6 @@ class SelectorTest(TestCase):
         result = find_matching_pair(string, pos, fst, snd)
         expected = None
         self.assertEqual(expected, result)
-
-
-
 
 if __name__ == '__main__':
     main()

@@ -218,7 +218,7 @@ class Selection:
         positions = [pos for interval in self for pos in interval]
         positions.insert(0, 0)
         positions.append(len(session.text))
-        print(positions)
+        #print(positions)
         in_selection = False
 
         result = []

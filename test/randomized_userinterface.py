@@ -1,9 +1,10 @@
 from ..userinterface import UserInterface
 from ..session import Session
 import random
-import string
 from re import escape
 
+# All characters that can be entered by the user simulator
+# Esc is included more often, to keep the insertions relatively small
 character_space = list(
 """
 1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM
@@ -39,7 +40,10 @@ class RandomizedUserSimulator(UserInterface):
         pass
 
     def prompt(self, prompt_string='>'):
-        length = random.randint(1, 5)
-        return escape(''.join(self.getchar() for _ in range(length)))
+        length = random.randint(1, 10)
+        # Generate random string
+        randomstring = ''.join(self.getchar() for _ in range(length))
+        # Escape string to ensure a valid regex
+        return escape(randomstring)
 
 Session.OnSessionInit.add(RandomizedUserSimulator)

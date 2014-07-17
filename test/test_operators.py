@@ -1,26 +1,12 @@
-from unittest import TestCase, main
-from ..session import Session
+from unittest import main
 from ..selectors import NextWord
 from ..operators import Insert
 from ..actions import undo
+from .basetestcase import BaseTestCase
 
-TEXT = """\
-import sys
-
-class Foo(Bar):
-    def __init__(self):
-        pass
-        pass
-
-    def start(self):
-        print('Start!')
-        return 1
-"""
-
-class OperatorTest(TestCase):
+class OperatorTest(BaseTestCase):
     def setUp(self):
-        self.session = Session()
-        self.session.text = TEXT
+        BaseTestCase.setUp(self)
         NextWord(self.session)(self.session)
 
     def test_insert(self):

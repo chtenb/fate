@@ -1,26 +1,12 @@
-from unittest import TestCase, main
-from ..session import Session
+from unittest import main
 from ..selectors import NextWord
 from ..actions import undo
 from ..clipboard import copy, paste_before
+from .basetestcase import BaseTestCase
 
-TEXT = """\
-import sys
-
-class Foo(Bar):
-    def __init__(self):
-        pass
-        pass
-
-    def start(self):
-        print('Start!')
-        return 1
-"""
-
-class ClipboardTest(TestCase):
+class ClipboardTest(BaseTestCase):
     def setUp(self):
-        self.session = Session()
-        self.session.text = TEXT
+        BaseTestCase.setUp(self)
         NextWord(self.session)(self.session)
 
     def test_paste_before(self):

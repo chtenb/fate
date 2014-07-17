@@ -1,6 +1,6 @@
-from unittest import TestCase, main
+from unittest import main
+from .basetestcase import BaseTestCase
 from .. import actions
-from ..session import Session
 from random import choice
 from ..command import publics, call_action
 from tempfile import gettempdir
@@ -12,26 +12,12 @@ from ..runtest import RERUN
 # importing RandomizedUserInterface will take care of creating a userinterface
 from . import randomized_userinterface
 
-TEXT = """\n
-import sys
-
-class Foo(Bar):
-    def __init__(self):
-        pass
-        pass
-
-    def start(self):
-        print('Start!')
-        return 1
-"""
-
 action_dict = publics(actions)
 action_names = list(action_dict.keys())
 
-class RandomizedActionTest(TestCase):
+class RandomizedActionTest(BaseTestCase):
     def setUp(self):
-        self.session = Session()
-        self.session.text = TEXT
+        BaseTestCase.setUp(self)
 
     def test_actions(self):
         if RERUN:
@@ -50,10 +36,10 @@ class RandomizedActionTest(TestCase):
                 self.run_batch(seed, batch)
 
     def run_batch(self, seed, batch):
-        path = gettempdir() + '/last_test_batch_fate.py'
-        print('Saving run into ' + path)
+        savefile = gettempdir() + '/last_test_batch_fate.py'
+        print('Saving run into ' + savefile)
 
-        with open(path, 'w') as f:
+        with open(savefile, 'w') as f:
             f.write('seed = {}\n'.format(seed))
             f.write('batch = {}\n'.format(batch))
 
