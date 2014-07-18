@@ -60,10 +60,11 @@ actions.local_find_backwards = local_find_backwards
 
 def search(session):
     session.search_pattern = session.ui.prompt('/')
-    try:
-        SelectPattern(session.search_pattern, session)(session)
-    except re.error as e:
-        session.ui.notify(str(e))
+    if session.search_pattern:
+        try:
+            SelectPattern(session.search_pattern, session)(session)
+        except re.error as e:
+            session.ui.notify(str(e))
 actions.search = search
 
 
