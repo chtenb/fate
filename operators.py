@@ -33,7 +33,8 @@ def delete(session, selection=None):
     operation(session)
 actions.delete = delete
 
-# The following two classes are action constructors
+
+# The classes Append and Insert are action constructors
 
 
 class Append:
@@ -66,24 +67,12 @@ class Insert:
 
 # TODO Improve this refactoring
 class ChangeInPlace(InsertOperation):
-    @property
-    def new_content(self):
-        return [self.insertions[i] for i in range(len(self.old_content))]
-
-
-class ChangeInPlaceOld(InsertOperation):
-
     """
     Interactive Operation which adds `insertions` in place of each interval.
     """
-
-    def __init__(self, session):
-        InsertOperation.__init__(self, session)
-
     @property
     def new_content(self):
         return [self.insertions[i] for i in range(len(self.old_content))]
-actions.ChangeInPlace = ChangeInPlace
 
 
 class ChangeBefore(InsertOperation):

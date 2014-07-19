@@ -19,7 +19,7 @@ class Operation(Undoable):
         selection = selection or session.selection
         self.old_selection = selection
         self.old_content = selection.content(session)
-        self.new_selection = None
+        self.new_selection = None # Maybe this can be done neater now
         try:
             self.new_content = new_content or self.old_content[:]
         except AttributeError:
@@ -29,7 +29,7 @@ class Operation(Undoable):
 
     def __str__(self):
         attributes = [('old_selection', self.old_selection),
-                      #('new_selection', self.new_selection),
+                      ('computed new_selection', self.compute_new_selection),
                       ('old_content', self.old_content),
                       ('new_content', self.new_content)]
         return '\n'.join([k + ': ' + str(v) for k, v in attributes])
@@ -45,11 +45,15 @@ class Operation(Undoable):
             result.add(Interval(beg, end))
         return result
 
-    def __call__(self, session):
-        Undoable.call(self, session)
-        self.do(session)
+    def do(self, session):
+        """Execute operation."""
+        self._apply(session)
 
-    def do(self, session, inverse=False):
+    def undo(self, session):
+        """Undo operation."""
+        self._apply(session, inverse=True)
+
+    def _apply(self, session, inverse=False):
         """Apply self to the session."""
         if inverse:
             if self.new_selection == None:
@@ -65,9 +69,19 @@ class Operation(Undoable):
             old_selection = self.old_selection
             new_content = self.new_content
 
+        #print(self)
+        #print(session.text)
+        #print(session.selection)
+
+        # Make sure the application of this operation is valid at this moment
+        assert session.selection == old_selection
+
+        assert len(new_content) == len(self.old_content)
+
         partition = old_selection.partition(session)
         partition_content = [(in_selection, session.text[beg:end])
                              for in_selection, (beg, end) in partition]
+
         count = 0
         result = []
         for in_selection, string in partition_content:
@@ -81,23 +95,22 @@ class Operation(Undoable):
         session.selection_mode = modes.SELECT_MODE
         session.selection = new_selection
 
-    def undo(self, session):
-        """Undo operation."""
-        self.do(session, inverse=True)
 
-
-class InsertOperation(Operation):
+class InsertOperation:
 
     """Abstract class for operations dealing with insertion of text."""
 
     def __init__(self, session, selection=None):
         selection = selection or session.selection
-        Operation.__init__(self, session, selection)
-        self.insertions = ['' for _ in selection]
-        self.deletions = [0 for _ in selection]
+        self.operation = Operation(session, selection)
+        self.insertions = [''] * len(selection)
+        self.deletions = [0] * len(selection)
 
     def __call__(self, session):
-        Operation.__call__(self, session)
+        """Execute action."""
+        # Execute the operation
+        self.operation(session)
+        # Then keep updating it according to the users changes
         while 1:
             session.ui.touch()
             char = session.ui.getchar()
@@ -105,23 +118,27 @@ class InsertOperation(Operation):
                 break
             self.insert(session, char)
 
+    @property
+    def new_content(self, session):
+        raise NotImplementedError("An abstract method is not callable.")
+
     def insert(self, session, string):
         """
         Insert a string (typically a char) in the operation.
         By only autoindenting on a single \n, we potentially allow proper pasting.
         """
-        self.new_selection = self.compute_new_selection()
+        self.operation.new_selection = self.operation.compute_new_selection()
 
         # Very ugly way to get a indent string for each interval in the selection
         indent = [SelectIndent(session, Selection([interval])).content(session)[0]
-                for interval in self.new_selection]
+                for interval in self.operation.new_selection]
 
-        assert (len(self.new_selection)
+        assert (len(self.operation.new_selection)
                 == len(indent)
                 == len(self.insertions)
                 == len(self.deletions))
 
-        for i in range(len(self.new_selection)):
+        for i in range(len(self.operation.new_selection)):
             if string == '\b':
                 # TODO remove multiple whitespaces if possible
                 # remove one char
@@ -139,5 +156,6 @@ class InsertOperation(Operation):
                 self.insertions[i] += str(string)
 
         # Make the changes to the session
-        self.undo(session)
-        self.do(session)
+        self.operation.undo(session)
+        self.operation.new_content = self.new_content
+        self.operation.do(session)

@@ -1,11 +1,13 @@
-#!python3
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--rerun', help='rerun the latest test batch',
         action='store_true')
+parser.add_argument('-l', '--long', help='start a long testing session',
+        action='store_true')
 args = parser.parse_args()
 
 RERUN = args.rerun
+LONG = args.long
 
 import os
 import sys

@@ -45,9 +45,6 @@ class Session():
         if filename:
             self.read()
 
-        if self.ui == None:
-            logging.critical('No userinterface loaded.')
-
     def quit(self):
         """Quit session."""
         logging.info('Quitting session ' + str(self))

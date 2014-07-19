@@ -1,24 +1,28 @@
 SHORT TERM
+Select around/inside (not done yet)
+Repeat last selector or operator
+    idea: repeat last action most-top-level which resulted in a text change
+    we may need a single function which always executes actions, to be able to store the right ones
 Incorporate testing with multiple sessions
 Check if we can specify multiple testruns more easily in the unittest framework
-repeat last selector or operator
-select around/inside (not done yet)
-add functools.wraps everywhere
-make labeling generation asynchronous
+Allow nested compositions
+    Fix bug: can't undo OpenLineAfter
+Fix autoindent bug
+Make labeling generation asynchronous
 
 LONG TERM
-persistent session (using a context manager?)
-improve syntax highlighting, for instance by disregarding quotes in comments
-contextual completion
+Persistent session (using a context manager?)
+Improve syntax highlighting, for instance by disregarding quotes in comments
+Contextual completion
     For completion it is also needed that the full text can be constructed including the pending operation. (No it isn't!! Only filtering is done based on the input, the context is not changed)
-some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same. If one changes, the other changes with it.
-implement fix interval/selection functionality?
-switch to alternative regex engine?
-focus on non-atomic operations
-idea: jumplist of lines of changes
+Some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same. If one changes, the other changes with it.
+Switch to alternative regex engine?
+Focus on non-atomic operations
+Idea: jumplist of lines of changes
 
 RESEARCH
-optimal configurable datastructure for text editing
+Optimal configurable datastructure for text editing
     optimize it for linenumber queries as well, not only for char numbers
-optimal configurable datastructure for labeling/syntax highlighting
+Optimal configurable datastructure for labeling/syntax highlighting
+Store additional metadata such as the number of line breaks in a certain range
 

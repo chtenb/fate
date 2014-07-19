@@ -7,7 +7,7 @@ from tempfile import gettempdir
 from sys import path
 from os import urandom
 import random
-from ..runtest import RERUN
+from ..runtest import RERUN, LONG
 
 # importing RandomizedUserInterface will take care of creating a userinterface
 from . import randomized_userinterface
@@ -19,7 +19,7 @@ class RandomizedActionTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
 
-    def test_actions(self):
+    def test_random_actions(self):
         if RERUN:
             path.insert(0, gettempdir())
             try:
@@ -29,13 +29,14 @@ class RandomizedActionTest(BaseTestCase):
             else:
                 self.run_batch(seed, batch)
         else:
-            for run in range(100):
+            runs, actions = (1000, 1000) if LONG else (100, 100)
+            for run in range(runs):
                 print('Run ' + str(run + 1))
 
                 # Make sure to create a new session for each run
                 self.setUp()
                 seed = urandom(10)
-                batch = [self.get_random_action() for _ in range(100)]
+                batch = [self.get_random_action() for _ in range(actions)]
 
                 self.run_batch(seed, batch)
 
