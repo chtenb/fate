@@ -65,13 +65,15 @@ def paste(session, before):
 
 def paste_before(session):
     """Paste clipboard before current selection."""
-    return Operation(session, paste(session, before=True))
+    operation = Operation(session, paste(session, before=True))
+    operation(session)
 actions.paste_before = paste_before
 
 
 def paste_after(session):
     """Paste clipboard after current selection."""
-    return Operation(session, paste(session, before=False))
+    operation = Operation(session, paste(session, before=False))
+    operation(session)
 actions.paste_after = paste_after
 
 

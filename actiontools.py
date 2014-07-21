@@ -46,38 +46,11 @@ class Undoable:
 # If this functionality is required nonetheless, the composition must be defined in an
 # action body
 
-
-class CompoundUndoable(Undoable):
-    """
-    This class can be used to compose multiple undoable actions into a single undoable action.
-    """
-    def __init__(self, *subactions):
-        assert all(isinstance(a, Undoable) for a in subactions)
-        self.subactions = deque(subactions)
-
-    def undo(self, session):
-        """Undo action."""
-        for action in self.subactions:
-            action.undo(session)
-
-    def do(self, session):
-        """
-        Execute action without it being added to the undotree again,
-        e.g. for performing a redo.
-        """
-        for action in self.subactions:
-            action.do(session)
-
-
 class Compose:
     """
     In order to be able to conveniently chain actions, we provide a
     function that composes a sequence of actions into a single action.
     The undoable subactions should be undoable as a whole.
-    We will make use of the class CompoundUndoable to achieve this.
-
-    ASSUMPTION 1: An undoable action does not return another action upon execution
-    ASSUMPTION 2: All operations used inside other actions are returned and not executed
     """
     def __init__(self, *subactions, name='', docs=''):
         self.subactions = subactions
@@ -85,27 +58,14 @@ class Compose:
         self.__docs__ = docs
 
     def __call__(self, session):
-        # Execute subactions, gathering undoable actions into a single CompoundUndoable action.
-        undoables = []
+        # Execute subactions
+        session.undotree.start_sequence()
         for action in self.subactions:
             while 1:
                 debug(action)
-                debug('undotree: ' + str(session.undotree.current_node.action))
-                if isinstance(action, Undoable):
-                    #debug(1)
-                    # Execute the action without it being added to the history
-                    action.do(session)
-                    undoables.append(action)
+                result = action(session)
+                if not callable(result):
                     break
-                else:
-                    #debug(2)
-                    result = action(session)
-                    if not callable(result):
-                        break
-                    action = result
-
-        # Now add the CompoundUndoable action to the undotree
-        # to make sure it is undoable as a whole
-        compound_undoable = CompoundUndoable(*undoables)
-        session.undotree.add(compound_undoable)
+                action = result
+        session.undotree.end_sequence()
 

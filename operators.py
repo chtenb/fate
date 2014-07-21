@@ -11,7 +11,8 @@ def uppercase(session, selection=None):
     """Delete content."""
     selection = selection or session.selection
     new_content = [s.upper() for s in selection.content(session)]
-    return Operation(session, new_content, selection)
+    operation = Operation(session, new_content, selection)
+    operation(session)
 actions.uppercase = uppercase
 
 
@@ -19,7 +20,8 @@ def lowercase(session, selection=None):
     """Lowercase content."""
     selection = selection or session.selection
     new_content = [s.lower() for s in selection.content(session)]
-    return Operation(session, new_content, selection)
+    operation = Operation(session, new_content, selection)
+    operation(session)
 actions.lowercase = lowercase
 
 
@@ -27,7 +29,8 @@ def delete(session, selection=None):
     """Delete content."""
     selection = selection or session.selection
     new_content = ['' for _ in selection]
-    return Operation(session, new_content, selection)
+    operation = Operation(session, new_content, selection)
+    operation(session)
 actions.delete = delete
 
 
@@ -44,7 +47,8 @@ class Append:
     def __call__(self, session, selection=None):
         selection = selection or session.selection
         new_content = [content + self.string for content in selection.content(session)]
-        return Operation(session, new_content, selection)
+        operation = Operation(session, new_content, selection)
+        operation(session)
 
 
 class Insert:
@@ -57,7 +61,8 @@ class Insert:
     def __call__(self, session, selection=None):
         selection = selection or session.selection
         new_content = [self.string + content for content in selection.content(session)]
-        return Operation(session, new_content, selection)
+        operation = Operation(session, new_content, selection)
+        operation(session)
 
 
 # TODO Improve this refactoring

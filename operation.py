@@ -108,8 +108,8 @@ class InsertOperation:
 
     def __call__(self, session):
         """Execute action."""
-        # Execute the operation (without adding it to the undotree)
-        self.operation.do(session)
+        # Execute the operation (includes adding it to the undotree)
+        self.operation(session)
         # Then keep updating it according to the users changes
         while 1:
             session.ui.touch()
@@ -117,9 +117,6 @@ class InsertOperation:
             if char == 'Esc':
                 break
             self.insert(session, char)
-
-        self.operation.undo(session)
-        return self.operation
 
     @property
     def new_content(self, session):
