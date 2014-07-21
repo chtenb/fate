@@ -1,13 +1,15 @@
 SHORT TERM
+Revert changes to compose and undotree
+Allow nested compositions
+    Fix bug: can't undo OpenLineAfter
 Select around/inside (not done yet)
 Repeat last selector or operator
     idea: repeat last action most-top-level which resulted in a text change
     we may need a single function which always executes actions, to be able to store the right ones
 Incorporate testing with multiple sessions
 Check if we can specify multiple testruns more easily in the unittest framework
-Allow nested compositions
-    Fix bug: can't undo OpenLineAfter
 Fix autoindent bug
+Add walking through undo tree as interactive action
 Make labeling generation asynchronous
 
 LONG TERM

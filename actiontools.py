@@ -3,6 +3,7 @@ This module contains several base classes and decorators for creating actions.
 """
 from functools import wraps
 from collections import deque
+from logging import debug
 
 
 class Undoable:
@@ -68,32 +69,43 @@ class CompoundUndoable(Undoable):
             action.do(session)
 
 
-def Compose(*subactions, name='', docs=''):
+class Compose:
     """
     In order to be able to conveniently chain actions, we provide a
     function that composes a sequence of actions into a single action.
     The undoable subactions should be undoable as a whole.
     We will make use of the class CompoundUndoable to achieve this.
+
+    ASSUMPTION 1: An undoable action does not return another action upon execution
+    ASSUMPTION 2: All operations used inside other actions are returned and not executed
     """
-    def wrapper(session):
+    def __init__(self, *subactions, name='', docs=''):
+        self.subactions = subactions
+        self.__name__ = name
+        self.__docs__ = docs
+
+    def __call__(self, session):
         # Execute subactions, gathering undoable actions into a single CompoundUndoable action.
         undoables = []
-        for action in subactions:
+        for action in self.subactions:
             while 1:
+                debug(action)
+                debug('undotree: ' + str(session.undotree.current_node.action))
                 if isinstance(action, Undoable):
-                    undoables.append(action)
+                    #debug(1)
                     # Execute the action without it being added to the history
                     action.do(session)
-
-                result = action(session)
-                if not callable(result):
+                    undoables.append(action)
                     break
-                action = result
+                else:
+                    #debug(2)
+                    result = action(session)
+                    if not callable(result):
+                        break
+                    action = result
 
+        # Now add the CompoundUndoable action to the undotree
+        # to make sure it is undoable as a whole
         compound_undoable = CompoundUndoable(*undoables)
         session.undotree.add(compound_undoable)
-
-    wrapper.__name__ = name
-    wrapper.__docs__ = docs
-    return wrapper
 

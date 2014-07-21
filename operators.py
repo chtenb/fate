@@ -11,8 +11,7 @@ def uppercase(session, selection=None):
     """Delete content."""
     selection = selection or session.selection
     new_content = [s.upper() for s in selection.content(session)]
-    operation = Operation(session, new_content, selection)
-    operation(session)
+    return Operation(session, new_content, selection)
 actions.uppercase = uppercase
 
 
@@ -20,8 +19,7 @@ def lowercase(session, selection=None):
     """Lowercase content."""
     selection = selection or session.selection
     new_content = [s.lower() for s in selection.content(session)]
-    operation = Operation(session, new_content, selection)
-    operation(session)
+    return Operation(session, new_content, selection)
 actions.lowercase = lowercase
 
 
@@ -29,8 +27,7 @@ def delete(session, selection=None):
     """Delete content."""
     selection = selection or session.selection
     new_content = ['' for _ in selection]
-    operation = Operation(session, new_content, selection)
-    operation(session)
+    return Operation(session, new_content, selection)
 actions.delete = delete
 
 
@@ -47,8 +44,7 @@ class Append:
     def __call__(self, session, selection=None):
         selection = selection or session.selection
         new_content = [content + self.string for content in selection.content(session)]
-        operation = Operation(session, new_content, selection)
-        operation(session)
+        return Operation(session, new_content, selection)
 
 
 class Insert:
@@ -61,8 +57,7 @@ class Insert:
     def __call__(self, session, selection=None):
         selection = selection or session.selection
         new_content = [self.string + content for content in selection.content(session)]
-        operation = Operation(session, new_content, selection)
-        operation(session)
+        return Operation(session, new_content, selection)
 
 
 # TODO Improve this refactoring
@@ -72,7 +67,7 @@ class ChangeInPlace(InsertOperation):
     """
     @property
     def new_content(self):
-        return [self.insertions[i] for i in range(len(self.old_content))]
+        return [self.insertions[i] for i in range(len(self.operation.old_content))]
 
 
 class ChangeBefore(InsertOperation):
@@ -84,8 +79,8 @@ class ChangeBefore(InsertOperation):
     @property
     def new_content(self):
         return [self.insertions[i]
-                + self.old_content[i][self.deletions[i]:]
-                for i in range(len(self.old_content))]
+                + self.operation.old_content[i][self.deletions[i]:]
+                for i in range(len(self.operation.old_content))]
 actions.ChangeBefore = ChangeBefore
 
 
@@ -97,9 +92,9 @@ class ChangeAfter(InsertOperation):
     """
     @property
     def new_content(self):
-        return [self.old_content[i][:-self.deletions[i] or None]
+        return [self.operation.old_content[i][:-self.deletions[i] or None]
                 + self.insertions[i]
-                for i in range(len(self.old_content))]
+                for i in range(len(self.operation.old_content))]
 actions.ChangeAfter = ChangeAfter
 
 
@@ -113,7 +108,7 @@ class ChangeAround(InsertOperation):
     def new_content(self):
         character_pairs = [('{', '}'), ('[', ']'), ('(', ')'), ('<', '>')]
         result = []
-        for i in range(len(self.old_content)):
+        for i in range(len(self.operation.old_content)):
             first_string = self.insertions[i][::-1]
             second_string = self.insertions[i]
             for first, second in character_pairs:
@@ -121,7 +116,7 @@ class ChangeAround(InsertOperation):
                 second_string = second_string.replace(first, second)
             beg, end = self.deletions[i], -self.deletions[i] or None
             result.append(first_string
-                          + self.old_content[i][beg:end]
+                          + self.operation.old_content[i][beg:end]
                           + second_string)
         return result
 actions.ChangeAround = ChangeAround

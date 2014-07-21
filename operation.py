@@ -29,7 +29,7 @@ class Operation(Undoable):
 
     def __str__(self):
         attributes = [('old_selection', self.old_selection),
-                      ('computed new_selection', self.compute_new_selection),
+                      ('computed new_selection', self.compute_new_selection()),
                       ('old_content', self.old_content),
                       ('new_content', self.new_content)]
         return '\n'.join([k + ': ' + str(v) for k, v in attributes])
@@ -74,7 +74,7 @@ class Operation(Undoable):
         #print(session.selection)
 
         # Make sure the application of this operation is valid at this moment
-        assert session.selection == old_selection
+        assert old_selection.isvalid(session)
 
         assert len(new_content) == len(self.old_content)
 
@@ -102,14 +102,14 @@ class InsertOperation:
 
     def __init__(self, session, selection=None):
         selection = selection or session.selection
-        self.operation = Operation(session, selection)
+        self.operation = Operation(session, selection=selection)
         self.insertions = [''] * len(selection)
         self.deletions = [0] * len(selection)
 
     def __call__(self, session):
         """Execute action."""
-        # Execute the operation
-        self.operation(session)
+        # Execute the operation (without adding it to the undotree)
+        self.operation.do(session)
         # Then keep updating it according to the users changes
         while 1:
             session.ui.touch()
@@ -117,6 +117,9 @@ class InsertOperation:
             if char == 'Esc':
                 break
             self.insert(session, char)
+
+        self.operation.undo(session)
+        return self.operation
 
     @property
     def new_content(self, session):
