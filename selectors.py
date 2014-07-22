@@ -7,6 +7,11 @@ Furthermore we have selectors that are based on regular expressions.
 Selectors may return None, in which case the session should not be affected.
 Selectors may also return a result which is identical to the previous selection.
 The code that executes the action may want to check if this is the case, before applying.
+
+Because it is often handy to use selectors as building blocks for other computations,
+selectors return their result as a selection instead of executing them immediately.
+Secondly, one can pass a selection which should be used as starting point
+for the selector instead of the current selection of the session.
 """
 import re
 from functools import partial
@@ -15,6 +20,7 @@ from . import actions
 from .selection import Selection, Interval
 from .modes import EXTEND_MODE, REDUCE_MODE
 
+from logging import debug
 
 class SelectEverything(Selection):
 
@@ -270,7 +276,7 @@ class SelectPattern(Selection):
 class SelectLocalPattern(Selection):
 
     def __init__(self, pattern, session, selection=None, selection_mode=None,
-                 reverse=False, group=0, only_within=False):
+                 reverse=False, group=0, only_within=False, allow_same_interval=False):
         Selection.__init__(self)
         selection = selection or session.selection
         selection_mode = selection_mode or session.selection_mode
@@ -287,10 +293,16 @@ class SelectLocalPattern(Selection):
                 if only_within and not (beg <= mbeg and mend <= end):
                     continue
 
+                # If next_if_same is True, allow same interval as original
+                if allow_same_interval and (beg, end) == (mbeg, mend):
+                    new_interval = Interval(mbeg, mend)
+                    break
+
                 # If match is valid, i.e. overlaps
                 # or is beyond current interval in right direction
-                if (not reverse and mend > beg
-                        or reverse and mbeg < end):
+                # or is empty interval adjacent to current interval
+                if (not reverse and (mend > beg or mend == beg == mbeg)
+                        or reverse and (mbeg < end or mbeg == end == mend)):
                     if selection_mode == EXTEND_MODE:
                         new_interval = Interval(min(beg, mbeg), max(end, mend))
                     elif selection_mode == REDUCE_MODE:
@@ -305,14 +317,15 @@ class SelectLocalPattern(Selection):
                     if new_interval and new_interval != interval:
                         break
 
-            # If the result invalid, return original selection
+            # If no suitable result for this interval, return original selection
             if not new_interval:
                 self._intervals = selection._intervals
                 return
 
             self.add(new_interval)
 
-SelectIndent = partial(SelectLocalPattern, r'(?m)^([ \t]*)', reverse=True, group=1)
+SelectIndent = partial(SelectLocalPattern, r'(?m)^([ \t]*)', reverse=True, group=1,
+        allow_same_interval=True)
 actions.SelectIndent = SelectIndent
 
 
