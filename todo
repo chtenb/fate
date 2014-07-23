@@ -1,17 +1,20 @@
 SHORT TERM
+fix openline
+fix walking through undo tree as interactive action
 Select around/inside (not done yet)
 Repeat last selector or operator
     idea: repeat last action most-top-level which resulted in a text change
     we may need a single function which always executes actions, to be able to store the right ones
 Incorporate testing with multiple sessions
 Check if we can specify multiple testruns more easily in the unittest framework
-Add walking through undo tree as interactive action
+make travis fail if tests fail
 unittests for pattern select machinery
 Make labeling generation asynchronous
 
 LONG TERM
 Persistent session (using a context manager?)
-Improve syntax highlighting, for instance by disregarding quotes in comments
+Improve syntax highlighting, for instance by disregarding quotes inside comments and strings
+    select around should maybe also disregard brackets etc in comments and strings
 Contextual completion
     For completion it is also needed that the full text can be constructed including the pending operation. (No it isn't!! Only filtering is done based on the input, the context is not changed)
 Some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same. If one changes, the other changes with it.

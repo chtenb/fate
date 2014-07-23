@@ -26,7 +26,7 @@ class SelectEverything(Selection):
 
     """Select the entire text."""
 
-    def __init__(self, session, selection=None, selection_mode=None):
+    def __init__(self, session, selection=None, mode=None):
         Selection.__init__(self, Interval(0, len(session.text)))
 actions.SelectEverything = SelectEverything
 
@@ -35,7 +35,7 @@ class SelectSingleInterval(Selection):
 
     """Reduce the selection to the single uppermost interval."""
 
-    def __init__(self, session, selection=None, selection_mode=None):
+    def __init__(self, session, selection=None, mode=None):
         selection = selection or session.selection
         Selection.__init__(self, selection[0])
 actions.SelectSingleInterval = SelectSingleInterval
@@ -45,7 +45,7 @@ class Empty(Selection):
 
     """Reduce the selection to a single uppermost empty interval."""
 
-    def __init__(self, session, selection=None, selection_mode=None):
+    def __init__(self, session, selection=None, mode=None):
         selection = selection or session.selection
         beg = selection[0][0]
         Selection.__init__(self, Interval(beg, beg))
@@ -56,7 +56,7 @@ class Join(Selection):
 
     """Join all intervals together."""
 
-    def __init__(self, session, selection=None, selection_mode=None):
+    def __init__(self, session, selection=None, mode=None):
         selection = selection or session.selection
         Selection.__init__(self, Interval(selection[0][0], selection[-1][1]))
 actions.Join = Join
@@ -66,7 +66,7 @@ class Complement(Selection):
 
     """Return the complement."""
 
-    def __init__(self, session, selection=None, selection_mode=None):
+    def __init__(self, session, selection=None, mode=None):
         selection = selection or session.selection
         Selection.__init__(self, selection.complement(session))
 actions.Complement = Complement
@@ -76,7 +76,7 @@ class EmptyBefore(Selection):
 
     """Return the empty interval before each interval."""
 
-    def __init__(self, session, selection=None, selection_mode=None):
+    def __init__(self, session, selection=None, mode=None):
         Selection.__init__(self)
         selection = selection or session.selection
         for interval in selection:
@@ -89,7 +89,7 @@ class EmptyAfter(Selection):
 
     """Return the empty interval after each interval."""
 
-    def __init__(self, session, selection=None, selection_mode=None):
+    def __init__(self, session, selection=None, mode=None):
         Selection.__init__(self)
         selection = selection or session.selection
         for interval in selection:
@@ -227,11 +227,11 @@ def find_pattern(text, pattern, reverse=False, group=0):
 
 class SelectPattern(Selection):
 
-    def __init__(self, pattern, session, selection=None, selection_mode=None,
+    def __init__(self, pattern, session, selection=None, mode=None,
                  reverse=False, group=0):
         Selection.__init__(self)
         selection = selection or session.selection
-        selection_mode = selection_mode or session.selection_mode
+        mode = mode or session.mode
 
         match_intervals = find_pattern(session.text, pattern, reverse, group)
 
@@ -242,9 +242,9 @@ class SelectPattern(Selection):
 
         if new_intervals:
             new_selection = Selection(new_intervals)
-            if selection_mode == EXTEND_MODE:
+            if mode == EXTEND_MODE:
                 new_selection.add(new_intervals)
-            elif selection_mode == REDUCE_MODE:
+            elif mode == REDUCE_MODE:
                 new_selection.substract(new_intervals)
 
             if new_selection and selection != new_selection:
@@ -263,9 +263,9 @@ class SelectPattern(Selection):
             new_selection = Selection(Interval(mbeg, mend))
             # If match is in the right direction
             if not reverse and mend > beg or reverse and mbeg < end:
-                if selection_mode == EXTEND_MODE:
+                if mode == EXTEND_MODE:
                     new_selection = selection.add(new_selection)
-                elif selection_mode == REDUCE_MODE:
+                elif mode == REDUCE_MODE:
                     new_selection = selection.substract(new_selection)
 
                 if new_selection and selection != new_selection:
@@ -275,11 +275,11 @@ class SelectPattern(Selection):
 
 class SelectLocalPattern(Selection):
 
-    def __init__(self, pattern, session, selection=None, selection_mode=None,
+    def __init__(self, pattern, session, selection=None, mode=None,
                  reverse=False, group=0, only_within=False, allow_same_interval=False):
         Selection.__init__(self)
         selection = selection or session.selection
-        selection_mode = selection_mode or session.selection_mode
+        mode = mode or session.mode
 
         match_intervals = find_pattern(session.text, pattern, reverse, group)
 
@@ -303,9 +303,9 @@ class SelectLocalPattern(Selection):
                 # or is empty interval adjacent to current interval
                 if (not reverse and (mend > beg or mend == beg == mbeg)
                         or reverse and (mbeg < end or mbeg == end == mend)):
-                    if selection_mode == EXTEND_MODE:
+                    if mode == EXTEND_MODE:
                         new_interval = Interval(min(beg, mbeg), max(end, mend))
-                    elif selection_mode == REDUCE_MODE:
+                    elif mode == REDUCE_MODE:
                         if reverse:
                             mend = max(end, mend)
                         else:

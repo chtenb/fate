@@ -89,3 +89,4 @@ actions.search_previous = search_previous
 def command_mode(session):
     session.ui.command_mode()
 actions.command_mode = command_mode
+

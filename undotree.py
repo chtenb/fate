@@ -2,7 +2,9 @@
 This module contains the classes ActionTree and Node, to store
 the action history.
 """
-
+from logging import debug
+from . import actions
+from . import modes
 
 class UndoTree:
 
@@ -27,13 +29,16 @@ class UndoTree:
                 action.undo(self.session)
             self.current_node = self.current_node.parent
 
-    def redo(self):
+    def redo(self, child_index=-1):
         """Redo most recent next action."""
         if self.sequence != None:
             raise Exception('Cannot perform redo; a sequence of actions is being added')
 
         if self.current_node and self.current_node.children:
-            self.current_node = self.current_node.children[-1]
+            l = len(self.current_node.children)
+            assert -l <= child_index < l
+
+            self.current_node = self.current_node.children[child_index]
             for action in self.current_node.actions:
                 action.do(self.session)
 
@@ -53,7 +58,9 @@ class UndoTree:
         Useful for previewing operations.
         """
         if self.sequence != None:
-            raise Exception('Cannot perform hard undo; a sequence of actions is being added')
+            raise Exception(
+                'Cannot perform hard undo; a sequence of actions is being added'
+            )
 
         if self.current_node.parent:
             current_node = self.current_node
@@ -105,3 +112,70 @@ class Node:
     def add_child(self, node):
         """Add a child to node."""
         self.children.append(node)
+
+modes.UNDO = 'UNDO'
+
+def undo_mode(session):
+    """
+    Walk around in undo tree using arrow keys.
+    You can only switch branches between siblings.
+    """
+    def update(child_index):
+        """Undo and execute the child pointed by the current child_index."""
+        if undotree.current_node.parent != None:
+            undotree.undo()
+
+            # The child index must be bound to the correct domain
+            child_index = bound(child_index)
+
+            undotree.redo(child_index)
+        return child_index
+
+    def bound(child_index):
+        """Bound the given child_index to be a valid index."""
+        l = len(undotree.current_node.children)
+        if l > 0:
+            child_index = min(child_index, l - 1)
+            child_index = max(child_index, 0)
+            assert 0 <= child_index < l
+        return child_index
+
+    def current_index():
+        node = undotree.current_node
+        return node.parent.children.index(node) if node.parent != None else 0
+
+    undotree = session.undotree
+    session.mode = modes.UNDO
+
+    while 1:
+        session.ui.touch()
+
+        # Make sure the child_index is set to the index we now have
+        child_index = current_index()
+
+        #debug('length: ' + str(len(undotree.current_node.children)))
+        #debug('index: ' + str(child_index))
+
+        char = session.ui.getchar()
+        if char == 'Esc':
+            session.mode = modes.SELECT_MODE
+            break
+
+        if char == 'Left':
+            # We can always just call undo; if there is no parent it will do nothing
+            undotree.undo()
+        elif char == 'Right':
+            # We can always just call redo(0); if there is no child it will do nothing
+            child_index = 0
+            undotree.redo(child_index)
+        elif char == 'Up':
+            child_index -= 1
+            # update() will take care of having a valid child_index
+            child_index = update(child_index)
+        elif char == 'Down':
+            child_index += 1
+            # update() will take care of having a valid child_index
+            child_index = update(child_index)
+
+actions.undo_mode = undo_mode
+

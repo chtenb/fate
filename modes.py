@@ -1,6 +1,6 @@
 """This module contains constants for the selection modes, and functions to switch modes.
 The current constants are `SELECT_MODE`, `EXTEND_MODE` and `REDUCE_MODE`. """
-SELECT_MODE, EXTEND_MODE, REDUCE_MODE = "SELECT", "EXTEND", "REDUCE"
+SELECT_MODE, EXTEND_MODE, REDUCE_MODE = 'SELECT', 'EXTEND', 'REDUCE'
 from . import actions
 
 

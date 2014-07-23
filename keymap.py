@@ -43,6 +43,7 @@ default = {
     'R': selectors.release_locked_selection,
     'u': actions.undo,
     'U': actions.redo,
+    'Ctrl-U': actions.undo_mode,
     'y': clipboard.copy,
     'Y': clipboard.clear,
     'p': clipboard.paste_after,

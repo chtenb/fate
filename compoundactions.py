@@ -11,7 +11,7 @@ from logging import debug
 
 def escape(session):
     """Escape"""
-    if session.selection_mode != modes.SELECT_MODE:
+    if session.mode != modes.SELECT_MODE:
         modes.select_mode(session)
     else:
         return Empty(session)

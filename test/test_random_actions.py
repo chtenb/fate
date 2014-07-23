@@ -29,7 +29,7 @@ class RandomizedActionTest(BaseTestCase):
             else:
                 self.run_batch(seed, batch)
         else:
-            runs, actions = (1000, 1000) if LONG else (100, 100)
+            runs, actions = (1000, 200) if LONG else (100, 100)
             for run in range(runs):
                 print('Run ' + str(run + 1))
 
