@@ -16,7 +16,7 @@ class Session():
     OnSessionInit = Event()
     _text = ''
     saved = True
-    mode = modes.SELECT_MODE
+    mode = modes.SELECT
     expandtab = False
     tabwidth = 4
     search_pattern = ''

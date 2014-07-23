@@ -92,9 +92,10 @@ class Operation(Undoable):
                 result.append(string)
 
         session.text = ''.join(result)
-        session.selection_mode = modes.SELECT_MODE
+        session.selection_mode = modes.SELECT
         session.selection = new_selection
 
+modes.INSERT = 'INSERT'
 
 class InsertOperation:
 
@@ -110,11 +111,13 @@ class InsertOperation:
         """Execute action."""
         # Execute the operation (includes adding it to the undotree)
         self.operation(session)
+        session.mode = modes.INSERT
         # Then keep updating it according to the users changes
         while 1:
             session.ui.touch()
             char = session.ui.getchar()
             if char == 'Esc':
+                session.mode = modes.SELECT
                 break
             self.insert(session, char)
 

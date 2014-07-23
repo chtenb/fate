@@ -18,7 +18,7 @@ from functools import partial
 
 from . import actions
 from .selection import Selection, Interval
-from .modes import EXTEND_MODE, REDUCE_MODE
+from .modes import EXTEND, REDUCE
 
 from logging import debug
 
@@ -242,9 +242,9 @@ class SelectPattern(Selection):
 
         if new_intervals:
             new_selection = Selection(new_intervals)
-            if mode == EXTEND_MODE:
+            if mode == EXTEND:
                 new_selection.add(new_intervals)
-            elif mode == REDUCE_MODE:
+            elif mode == REDUCE:
                 new_selection.substract(new_intervals)
 
             if new_selection and selection != new_selection:
@@ -263,9 +263,9 @@ class SelectPattern(Selection):
             new_selection = Selection(Interval(mbeg, mend))
             # If match is in the right direction
             if not reverse and mend > beg or reverse and mbeg < end:
-                if mode == EXTEND_MODE:
+                if mode == EXTEND:
                     new_selection = selection.add(new_selection)
-                elif mode == REDUCE_MODE:
+                elif mode == REDUCE:
                     new_selection = selection.substract(new_selection)
 
                 if new_selection and selection != new_selection:
@@ -300,12 +300,12 @@ class SelectLocalPattern(Selection):
 
                 # If match is valid, i.e. overlaps
                 # or is beyond current interval in right direction
-                # or is empty interval adjacent to current interval
-                if (not reverse and (mend > beg or mend == beg == mbeg)
-                        or reverse and (mbeg < end or mbeg == end == mend)):
-                    if mode == EXTEND_MODE:
+                # or is empty interval adjacent to current interval in right direction
+                if (not reverse and mend > beg
+                        or reverse and mbeg < end):
+                    if mode == EXTEND:
                         new_interval = Interval(min(beg, mbeg), max(end, mend))
-                    elif mode == REDUCE_MODE:
+                    elif mode == REDUCE:
                         if reverse:
                             mend = max(end, mend)
                         else:

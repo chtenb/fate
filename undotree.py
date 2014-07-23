@@ -158,7 +158,7 @@ def undo_mode(session):
 
         char = session.ui.getchar()
         if char == 'Esc':
-            session.mode = modes.SELECT_MODE
+            session.mode = modes.SELECT
             break
 
         if char == 'Left':

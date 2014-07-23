@@ -1,6 +1,6 @@
 SHORT TERM
-fix openline
-fix walking through undo tree as interactive action
+fix autoindent and select indent
+how to define a keymap for each interactive action?
 Select around/inside (not done yet)
 Repeat last selector or operator
     idea: repeat last action most-top-level which resulted in a text change
