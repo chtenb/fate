@@ -1,5 +1,4 @@
 from ..userinterface import UserInterface
-from ..session import Session
 import random
 from re import escape
 
@@ -46,4 +45,3 @@ class RandomizedUserSimulator(UserInterface):
         # Escape string to ensure a valid regex
         return escape(randomstring)
 
-Session.OnSessionInit.add(RandomizedUserSimulator)

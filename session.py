@@ -4,16 +4,18 @@ from .selection import Selection, Interval
 from .clipboard import Clipboard
 from .undotree import UndoTree
 from . import modes
+from .userinterface import UserInterface
 
 import logging
 
-session_list = []
+sessionlist = []
 
 
 class Session():
 
     """Contains all objects of one file editing session"""
     OnSessionInit = Event()
+    UserInterfaceClass = None
     _text = ''
     saved = True
     mode = modes.SELECT
@@ -22,7 +24,7 @@ class Session():
     search_pattern = ''
 
     def __init__(self, filename=""):
-        session_list.append(self)
+        sessionlist.append(self)
         self.OnTextChanged = Event()
         self.OnRead = Event()
         self.OnWrite = Event()
@@ -34,7 +36,14 @@ class Session():
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
         self.locked_selection = None
-        self.ui = None
+
+        if not self.UserInterfaceClass:
+            raise Exception('No userinterface class specified in Session.UserInterfaceClass.')
+        if not issubclass(self.UserInterfaceClass, UserInterface):
+            raise Exception('Session.UserInterfaceClass not a subclass of UserInterface.')
+
+        self.ui = self.UserInterfaceClass(self)
+        self.OnQuit.add(self.ui.quit)
 
         # Load the default key map
         from .keymap import default
@@ -42,6 +51,7 @@ class Session():
         self.keymap.update(default)
 
         self.OnSessionInit.fire(self)
+
         if filename:
             self.read()
 
@@ -49,7 +59,7 @@ class Session():
         """Quit session."""
         logging.info('Quitting session ' + str(self))
         self.OnQuit.fire(self)
-        session_list.remove(self)
+        sessionlist.remove(self)
 
     @property
     def selection(self):

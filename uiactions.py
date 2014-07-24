@@ -4,7 +4,7 @@ We shall call them ui actors.
 """
 import re
 
-from .session import Session, session_list
+from .session import Session, sessionlist
 from . import actions
 from .selectors import SelectPattern, SelectLocalPattern
 
@@ -32,16 +32,16 @@ actions.quit_session = quit_session
 
 def next_session(session):
     """Go to the next session."""
-    index = session_list.index(session)
-    nsession = session_list[(index + 1) % len(session_list)]
+    index = sessionlist.index(session)
+    nsession = sessionlist[(index + 1) % len(sessionlist)]
     nsession.ui.activate()
 actions.next_session = next_session
 
 
 def previous_session(session):
     """Go to the previous session."""
-    index = session_list.index(session)
-    nsession = session_list[(index - 1) % len(session_list)]
+    index = sessionlist.index(session)
+    nsession = sessionlist[(index - 1) % len(sessionlist)]
     nsession.ui.activate()
 actions.previous_session = previous_session
 

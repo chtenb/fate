@@ -2,7 +2,6 @@
 from . import modes
 from .actiontools import Undoable
 from .selection import Selection, Interval
-from .selectors import SelectIndent
 
 
 class Operation(Undoable):
@@ -95,70 +94,3 @@ class Operation(Undoable):
         session.selection_mode = modes.SELECT
         session.selection = new_selection
 
-modes.INSERT = 'INSERT'
-
-class InsertOperation:
-
-    """Abstract class for operations dealing with insertion of text."""
-
-    def __init__(self, session, selection=None):
-        selection = selection or session.selection
-        self.operation = Operation(session, selection=selection)
-        self.insertions = [''] * len(selection)
-        self.deletions = [0] * len(selection)
-
-    def __call__(self, session):
-        """Execute action."""
-        # Execute the operation (includes adding it to the undotree)
-        self.operation(session)
-        session.mode = modes.INSERT
-        # Then keep updating it according to the users changes
-        while 1:
-            session.ui.touch()
-            char = session.ui.getchar()
-            if char == 'Esc':
-                session.mode = modes.SELECT
-                break
-            self.insert(session, char)
-
-    @property
-    def new_content(self, session):
-        raise NotImplementedError("An abstract method is not callable.")
-
-    def insert(self, session, string):
-        """
-        Insert a string (typically a char) in the operation.
-        By only autoindenting on a single \n, we potentially allow proper pasting.
-        """
-        self.operation.new_selection = self.operation.compute_new_selection()
-
-        # Very ugly way to get a indent string for each interval in the selection
-        indent = [SelectIndent(session, Selection([interval])).content(session)[0]
-                for interval in self.operation.new_selection]
-
-        assert (len(self.operation.new_selection)
-                == len(indent)
-                == len(self.insertions)
-                == len(self.deletions))
-
-        for i in range(len(self.operation.new_selection)):
-            if string == '\b':
-                # TODO remove multiple whitespaces if possible
-                # remove one char
-                if self.insertions[i]:
-                    self.insertions[i] = self.insertions[i][:-1]
-                else:
-                    self.deletions[i] += 1
-            elif string == '\n':
-                # add indent after \n
-                self.insertions[i] += string + indent[i]
-            elif string == '\t' and session.expandtab:
-                self.insertions[i] += ' ' * session.tabwidth
-            else:
-                # add string
-                self.insertions[i] += str(string)
-
-        # Make the changes to the session
-        self.operation.undo(session)
-        self.operation.new_content = self.new_content
-        self.operation.do(session)

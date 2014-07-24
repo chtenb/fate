@@ -5,7 +5,8 @@ from . import actions
 from .actiontools import Compose
 from .selectors import (Empty, EmptyBefore, PreviousFullLine,
                         SelectIndent, NextFullLine, NextChar, PreviousChar)
-from .operators import (Append, ChangeAfter, Insert, ChangeInPlace, delete)
+from .operators import Append, Insert, delete
+from .insertoperations import ChangeAfter, ChangeInPlace
 from .clipboard import copy, clear, paste_before
 from logging import debug
 

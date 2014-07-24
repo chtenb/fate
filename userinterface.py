@@ -10,8 +10,6 @@ class UserInterface:
 
     def __init__(self, session):
         self.session = session
-        self.session.ui = self
-        self.session.OnQuit.add(self.quit)
 
     def touch(self, message):
         raise NotImplementedError("An abstract method is not callable.")

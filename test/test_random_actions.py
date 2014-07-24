@@ -8,15 +8,14 @@ from sys import path
 from os import urandom
 import random
 from ..runtest import RERUN, LONG
-
-# importing RandomizedUserInterface will take care of creating a userinterface
-from . import randomized_userinterface
+from .randomized_userinterface import RandomizedUserSimulator
 
 action_dict = publics(actions)
 action_names = list(action_dict.keys())
 
 class RandomizedActionTest(BaseTestCase):
     def setUp(self):
+        self.UserInterfaceClass = RandomizedUserSimulator
         BaseTestCase.setUp(self)
 
     def test_random_actions(self):

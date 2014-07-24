@@ -29,7 +29,8 @@ logging.basicConfig(level=logging.DEBUG,
 info('Starting fate.')
 
 # Load modules exposing actions, to make sure the actions module contains all actions
-from . import actions, selectors, operators, clipboard, compoundactions, uiactions, modes
+from . import (actions, selectors, operators, clipboard, compoundactions, uiactions,
+        modes, insertoperations)
 
 # Load standard plugins
 from . import filetype_system
