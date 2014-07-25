@@ -4,12 +4,30 @@ This module contains several base classes and decorators for creating actions.
 from functools import wraps
 from collections import deque
 from logging import debug
+from . import actions
+
 
 def execute(action, session):
     """Call obj as an action recursively while callable."""
     while callable(action):
         action = action(session)
     return action
+
+
+def repeatable(action):
+    """Action decorator which stores action in last_repeatable_action field in session."""
+    @wraps(action)
+    def wrapper(session):
+        result = action(session)
+        session.last_repeatable_action = action
+        return result
+    return wrapper
+
+
+def repeat(session):
+    """Repeat last repeatable action."""
+    execute(session.last_repeatable_action, session)
+actions.repeat = repeat
 
 class Undoable:
 

@@ -62,6 +62,9 @@ default = {
     'O': actions.OpenLineBefore,
     'x': actions.Cut,
     'X': actions.CutChange,
+    '.': actions.repeat,
+    '~': actions.uppercase,
+    '`': actions.lowercase,
 }
 
 
