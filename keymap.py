@@ -30,6 +30,8 @@ default = {
     'h': actions.PreviousChar,
     'w': actions.NextWord,
     'b': actions.PreviousWord,
+    'W': actions.NextClass,
+    'B': actions.PreviousClass,
     '}': actions.NextParagraph,
     '{': actions.PreviousParagraph,
     ')': actions.SelectAround,

@@ -293,7 +293,7 @@ class SelectLocalPattern(Selection):
                 if only_within and not (beg <= mbeg and mend <= end):
                     continue
 
-                # If next_if_same is True, allow same interval as original
+                # If allow_same_interval is True, allow same interval as original
                 if allow_same_interval and (beg, end) == (mbeg, mend):
                     new_interval = Interval(mbeg, mend)
                     break
@@ -343,7 +343,10 @@ actions.PreviousChar = PreviousChar
 NextWord, PreviousWord = pattern_pair(r'\b\w+\b')
 actions.NextWord = NextWord
 actions.PreviousWord = PreviousWord
-NextLine, PreviousLine = pattern_pair(r'\s*([^\n]*)', group=1)
+NextClass, PreviousClass = pattern_pair(r'\w+|[ \t]+|[^\w \t\n]+')
+actions.NextClass = NextClass
+actions.PreviousClass = PreviousClass
+NextLine, PreviousLine = pattern_pair(r'(?m)^[ \t]*([^\n]*)', group=1)
 actions.NextLine = NextLine
 actions.PreviousLine = PreviousLine
 NextFullLine, PreviousFullLine = pattern_pair(r'[^\n]*\n?')
