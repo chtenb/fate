@@ -5,6 +5,11 @@ from functools import wraps
 from collections import deque
 from logging import debug
 
+def execute(action, session):
+    """Call obj as an action recursively while callable."""
+    while callable(action):
+        action = action(session)
+    return action
 
 class Undoable:
 

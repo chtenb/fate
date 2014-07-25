@@ -124,7 +124,7 @@ class ChangeAfter(InsertOperation):
                     self.deletions[i] += 1
             elif string == '\n':
                 # add indent after \n
-                cursor_pos = self.operation.new_selection[i][0] + len(self.insertions)
+                cursor_pos = self.operation.new_selection[i][1] - 1 + len(self.insertions)
                 indent = get_indent(session, cursor_pos)
                 self.insertions[i] += string + indent
             elif string == '\t' and session.expandtab:
@@ -202,9 +202,10 @@ class ChangeAround(InsertOperation):
             for first, second in character_pairs:
                 first_string = first_string.replace(second, first)
                 second_string = second_string.replace(first, second)
+
             beg, end = self.deletions[i], -self.deletions[i] or None
             result.append(first_string
                     + self.operation.old_content[i][beg:end]
                     + second_string)
-            return result
+        return result
 actions.ChangeAround = ChangeAround

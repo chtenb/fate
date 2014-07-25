@@ -18,7 +18,6 @@ class Operation(Undoable):
         selection = selection or session.selection
         self.old_selection = selection
         self.old_content = selection.content(session)
-        self.new_selection = None # Maybe this can be done neater now
         try:
             self.new_content = new_content or self.old_content[:]
         except AttributeError:
@@ -55,26 +54,21 @@ class Operation(Undoable):
     def _apply(self, session, inverse=False):
         """Apply self to the session."""
         if inverse:
-            if self.new_selection == None:
-                raise Exception(
-                    'An operation that has not been applied cannot be undone.'
-                )
-            old_selection = self.new_selection
+            old_selection = self.compute_new_selection()
             new_selection = self.old_selection
             new_content = self.old_content
         else:
-            self.new_selection = self.compute_new_selection()
-            new_selection = self.new_selection
+            new_selection = self.compute_new_selection()
             old_selection = self.old_selection
             new_content = self.new_content
 
-        #print(self)
         #print(session.text)
-        #print(session.selection)
+        #print('old: ' + str(old_selection))
+        #print('new: ' + str(new_selection))
 
         # Make sure the application of this operation is valid at this moment
         assert old_selection.isvalid(session)
-
+        assert len(new_selection) == len(old_selection)
         assert len(new_content) == len(self.old_content)
 
         partition = old_selection.partition(session)

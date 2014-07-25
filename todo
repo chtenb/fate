@@ -11,9 +11,9 @@ Incorporate testing with multiple sessions
 Check if we can specify multiple testruns more easily in the unittest framework
 make travis fail if tests fail
 unittests for pattern select machinery
-Make labeling generation asynchronous
 
 LONG TERM
+Make labeling generation asynchronous
 Persistent session (using a context manager?)
 Improve syntax highlighting, for instance by disregarding quotes inside comments and strings
     select around should maybe also disregard brackets etc in comments and strings
@@ -29,4 +29,4 @@ Optimal configurable datastructure for text editing
     optimize it for linenumber queries as well, not only for char numbers
 Optimal configurable datastructure for labeling/syntax highlighting
 Store additional metadata such as the number of line breaks in a certain range
-
+Executing regex over the whole text should be fast, so is this case we want lookup to be constant time (amortized)

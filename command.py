@@ -1,6 +1,7 @@
 from . import actions
 from re import match
 from logging import debug
+from .actiontools import execute
 
 
 def publics(obj):
@@ -58,10 +59,5 @@ def evaluate(session, command):
     except Exception as e:
         return command + ' : ' + str(e)
     else:
-        return call_action(result, session)
+        return execute(result, session)
 
-def call_action(obj, session):
-    """Call obj as an action recursively while callable."""
-    while callable(obj):
-        obj = obj(session)
-    return obj

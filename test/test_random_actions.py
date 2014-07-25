@@ -2,7 +2,8 @@ from unittest import main
 from .basetestcase import BaseTestCase
 from .. import actions
 from random import choice
-from ..command import publics, call_action
+from ..command import publics
+from ..actiontools import execute
 from tempfile import gettempdir
 from sys import path
 from os import urandom
@@ -54,7 +55,7 @@ class RandomizedActionTest(BaseTestCase):
         random.seed(seed)
         for i, name in enumerate(batch):
             print(str(i + 1) + ': executing ' + name)
-            call_action(action_dict[name], self.session)
+            execute(action_dict[name], self.session)
 
         #print('Result:\n' + self.session.text)
 
