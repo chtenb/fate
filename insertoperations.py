@@ -33,7 +33,7 @@ class InsertOperation:
             if char == 'Esc':
                 session.mode = modes.SELECT
                 break
-            self.operation.new_selection = self.operation.compute_new_selection()
+            self.new_selection = self.operation.compute_new_selection()
             self.insert(session, char)
             # Make the changes to the session
             self.operation.undo(session)
@@ -76,7 +76,7 @@ class ChangeBefore(InsertOperation):
         self.mode = modes.INSERT
 
     def insert(self, session, string):
-        for i in range(len(self.operation.new_selection)):
+        for i in range(len(self.new_selection)):
             if string == '\b':
                 # TODO remove multiple whitespaces if possible
                 # Remove one char
@@ -86,7 +86,7 @@ class ChangeBefore(InsertOperation):
                     self.deletions[i] += 1
             elif string == '\n':
                 # Add indent after \n
-                cursor_pos = self.operation.new_selection[i][0] + len(self.insertions)
+                cursor_pos = self.new_selection[i][0] + len(self.insertions[i])
                 indent = get_indent(session, cursor_pos)
                 self.insertions[i] += string + indent
             elif string == '\t' and session.expandtab:
@@ -114,7 +114,7 @@ class ChangeAfter(InsertOperation):
         self.mode = modes.APPEND
 
     def insert(self, session, string):
-        for i in range(len(self.operation.new_selection)):
+        for i in range(len(self.new_selection)):
             if string == '\b':
                 # TODO remove multiple whitespaces if possible
                 # remove one char
@@ -124,7 +124,7 @@ class ChangeAfter(InsertOperation):
                     self.deletions[i] += 1
             elif string == '\n':
                 # add indent after \n
-                cursor_pos = self.operation.new_selection[i][1] - 1 + len(self.insertions)
+                cursor_pos = self.new_selection[i][1]
                 indent = get_indent(session, cursor_pos)
                 self.insertions[i] += string + indent
             elif string == '\t' and session.expandtab:
@@ -165,7 +165,7 @@ class ChangeAround(InsertOperation):
         self.mode = modes.SURROUND
 
     def insert(self, session, string):
-        for i in range(len(self.operation.new_selection)):
+        for i in range(len(self.new_selection)):
             if string == '\b':
                 # TODO remove multiple whitespaces if possible
                 # remove one char
@@ -178,11 +178,11 @@ class ChangeAround(InsertOperation):
                     self.deletions[i] += 1
             elif string == '\n':
                 # add indent after \n
-                cursor_pos_before = self.operation.new_selection[i][0]
-                cursor_pos_after = self.operation.new_selection[i][1]
+                cursor_pos_before = self.new_selection[i][0]
+                cursor_pos_after = self.new_selection[i][1]
                 indent_before = get_indent(session, cursor_pos_before)
                 indent_after = get_indent(session, cursor_pos_after)
-                self.insertions_before[i] += string + indent_before
+                self.insertions_before[i] += indent_before + string
                 self.insertions_after[i] += string + indent_after
             elif string == '\t' and session.expandtab:
                 self.insertions_before[i] += ' ' * session.tabwidth

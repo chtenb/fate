@@ -1,6 +1,4 @@
 SHORT TERM
-fix autoindent and select indent
-    write unit tests for the insert operations
 how to define a keymap for each interactive action?
 Select around/inside (not done yet)
 Repeat last selector or operator
