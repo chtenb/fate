@@ -32,7 +32,7 @@ class RandomizedActionTest(BaseTestCase):
                 else:
                     self.run_batch(seed, batch)
             else:
-                runs, actions = (1000, 200) if LONG else (100, 100)
+                runs, actions = (5000, 50) if LONG else (500, 50)
                 for run in range(runs):
                     print('Run ' + str(run + 1))
 
@@ -46,10 +46,11 @@ class RandomizedActionTest(BaseTestCase):
     def run_batch(self, seed, batch):
         savefile = gettempdir() + '/last_test_batch_fate.py'
 
-        print('Saving run into ' + savefile)
-        print('Seed: ' + str(seed))
-        print('Text:\n' + str(self.session.text))
-        print('Selection: ' + str(self.session.selection))
+        if VERBOSE:
+            print('Saving run into ' + savefile)
+            print('Seed: ' + str(seed))
+            print('Text:\n' + str(self.session.text))
+            print('Selection: ' + str(self.session.selection))
 
         with open(savefile, 'w') as f:
             f.write('seed = {}\n'.format(seed))
@@ -70,5 +71,3 @@ class RandomizedActionTest(BaseTestCase):
                 break
         return name
 
-if __name__ == '__main__':
-    main()

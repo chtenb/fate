@@ -17,5 +17,3 @@ class ClipboardTest(BaseTestCase):
         undo(self.session)
         self.assertEqual('import sys', self.session.text[:10])
 
-if __name__ == '__main__':
-    main()

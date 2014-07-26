@@ -53,5 +53,3 @@ class OperatorTest(BaseTestCase):
         undo(self.session)
         self.assertEqual('import sys\n\n', self.session.text[:12])
 
-if __name__ == '__main__':
-    main()
