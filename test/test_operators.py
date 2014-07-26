@@ -12,7 +12,7 @@ class OperatorTest(BaseTestCase):
     def test_insert(self):
         action = Insert('Foo ')
         action(self.session)
-        expected = 'Foo import sys$'
+        expected = 'Foo import sys'
         self.assertEqual(expected, self.session.text[:14])
 
         undo(self.session)
