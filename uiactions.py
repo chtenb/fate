@@ -23,6 +23,7 @@ def quit_session(session):
             answer = session.ui.prompt('Unsaved changes! Really quit? (y/n)')
             if answer == 'y':
                 session.quit()
+                break
             if answer == 'n':
                 break
     else:
