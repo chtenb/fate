@@ -22,6 +22,7 @@ class Session():
     expandtab = False
     tabwidth = 4
     search_pattern = ''
+    last_repeatable_action = None
 
     def __init__(self, filename=""):
         sessionlist.append(self)

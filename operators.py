@@ -5,10 +5,8 @@ by operator, either directly or indirectly.
 """
 from . import actions
 from .operation import Operation
-from .actiontools import repeatable
 
 
-@repeatable
 def uppercase(session, selection=None):
     """Delete content."""
     selection = selection or session.selection
@@ -18,7 +16,6 @@ def uppercase(session, selection=None):
 actions.uppercase = uppercase
 
 
-@repeatable
 def lowercase(session, selection=None):
     """Lowercase content."""
     selection = selection or session.selection
@@ -28,7 +25,6 @@ def lowercase(session, selection=None):
 actions.lowercase = lowercase
 
 
-@repeatable
 def delete(session, selection=None):
     """Delete content."""
     selection = selection or session.selection

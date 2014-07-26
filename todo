@@ -1,13 +1,12 @@
 SHORT TERM
-how to define a keymap for each interactive action?
-Select around/inside (not done yet)
+make travis fail if tests fail
 Repeat last selector or operator
-    idea: repeat last action most-top-level which resulted in a text change
-    we may need a single function which always executes actions, to be able to store the right ones
-    Or add a decorator @repeatable
+    idea 1: Add a decorator @repeatable. How to decorate functions defined by classes?
+    idea 2: Repeat last action most-top-level which resulted in a text change. We may need a single function which always executes actions, to be able to store the right ones.
+how to define a keymap for each interactive action?
+Select around/inside (not finished yet)
 Incorporate testing with multiple sessions
 Check if we can specify multiple testruns more easily in the unittest framework
-make travis fail if tests fail
 unittests for pattern select machinery
 
 LONG TERM

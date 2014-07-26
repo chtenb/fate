@@ -2,7 +2,7 @@
 
 from . import modes
 from . import actions
-from .actiontools import Compose
+from .actiontools import Compose, repeatable
 from .selectors import (Empty, EmptyBefore, PreviousFullLine,
                         SelectIndent, NextFullLine, NextChar, PreviousChar)
 from .operators import Append, Insert, delete
@@ -36,3 +36,4 @@ actions.Cut = Cut
 CutChange = Compose(Cut, ChangeInPlace,
                     name='CutChange', docs='Copy and change selected text.')
 actions.CutChange = CutChange
+

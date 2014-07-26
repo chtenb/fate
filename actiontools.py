@@ -26,8 +26,10 @@ def repeatable(action):
 
 def repeat(session):
     """Repeat last repeatable action."""
-    execute(session.last_repeatable_action, session)
+    if session.last_repeatable_action:
+        execute(session.last_repeatable_action, session)
 actions.repeat = repeat
+
 
 class Undoable:
 

@@ -4,7 +4,6 @@ from .operation import Operation
 import re
 from .selectors import NextFullLine
 from .selection import Selection, Interval
-from .actiontools import repeatable
 
 from logging import debug
 
@@ -65,7 +64,6 @@ def get_indent(session, pos):
     return string[match.start(): match.end()]
 
 
-@repeatable
 class ChangeBefore(InsertOperation):
     """
     Interactive Operation which deletes `deletions`
@@ -140,7 +138,7 @@ class ChangeAfter(InsertOperation):
         return [self.operation.old_content[i][:-self.deletions[i] or None]
                 + self.insertions[i]
                 for i in range(len(self.operation.old_content))]
-actions.ChangeAfter = repeatable(ChangeAfter)
+actions.ChangeAfter = ChangeAfter
 
 class ChangeInPlace(ChangeAfter):
     """
@@ -149,10 +147,9 @@ class ChangeInPlace(ChangeAfter):
     @property
     def new_content(self):
         return [self.insertions[i] for i in range(len(self.operation.old_content))]
-actions.ChangeInPlace = repeatable(ChangeInPlace)
+actions.ChangeInPlace = ChangeInPlace
 
 
-@repeatable
 class ChangeAround(InsertOperation):
 
     """

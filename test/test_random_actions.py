@@ -8,7 +8,7 @@ from tempfile import gettempdir
 from sys import path
 from os import urandom
 import random
-from ..runtest import RERUN, LONG
+from ..runtest import RERUN, LONG, NO_RANDOMIZED_TESTS
 from .randomized_userinterface import RandomizedUserSimulator
 
 action_dict = publics(actions)
@@ -20,25 +20,28 @@ class RandomizedActionTest(BaseTestCase):
         BaseTestCase.setUp(self)
 
     def test_random_actions(self):
-        if RERUN:
-            path.insert(0, gettempdir())
-            try:
-                from last_test_batch_fate import seed, batch
-            except ImportError:
-                raise Exception('Can\'t rerun batch: no previous batch exists.')
-            else:
-                self.run_batch(seed, batch)
+        if NO_RANDOMIZED_TESTS:
+            print('Skipping randomized tests')
         else:
-            runs, actions = (1000, 200) if LONG else (100, 100)
-            for run in range(runs):
-                print('Run ' + str(run + 1))
+            if RERUN:
+                path.insert(0, gettempdir())
+                try:
+                    from last_test_batch_fate import seed, batch
+                except ImportError:
+                    raise Exception('Can\'t rerun batch: no previous batch exists.')
+                else:
+                    self.run_batch(seed, batch)
+            else:
+                runs, actions = (1000, 200) if LONG else (100, 100)
+                for run in range(runs):
+                    print('Run ' + str(run + 1))
 
-                # Make sure to create a new session for each run
-                self.setUp()
-                seed = urandom(10)
-                batch = [self.get_random_action() for _ in range(actions)]
+                    # Make sure to create a new session for each run
+                    self.setUp()
+                    seed = urandom(10)
+                    batch = [self.get_random_action() for _ in range(actions)]
 
-                self.run_batch(seed, batch)
+                    self.run_batch(seed, batch)
 
     def run_batch(self, seed, batch):
         savefile = gettempdir() + '/last_test_batch_fate.py'
