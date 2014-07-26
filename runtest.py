@@ -25,5 +25,6 @@ sys.path.insert(0, path_to_fate)
 suite = loader.discover('fate')
 runner = TextTestRunner()
 test_result = runner.run(suite)
-exit_code = not test_result.wasSuccessful()
-sys.exit(exit_code)
+success = test_result.wasSuccessful()
+if not success:
+    sys.exit(1)
