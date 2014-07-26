@@ -8,7 +8,7 @@ from tempfile import gettempdir
 from sys import path
 from os import urandom
 import random
-from ..runtest import RERUN, LONG, NO_RANDOMIZED_TESTS
+from ..runtest import RERUN, LONG, NO_RANDOMIZED_TESTS, VERBOSE
 from .randomized_userinterface import RandomizedUserSimulator
 
 action_dict = publics(actions)
@@ -57,7 +57,8 @@ class RandomizedActionTest(BaseTestCase):
 
         random.seed(seed)
         for i, name in enumerate(batch):
-            print(str(i + 1) + ': executing ' + name)
+            if VERBOSE:
+                print(str(i + 1) + ': executing ' + name)
             execute(action_dict[name], self.session)
 
         #print('Result:\n' + self.session.text)
