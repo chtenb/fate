@@ -12,6 +12,7 @@ from . import actions
 default = {
     'Ctrl-S': Session.write,
     'Ctrl-Q': actions.quit_session,
+    'Ctrl-X': actions.force_quit,
     'Ctrl-O': actions.open_session,
     'Ctrl-N': actions.next_session,
     'Ctrl-P': actions.previous_session,

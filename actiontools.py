@@ -2,7 +2,6 @@
 This module contains several base classes and decorators for creating actions.
 """
 from functools import wraps
-from collections import deque
 from logging import debug
 from . import actions
 
@@ -14,12 +13,26 @@ def execute(action, session):
     return action
 
 
+# TODO: think about how to allow decoration of class methods easily
 def repeatable(action):
     """Action decorator which stores action in last_repeatable_action field in session."""
     @wraps(action)
-    def wrapper(session):
-        result = action(session)
-        session.last_repeatable_action = action
+    def wrapper(arg1, arg2=None):
+        if arg2 == None:
+            self = None
+            session = arg1
+        else:
+            self = arg1
+            session = arg2
+
+        if self != None:
+            result = action(self, session)
+            debug(1)
+            session.last_repeatable_action = action.__call__
+            debug(str(action.__call__))
+        else:
+            result = action(session)
+            session.last_repeatable_action = action
         return result
     return wrapper
 
@@ -64,7 +77,8 @@ class Undoable:
 # There is a complication with implementing composed actions.
 # Suppose we want to create a compound selection which involves a the mode
 # of the session to change to extend mode at some point.
-# Then extend mode must be executed at creation time, in order to create the intended selection.
+# Then extend mode must be executed at creation time,
+# in order to create the intended selection.
 # However, this violates the principle that the session must not be
 # touched while only creating an action.
 # The solution is that compositions don't return an action and thus cannot be inspected

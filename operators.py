@@ -64,3 +64,17 @@ class Insert:
         operation = Operation(session, new_content, selection)
         operation(session)
 
+
+class Change:
+
+    """Insert in place of content."""
+
+    def __init__(self, string):
+        self.string = string
+
+    def __call__(self, session, selection=None):
+        selection = selection or session.selection
+        new_content = [self.string for content in selection.content(session)]
+        operation = Operation(session, new_content, selection)
+        operation(session)
+

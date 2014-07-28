@@ -67,7 +67,7 @@ class RandomizedActionTest(BaseTestCase):
     def get_random_action(self):
         while 1:
             name = choice(action_names)
-            if name != 'quit_session':
+            if name not in ['quit_session', 'force_quit']:
                 break
         return name
 

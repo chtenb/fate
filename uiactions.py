@@ -31,6 +31,11 @@ def quit_session(session):
 actions.quit_session = quit_session
 
 
+def force_quit(session):
+    session.quit()
+actions.force_quit = force_quit
+
+
 def next_session(session):
     """Go to the next session."""
     index = sessionlist.index(session)
@@ -90,4 +95,3 @@ actions.search_previous = search_previous
 def command_mode(session):
     session.ui.command_mode()
 actions.command_mode = command_mode
-

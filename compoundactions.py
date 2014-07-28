@@ -2,7 +2,7 @@
 
 from . import modes
 from . import actions
-from .actiontools import Compose, repeatable
+from .actiontools import Compose
 from .selectors import (Empty, EmptyBefore, PreviousFullLine,
                         SelectIndent, NextFullLine, NextChar, PreviousChar)
 from .operators import Append, Insert, delete

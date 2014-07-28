@@ -21,6 +21,7 @@ class Session():
     mode = modes.SELECT
     expandtab = False
     tabwidth = 4
+    autoindent = True
     search_pattern = ''
     last_repeatable_action = None
 
