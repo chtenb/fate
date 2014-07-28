@@ -13,26 +13,13 @@ def execute(action, session):
     return action
 
 
-# TODO: think about how to allow decoration of class methods easily
+# TODO: think about how to allow decoration of classes/instancemethods easily
 def repeatable(action):
     """Action decorator which stores action in last_repeatable_action field in session."""
     @wraps(action)
-    def wrapper(arg1, arg2=None):
-        if arg2 == None:
-            self = None
-            session = arg1
-        else:
-            self = arg1
-            session = arg2
-
-        if self != None:
-            result = action(self, session)
-            debug(1)
-            session.last_repeatable_action = action.__call__
-            debug(str(action.__call__))
-        else:
-            result = action(session)
-            session.last_repeatable_action = action
+    def wrapper(session):
+        result = action(session)
+        session.last_repeatable_action = action
         return result
     return wrapper
 

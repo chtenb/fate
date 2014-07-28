@@ -1,9 +1,7 @@
 SHORT TERM
-Repeat last selector or operator
-    idea 1: Add a decorator @repeatable. How to decorate functions defined by classes?
-        Decorate __call__
-    idea 2: Repeat last action most-top-level which resulted in a text change. We may need a single function which always executes actions, to be able to store the right ones.
-how to define a keymap for each interactive action?
+Define keymap for interactions
+Make openline correctly repeatable
+    Add a decorator @repeatable. How to decorate functions defined by classes?
 Select around/inside (not finished yet)
 Incorporate testing with multiple sessions
 Check if we can specify multiple testruns more easily in the unittest framework

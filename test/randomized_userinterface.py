@@ -11,7 +11,7 @@ character_space = list(
 !@#$%&*()
 \n\t\b
 """
-) + 10 * ['Esc']
+) + 10 * ['Esc'] + ['Up', 'Down', 'Left', 'Right']
 
 class RandomizedUserSimulator(UserInterface):
 
