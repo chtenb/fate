@@ -4,7 +4,7 @@ from .operation import Operation
 import re
 from .selectors import NextFullLine
 from .selection import Selection, Interval
-from .repeat import start_recording, stop_recording
+from .repeat import repeatable
 
 from logging import debug
 
@@ -21,9 +21,6 @@ class InsertOperation:
 
     def __init__(self, session):
         session.mode = self.mode
-
-        self.record(session)
-        start_recording(session)
 
         # Then keep updating it according to the users changes
         while 1:
@@ -44,12 +41,6 @@ class InsertOperation:
             self.preview_operation.undo(session)
 
         self.preview_operation(session)
-
-        stop_recording(session)
-
-    @classmethod
-    def record(cls, session):
-        session.repeat_data.current_action = cls
 
     def compute_operation(self, session):
         """Compute operation based on insertions and deletions."""
@@ -74,6 +65,7 @@ def get_indent(session, pos):
     return string[match.start(): match.end()]
 
 
+@repeatable
 class ChangeBefore(InsertOperation):
 
     """
@@ -169,9 +161,10 @@ class ChangeAfter(InsertOperation):
                        for i in range(len(session.selection))]
         return Operation(session, new_content)
 
-actions.ChangeAfter = ChangeAfter
+actions.ChangeAfter = repeatable(ChangeAfter)
 
 
+@repeatable
 class ChangeInPlace(ChangeAfter):
 
     """
@@ -189,6 +182,7 @@ class ChangeInPlace(ChangeAfter):
 actions.ChangeInPlace = ChangeInPlace
 
 
+@repeatable
 class ChangeAround(InsertOperation):
 
     """
