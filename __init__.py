@@ -30,7 +30,7 @@ info('Starting fate.')
 
 # Load modules exposing actions, to make sure the actions module contains all actions
 from . import (actions, selectors, operators, clipboard, compoundactions, uiactions,
-        modes, insertoperations, actiontools, repeat)
+        modes, insertoperations, actiontools, repeat, undotree)
 
 # Load standard plugins
 from . import filetype_system

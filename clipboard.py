@@ -11,6 +11,7 @@ For this to work, the clipboard must be usable cross-history.
 """
 from .operation import Operation
 from . import actions
+from .session import Session
 
 
 class Clipboard:
@@ -36,6 +37,11 @@ class Clipboard:
             return self.storage.pop()
         except IndexError:
             return
+
+
+def init(session):
+    session.clipboard = Clipboard()
+Session.OnSessionInit.add(init)
 
 
 def copy(session):

@@ -11,13 +11,10 @@ class UserInterface:
     def __init__(self, session):
         self.session = session
 
-    def touch(self, message):
+    def touch(self):
         raise NotImplementedError("An abstract method is not callable.")
 
     def notify(self, message):
-        raise NotImplementedError("An abstract method is not callable.")
-
-    def quit(self):
         raise NotImplementedError("An abstract method is not callable.")
 
     def activate(self):

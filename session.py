@@ -1,8 +1,6 @@
 """A session represents the state of an editing session."""
 from .event import Event
 from .selection import Selection, Interval
-from .clipboard import Clipboard
-from .undotree import UndoTree
 from . import modes
 from .userinterface import UserInterface
 from collections import deque
@@ -35,9 +33,6 @@ class Session():
         self.OnWrite = Event()
         self.OnQuit = Event()
         self.OnUserInput = Event()
-
-        self.clipboard = Clipboard()
-        self.undotree = UndoTree(self)
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))

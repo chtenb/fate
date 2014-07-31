@@ -5,6 +5,8 @@ the action history.
 from logging import debug
 from . import actions
 from . import modes
+from .session import Session
+
 
 class UndoTree:
 
@@ -113,21 +115,29 @@ class Node:
         """Add a child to node."""
         self.children.append(node)
 
+
+def init(session):
+    session.undotree = UndoTree(session)
+Session.OnSessionInit.add(init)
+
 modes.UNDO = 'UNDO'
 
+
 class UndoMode:
+
     """
     Walk around in undo tree using arrow keys.
     You can only switch branches between siblings.
     """
+
     def __init__(self):
         self.keymap = {
-            'Left' : self.left,
-            'Right' : self.right,
-            'Up' : self.up,
-            'Down' : self.down,
-            'Esc' : self.stop
-            }
+            'Left': self.left,
+            'Right': self.right,
+            'Up': self.up,
+            'Down': self.down,
+            'Esc': self.stop
+        }
 
     def __call__(self, session):
         session.mode = modes.UNDO
@@ -196,4 +206,3 @@ class UndoMode:
         return node.parent.children.index(node) if node.parent != None else 0
 
 actions.undo_mode = UndoMode()
-
