@@ -4,6 +4,7 @@ from .operation import Operation
 import re
 from .selectors import NextFullLine
 from .selection import Selection, Interval
+from .repeat import start_recording, stop_recording
 
 from logging import debug
 
@@ -21,6 +22,9 @@ class InsertOperation:
     def __init__(self, session):
         session.mode = self.mode
 
+        self.record(session)
+        start_recording(session)
+
         # Then keep updating it according to the users changes
         while 1:
             # Execute the operation (excludes adding it to the undotree)
@@ -28,7 +32,7 @@ class InsertOperation:
             self.preview_operation.do(session)
 
             session.ui.touch()
-            char = session.ui.getchar()
+            char = session.getchar()
 
             if char == 'Esc':
                 self.preview_operation.undo(session)
@@ -39,11 +43,13 @@ class InsertOperation:
 
             self.preview_operation.undo(session)
 
-    def __call__(self, session):
-        """Execute the final insertion."""
-        operation = self.compute_operation(session)
-        operation(session)
-        session.last_repeatable_action = self
+        self.preview_operation(session)
+
+        stop_recording(session)
+
+    @classmethod
+    def record(cls, session):
+        session.current_repeatable_action = cls
 
     def compute_operation(self, session):
         """Compute operation based on insertions and deletions."""

@@ -1,7 +1,11 @@
 SHORT TERM
-Define keymap for interactions
+Reset mode after operation
 Make openline correctly repeatable
-    Add a decorator @repeatable. How to decorate functions defined by classes?
+    Add a decorator @repeatable. How to decorate actions/callables defined by classes?
+    option 1: rewrite OpenLine without using Compose
+    option 2: only make actions repeatable which require additional user input
+        repeating then means executing and feeding the same input as before
+        so we need to store user input instead of actions: revise paradigm
 Select around/inside (not finished yet)
 Incorporate testing with multiple sessions
 Check if we can specify multiple testruns more easily in the unittest framework

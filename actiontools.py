@@ -5,7 +5,6 @@ from functools import wraps
 from logging import debug
 from . import actions
 
-
 def execute(action, session):
     """Call obj as an action recursively while callable."""
     while callable(action):
@@ -14,21 +13,22 @@ def execute(action, session):
 
 
 # TODO: think about how to allow decoration of classes/instancemethods easily
-def repeatable(action):
-    """Action decorator which stores action in last_repeatable_action field in session."""
-    @wraps(action)
-    def wrapper(session):
-        result = action(session)
-        session.last_repeatable_action = action
-        return result
-    return wrapper
+#def repeatable(action):
+    #"""Action decorator which stores action in last_repeatable_action field in session."""
+    #@wraps(action)
+    #def wrapper(session):
+        #start_recording(session)
+        #result = action(session)
+        #stop_recording(session)
+        #return result
+    #return wrapper
 
 
-def repeat(session):
-    """Repeat last repeatable action."""
-    if session.last_repeatable_action:
-        execute(session.last_repeatable_action, session)
-actions.repeat = repeat
+#def repeat(session):
+    #"""Repeat last repeatable action."""
+    #if session.last_repeatable_action:
+        #execute(session.last_repeatable_action, session)
+#actions.repeat = repeat
 
 
 class Undoable:

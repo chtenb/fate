@@ -5,6 +5,7 @@ from .clipboard import Clipboard
 from .undotree import UndoTree
 from . import modes
 from .userinterface import UserInterface
+from collections import deque
 
 import logging
 
@@ -24,6 +25,7 @@ class Session():
     autoindent = True
     search_pattern = ''
     last_repeatable_action = None
+    locked_selection = None
 
     def __init__(self, filename=""):
         sessionlist.append(self)
@@ -31,13 +33,14 @@ class Session():
         self.OnRead = Event()
         self.OnWrite = Event()
         self.OnQuit = Event()
+        self.OnUserInput = Event()
 
         self.clipboard = Clipboard()
         self.undotree = UndoTree(self)
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
-        self.locked_selection = None
+        self.food = deque()
 
         if not self.UserInterfaceClass:
             raise Exception('No userinterface class specified in Session.UserInterfaceClass.')
@@ -56,6 +59,17 @@ class Session():
 
         if filename:
             self.read()
+
+    def getchar(self):
+        if self.food:
+            char = self.food.popleft()
+        else:
+            char = self.ui.getchar()
+        self.OnUserInput.fire(self, char)
+        return char
+
+    def feed(self, chars):
+        self.food.extend(chars)
 
     def quit(self):
         """Quit session."""
