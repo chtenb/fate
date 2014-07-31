@@ -49,7 +49,7 @@ class InsertOperation:
 
     @classmethod
     def record(cls, session):
-        session.current_repeatable_action = cls
+        session.repeat_data.current_action = cls
 
     def compute_operation(self, session):
         """Compute operation based on insertions and deletions."""

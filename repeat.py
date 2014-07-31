@@ -1,41 +1,67 @@
+"""This module provides a repeat mechanism for user input."""
 from .session import Session
 from . import actions
-from logging import debug
+from functools import wraps
+
+
+class RepeatData:
+
+    """A container object for all data we need."""
+
+    def __init__(self):
+        self.last_user_input = []
+        self.last_action = None
+        self.current_user_input = []
+        self.current_action = None
+        self.recording_level = 0
+
 
 def init(session):
     session.OnUserInput.add(record_input)
-    session.input_recording_level = 0
-
-    session.last_user_input = []
-    session.last_repeatable_action = None
-    session.current_user_input = []
-    session.current_repeatable_action = None
+    session.repeat_data = RepeatData()
 
 Session.OnSessionInit.add(init)
 
+
 def record_input(session, char):
-    if session.input_recording_level > 0:
-        session.current_user_input.append(char)
+    data = session.repeat_data
+    if data.recording_level > 0:
+        data.current_user_input.append(char)
+
 
 def start_recording(session):
-    session.input_recording_level += 1
+    data = session.repeat_data
+    data.recording_level += 1
+
 
 def stop_recording(session):
-    session.input_recording_level -= 1
-    if session.input_recording_level < 0:
+    data = session.repeat_data
+    data.recording_level -= 1
+    if data.recording_level < 0:
         raise Exception('input_recording_level must not be < 0')
 
-    if session.input_recording_level == 0:
-        debug(session.current_user_input)
-        debug(session.current_repeatable_action)
-        session.last_user_input = session.current_user_input
-        session.last_repeatable_action = session.current_repeatable_action
-        session.current_user_input = []
-        session.current_repeatable_action = None
+    if data.recording_level == 0:
+        data.last_user_input = data.current_user_input
+        data.last_action = data.current_action
+        data.current_user_input = []
+        data.current_action = None
+
 
 def repeat(session):
-    if session.last_repeatable_action:
-        session.feed(session.last_user_input)
-        session.last_repeatable_action(session)
+    data = session.repeat_data
+    if data.last_action:
+        session.feed_input(data.last_user_input)
+        data.last_action(session)
 actions.repeat = repeat
 
+
+def repeatable(action):
+    """Action decorator which stores action in last_action field in session."""
+    @wraps(action)
+    def wrapper(session):
+        session.repeat_data.current_action = action
+        start_recording(session)
+        result = action(session)
+        stop_recording(session)
+        return result
+    return wrapper

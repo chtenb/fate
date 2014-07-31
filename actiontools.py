@@ -1,34 +1,14 @@
 """
 This module contains several base classes and decorators for creating actions.
 """
-from functools import wraps
 from logging import debug
-from . import actions
+
 
 def execute(action, session):
     """Call obj as an action recursively while callable."""
     while callable(action):
         action = action(session)
     return action
-
-
-# TODO: think about how to allow decoration of classes/instancemethods easily
-#def repeatable(action):
-    #"""Action decorator which stores action in last_repeatable_action field in session."""
-    #@wraps(action)
-    #def wrapper(session):
-        #start_recording(session)
-        #result = action(session)
-        #stop_recording(session)
-        #return result
-    #return wrapper
-
-
-#def repeat(session):
-    #"""Repeat last repeatable action."""
-    #if session.last_repeatable_action:
-        #execute(session.last_repeatable_action, session)
-#actions.repeat = repeat
 
 
 class Undoable:
@@ -73,11 +53,13 @@ class Undoable:
 # action body
 
 class Compose:
+
     """
     In order to be able to conveniently chain actions, we provide a
     function that composes a sequence of actions into a single action.
     The undoable subactions should be undoable as a whole.
     """
+
     def __init__(self, *subactions, name='', docs=''):
         self.subactions = subactions
         self.__name__ = name
@@ -94,4 +76,3 @@ class Compose:
                     break
                 action = result
         session.undotree.end_sequence()
-

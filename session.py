@@ -20,11 +20,12 @@ class Session():
     _text = ''
     saved = True
     mode = modes.SELECT
+
     expandtab = False
     tabwidth = 4
     autoindent = True
+
     search_pattern = ''
-    last_repeatable_action = None
     locked_selection = None
 
     def __init__(self, filename=""):
@@ -40,10 +41,10 @@ class Session():
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
-        self.food = deque()
+        self.input_food = deque()
 
         if not self.UserInterfaceClass:
-            raise Exception('No userinterface class specified in Session.UserInterfaceClass.')
+            raise Exception('No class specified in Session.UserInterfaceClass.')
         if not issubclass(self.UserInterfaceClass, UserInterface):
             raise Exception('Session.UserInterfaceClass not a subclass of UserInterface.')
 
@@ -61,15 +62,15 @@ class Session():
             self.read()
 
     def getchar(self):
-        if self.food:
-            char = self.food.popleft()
+        if self.input_food:
+            char = self.input_food.popleft()
         else:
             char = self.ui.getchar()
         self.OnUserInput.fire(self, char)
         return char
 
-    def feed(self, chars):
-        self.food.extend(chars)
+    def feed_input(self, chars):
+        self.input_food.extend(chars)
 
     def quit(self):
         """Quit session."""
