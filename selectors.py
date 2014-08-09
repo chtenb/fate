@@ -101,6 +101,7 @@ actions.EmptyAfter = EmptyAfter
 def find_matching_pair(string, pos, fst, snd):
     """Find matching pair of characters fst and snd around (inclusive) position pos."""
     assert 0 <= pos < len(string)
+    
     level = 0
     i = pos
     beg = None
@@ -251,7 +252,7 @@ class SelectPattern(Selection):
                 self.add(new_selection)
                 return
 
-        # If that doesn't change the selection,
+        # If that doesnt change the selection,
         # start selecting one by one, and process according to mode
         new_intervals = []
         if reverse:

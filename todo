@@ -1,10 +1,8 @@
 SHORT TERM
-Reset mode after operation
 Think about how to decorate classes easily, without disabling subclassing
 Select around/inside (not finished yet)
 Incorporate testing with multiple sessions
-Check if we can specify multiple testruns more easily in the unittest framework
-unittests for pattern select machinery
+Unittests for pattern select machinery
 
 LONG TERM
 Make labeling generation asynchronous

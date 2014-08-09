@@ -8,7 +8,7 @@ from tempfile import gettempdir
 from sys import path
 from os import urandom
 import random
-from ..runtest import RERUN, LONG, NO_RANDOMIZED_TESTS, VERBOSE
+from ..runtest import args
 from .randomized_userinterface import RandomizedUserSimulator
 
 action_dict = publics(actions)
@@ -20,10 +20,10 @@ class RandomizedActionTest(BaseTestCase):
         BaseTestCase.setUp(self)
 
     def test_random_actions(self):
-        if NO_RANDOMIZED_TESTS:
+        if args.no_randomized_tests:
             print('Skipping randomized tests')
         else:
-            if RERUN:
+            if args.rerun:
                 path.insert(0, gettempdir())
                 try:
                     from last_test_batch_fate import seed, batch
@@ -32,7 +32,7 @@ class RandomizedActionTest(BaseTestCase):
                 else:
                     self.run_batch(seed, batch)
             else:
-                runs, actions = (5000, 50) if LONG else (500, 50)
+                runs, actions = (5000, 50) if args.long else (500, 50)
                 for run in range(runs):
                     print('Run ' + str(run + 1))
 
@@ -46,7 +46,7 @@ class RandomizedActionTest(BaseTestCase):
     def run_batch(self, seed, batch):
         savefile = gettempdir() + '/last_test_batch_fate.py'
 
-        if VERBOSE:
+        if args.verbose:
             print('Saving run into ' + savefile)
             print('Seed: ' + str(seed))
             print('Text:\n' + str(self.session.text))
@@ -58,7 +58,7 @@ class RandomizedActionTest(BaseTestCase):
 
         random.seed(seed)
         for i, name in enumerate(batch):
-            if VERBOSE:
+            if args.verbose:
                 print(str(i + 1) + ': executing ' + name)
             execute(action_dict[name], self.session)
 

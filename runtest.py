@@ -1,19 +1,14 @@
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--rerun', help='rerun the latest test batch',
-        action='store_true')
+                    action='store_true')
 parser.add_argument('-l', '--long', help='start a long testing session',
-        action='store_true')
+                    action='store_true')
 parser.add_argument('-n', '--no-randomized-tests',
-        help='don \'t run the randomized tests', action='store_true')
+                    help='don \'t run the randomized tests', action='store_true')
 parser.add_argument('-v', '--verbose', help='run in verbose mode',
-        action='store_true')
+                    action='store_true')
 args = parser.parse_args()
-
-RERUN = args.rerun
-LONG = args.long
-NO_RANDOMIZED_TESTS = args.no_randomized_tests
-VERBOSE = args.verbose
 
 import os
 import sys
