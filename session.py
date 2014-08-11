@@ -4,6 +4,7 @@ from .selection import Selection, Interval
 from . import modes
 from .userinterface import UserInterface
 from collections import deque
+from .text import Text
 
 import logging
 
@@ -15,7 +16,6 @@ class Session():
     """Contains all objects of one file editing session"""
     OnSessionInit = Event()
     UserInterfaceClass = None
-    _text = ''
     saved = True
     mode = modes.SELECT
 
@@ -27,6 +27,7 @@ class Session():
     locked_selection = None
 
     def __init__(self, filename=""):
+        self._text = Text('')
         sessionlist.append(self)
         self.OnTextChanged = Event()
         self.OnRead = Event()
@@ -88,8 +89,8 @@ class Session():
         return self._text
 
     @text.setter
-    def text(self, value):
-        self._text = value
+    def text(self, string):
+        self._text = Text(string)
         self.saved = False
         self.OnTextChanged.fire(self)
 

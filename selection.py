@@ -76,11 +76,11 @@ class Selection:
 
     def isvalid(self, session):
         """Return False if selection is not valid, True otherwise."""
-        return not self.isempty and self._intervals[-1][1] <= len(session.text)
+        return not self.isempty and self._intervals[-1][1] <= session.text.length
 
     def content(self, session):
         """Return the content of self."""
-        return [session.text[max(0, beg):min(len(session.text), end)]
+        return [session.text.get_interval(max(0, beg), min(len(session.text), end))
                 for beg, end in self]
 
     def index(self, interval):
@@ -200,8 +200,8 @@ class Selection:
 
     def complement(self, session):
         """Return the complementary selection of self."""
-        intervals = [interval for in_selection, interval in self.partition(session)
-                     if not in_selection]
+        intervals = [interval for in_selection, interval
+                     in self.partition(session.text.length) if not in_selection]
         return Selection(intervals)
 
     def bound(self, lower_bound, upper_bound):
@@ -214,14 +214,14 @@ class Selection:
                 result.add(Interval(beg, end))
         return result
 
-    def partition(self, session):
+    def partition(self, text_length):
         """
         Return a sorted list containing all intervals in self
         together with all complementary intervals.
         """
         positions = [pos for interval in self for pos in interval]
         positions.insert(0, 0)
-        positions.append(len(session.text))
+        positions.append(text_length)
         in_selection = False
 
         result = []
