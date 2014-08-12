@@ -1,7 +1,7 @@
 """This module contains the trivial string datastructure."""
 
 
-class Text:
+class Text(str):
 
     """
     Text datastructure implemented by a single string.
@@ -12,16 +12,33 @@ class Text:
         self.string = string
         self.preview_operation = None
 
-    @property
-    def length(self):
+    def __str__(self):
+        return self.get_interval(0, len(self))
+
+    def __repr__(self):
+        return str(self)
+
+    def __len__(self):
         # TODO: take preview_operation into account
         return len(self.string)
 
-    def __len__(self):
-        # TODO: this one is obsolete
-        return self.length
+    def __getitem__(self, index):
+        if type(index) == slice:
+            beg, end = index.start, index.stop
+            return self.get_interval(beg, end)
+        else:
+            return self.get_position(index)
 
-    def get(self, pos):
+    def __setitem__(self, index, value):
+        return NotImplemented
+
+    def __delitem__(self, index):
+        return NotImplemented
+
+    def __add__(self, other):
+        return NotImplemented
+
+    def get_position(self, pos):
         """Lookup character at the given position."""
         if self.preview_operation != None:
             for beg, end in self.preview_operation.new_selection:
@@ -31,19 +48,11 @@ class Text:
 
     def get_interval(self, beg, end):
         """Lookup string at the given interval."""
-        return ''.join(self.get(pos) for pos in range(beg, end))
+        return ''.join(self.get_position(pos) for pos in range(beg, end))
 
-    def tostring(self):
-        """Return the entire text as a string."""
-        return self.get_interval(0, self.length)
-
-
-    # def get(self, selection):
-        #"""Lookup the list of strings contained in the given selection."""
-        # if self.preview_operation != None:
-            # pass
-        # else:
-            # return [self.string[beg:end] for beg, end in selection]
+    def get_selection(self, selection):
+        """Lookup the list of strings contained in the given selection."""
+        return [self.get_interval(beg, end) for beg, end in selection]
 
     def preview(self, operation):
         """Preview an operation."""
@@ -53,7 +62,7 @@ class Text:
         """Apply the given operation to the text."""
         self.preview_operation = None
 
-        partition = operation.old_selection.partition(self.length)
+        partition = operation.old_selection.partition(len(self))
         partition_content = [(in_selection, self.string[beg:end])
                              for in_selection, (beg, end) in partition]
 

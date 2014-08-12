@@ -76,7 +76,7 @@ class Selection:
 
     def isvalid(self, session):
         """Return False if selection is not valid, True otherwise."""
-        return not self.isempty and self._intervals[-1][1] <= session.text.length
+        return not self.isempty and self._intervals[-1][1] <= len(session.text)
 
     def content(self, session):
         """Return the content of self."""
@@ -201,7 +201,7 @@ class Selection:
     def complement(self, session):
         """Return the complementary selection of self."""
         intervals = [interval for in_selection, interval
-                     in self.partition(session.text.length) if not in_selection]
+                     in self.partition(len(session.text)) if not in_selection]
         return Selection(intervals)
 
     def bound(self, lower_bound, upper_bound):
