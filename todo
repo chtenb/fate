@@ -1,4 +1,5 @@
 SHORT TERM
+reorganize testcode to make running standalone possible
 Think about how to decorate classes easily, without disabling subclassing
 Select around/inside (not finished yet)
 Incorporate testing with multiple sessions

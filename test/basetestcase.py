@@ -1,5 +1,12 @@
-from unittest import TestCase, main
+# We import fate here as well, to make it possible to run test scripts standalone
+#import os
+#import sys
+#path_to_fate = os.path.dirname(os.path.abspath(__file__)) + '/../'
+#sys.path.insert(0, path_to_fate)
+
 from ..session import Session
+
+from unittest import TestCase
 from tempfile import gettempdir
 from shutil import copyfile
 from os.path import dirname, abspath
@@ -19,5 +26,3 @@ class BaseTestCase(TestCase):
     def tearDown(self):
         self.session.quit()
 
-if __name__ == '__main__':
-    main()

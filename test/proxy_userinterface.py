@@ -1,8 +1,6 @@
 from ..userinterface import UserInterface
 from queue import Queue
 
-from logging import debug
-
 
 class ProxyUserInterface(UserInterface):
 
@@ -34,7 +32,6 @@ class ProxyUserInterface(UserInterface):
         Return characters from the char_queue.
         When no more characters are available, return Esc.
         """
-        debug(1)
         if not self.char_queue.empty():
             return self.char_queue.get()
         else:

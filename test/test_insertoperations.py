@@ -2,11 +2,10 @@
 This module provides testcases for insertoperations.
 Auto indentation is covered.
 """
-from unittest import main
+from .basetestcase import BaseTestCase
 from ..selectors import NextLine, PreviousWord
 from ..insertoperations import ChangeAfter, ChangeBefore, ChangeInPlace, ChangeAround
 from ..actions import undo
-from .basetestcase import BaseTestCase
 from ..actiontools import execute
 
 class OperatorTest(BaseTestCase):

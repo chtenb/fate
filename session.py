@@ -88,12 +88,6 @@ class Session():
     def text(self):
         return self._text
 
-    @text.setter
-    def text(self, string):
-        self._text = Text(string)
-        self.saved = False
-        self.OnTextChanged.fire(self)
-
     def read(self, filename=None):
         """Read text from file."""
         filename = filename or self.filename
@@ -101,9 +95,10 @@ class Session():
         if filename:
             try:
                 with open(filename, 'r') as fd:
-                    self.text = fd.read()
+                    self._text = Text(fd.read())
                 self.saved = True
                 self.OnRead.fire(self)
+                self.OnTextChanged.fire(self)
             except (FileNotFoundError, PermissionError) as e:
                 logging.error(str(e))
         else:

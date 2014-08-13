@@ -46,7 +46,6 @@ class Operation(Undoable):
     def do(self, session):
         """Execute operation."""
         self._apply(session)
-        session.mode = modes.SELECT
 
     def undo(self, session):
         """Undo operation."""
@@ -76,4 +75,5 @@ class Operation(Undoable):
 
         session.selection_mode = modes.SELECT
         session.selection = new_selection
+        session.OnTextChanged.fire(session)
 

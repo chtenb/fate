@@ -1,5 +1,5 @@
 """This module contains the Interval and the Selection class."""
-
+from logging import debug
 
 class Interval:
 
@@ -13,6 +13,9 @@ class Interval:
 
     def __str__(self):
         return '({},{})'.format(self.beg, self.end)
+
+    def __len__(self):
+        return self.end - self.beg
 
     def __eq__(self, obj):
         return (isinstance(obj, Interval)
@@ -48,7 +51,7 @@ class Selection:
 
     def __init__(self, intervals=None):
         self._intervals = []
-        if intervals:
+        if intervals != None:
             self.add(intervals)
 
     def __getitem__(self, index):
@@ -72,7 +75,7 @@ class Selection:
     @property
     def isempty(self):
         """Check if we have intervals."""
-        return not bool(self._intervals)
+        return not self._intervals
 
     def isvalid(self, session):
         """Return False if selection is not valid, True otherwise."""

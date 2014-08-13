@@ -19,8 +19,13 @@ class Text(str):
         return str(self)
 
     def __len__(self):
-        # TODO: take preview_operation into account
-        return len(self.string)
+        operation = self.preview_operation
+        if operation != None:
+            less = sum(len(interval) for interval in operation.old_selection)
+            more = sum(len(interval) for interval in operation.compute_new_selection())
+            return len(self.string) - less + more
+        else:
+            return len(self.string)
 
     def __getitem__(self, index):
         if type(index) == slice:
@@ -44,7 +49,8 @@ class Text(str):
             for beg, end in self.preview_operation.new_selection:
                 if beg <= pos < end:
                     return self.preview_operation.new_content[pos - beg]
-        return self.string[pos]
+        else:
+            return self.string[pos]
 
     def get_interval(self, beg, end):
         """Lookup string at the given interval."""

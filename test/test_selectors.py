@@ -1,4 +1,3 @@
-from unittest import main
 from ..selection import Interval, Selection
 from ..selectors import SelectEverything, NextWord, find_matching_pair
 from .basetestcase import BaseTestCase

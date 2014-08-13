@@ -1,4 +1,3 @@
-from unittest import main
 from ..selectors import NextWord
 from ..operators import Insert
 from ..actions import undo

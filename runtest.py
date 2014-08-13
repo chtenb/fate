@@ -8,6 +8,8 @@ parser.add_argument('-n', '--no-randomized-tests',
                     help='don \'t run the randomized tests', action='store_true')
 parser.add_argument('-v', '--verbose', help='run in verbose mode',
                     action='store_true')
+parser.add_argument('-m', '--module', help='run single module',
+                    action='store')
 args = parser.parse_args()
 
 import os
@@ -17,7 +19,11 @@ from unittest import defaultTestLoader as loader, TextTestRunner
 path_to_fate = os.path.dirname(os.path.abspath(__file__)) + '/../'
 sys.path.insert(0, path_to_fate)
 
-suite = loader.discover('fate')
+if args.module:
+    suite = loader.loadTestsFromModule(args.module)
+else:
+    suite = loader.discover('fate')
+
 runner = TextTestRunner()
 test_result = runner.run(suite)
 success = test_result.wasSuccessful()

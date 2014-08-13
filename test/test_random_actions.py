@@ -1,4 +1,3 @@
-from unittest import main
 from .basetestcase import BaseTestCase
 from .. import actions
 from random import choice
