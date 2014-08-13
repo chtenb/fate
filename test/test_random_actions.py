@@ -8,7 +8,7 @@ from sys import path
 from os import urandom
 import random
 from ..runtest import args
-from .randomized_userinterface import RandomizedUserSimulator
+from .randomizeduserinterface import RandomizedUserSimulator
 
 action_dict = publics(actions)
 action_names = list(action_dict.keys())

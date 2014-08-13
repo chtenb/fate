@@ -1,30 +1,28 @@
 from .basetestcase import BaseTestCase
-from logging import debug
+from ..operation import Operation
+from ..selection import Selection, Interval
+
 
 class TextTest(BaseTestCase):
+
     def setUp(self):
         BaseTestCase.setUp(self)
+        self.session.selection = Selection(Interval(7, 10))
+        self.operation = Operation(self.session, [''])
 
     def test_str(self):
-        expected = """import sys
+        self.assertEqual(self.sampletext, str(self.session.text))
 
-class Foo(Bar):
-    def __init__(self):
-        pass
-        pass
+    def test_len(self):
+        self.assertEqual(142, len(self.session.text))
 
-    def start(self):
-        print('Start!')
-        return 1
+    def test_get_position(self):
+        for i, c in enumerate(self.sampletext):
+            self.assertEqual(self.session.text.get_position(i), c)
 
-"""
+        self.session.text.preview(self.operation)
 
-        #debug(repr(expected))
-        #debug(repr(self.session.text))
-        #debug(len(expected))
-        #debug(len(self.session.text))
-        #debug(expected)
-        #debug(self.session.text)
-        #debug(self.session.text == expected)
-        self.assertEqual(expected, str(self.session.text))
+        print(self.session.text)
 
+        for i, c in enumerate(self.sampletext[:7] + self.sampletext[10:]):
+            self.assertEqual(self.session.text.get_position(i), c)

@@ -46,11 +46,11 @@ class Text(str):
     def get_position(self, pos):
         """Lookup character at the given position."""
         if self.preview_operation != None:
-            for beg, end in self.preview_operation.new_selection:
+            for beg, end in self.preview_operation.old_selection:
+                print(str(beg) + ',' + str(end))
                 if beg <= pos < end:
                     return self.preview_operation.new_content[pos - beg]
-        else:
-            return self.string[pos]
+        return self.string[pos]
 
     def get_interval(self, beg, end):
         """Lookup string at the given interval."""
