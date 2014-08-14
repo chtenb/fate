@@ -12,9 +12,15 @@ class UserInterface:
         self.document = document
 
     def touch(self):
+        """
+        Must be an atomic operation which forces a redraw of the screen.
+        """
         raise NotImplementedError("An abstract method is not callable.")
 
     def notify(self, message):
+        """
+        Notify the user with the given message.
+        """
         raise NotImplementedError("An abstract method is not callable.")
 
     def activate(self):

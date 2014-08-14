@@ -31,6 +31,7 @@ info('Starting fate.')
 # Load modules exposing actions, to make sure the actions module contains all actions
 from . import (actions, selectors, operators, clipboard, compoundactions, uiactions,
         modes, insertoperations, actiontools, repeat, undotree)
+from . import document
 
 # Load standard plugins
 from . import filetype_system
@@ -51,3 +52,17 @@ else:
         info('User script loaded.')
     else:
         info('No user script is present in .fate directory.')
+
+
+# Expose main loop function to the userinterface
+def run():
+    """Main input loop for fate."""
+    while document.activedocument != None:
+        document.activedocument.ui.touch()
+        char = document.activedocument.ui.getchar()
+
+        if char in document.activedocument.keymap:
+            action = document.activedocument.keymap[char]
+            while callable(action):
+                action = action(document.activedocument)
+

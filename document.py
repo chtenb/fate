@@ -8,6 +8,7 @@ from collections import deque
 import logging
 
 documentlist = []
+activedocument = None
 
 
 class Document():
