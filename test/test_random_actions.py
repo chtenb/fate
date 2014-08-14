@@ -36,7 +36,7 @@ class RandomizedActionTest(BaseTestCase):
                 for run in range(runs):
                     print('Run ' + str(run + 1))
 
-                    # Make sure to create a new session for each run
+                    # Make sure to create a new document for each run
                     self.setUp()
                     seed = urandom(10)
                     batch = [self.get_random_action() for _ in range(actions)]
@@ -49,8 +49,8 @@ class RandomizedActionTest(BaseTestCase):
         if args.verbose:
             print('Saving run into ' + savefile)
             print('Seed: ' + str(seed))
-            print('Text:\n' + str(self.session.text))
-            print('Selection: ' + str(self.session.selection))
+            print('Text:\n' + str(self.document.text))
+            print('Selection: ' + str(self.document.selection))
 
         with open(savefile, 'w') as f:
             f.write('seed = {}\n'.format(seed))
@@ -60,14 +60,14 @@ class RandomizedActionTest(BaseTestCase):
         for i, name in enumerate(batch):
             if args.verbose:
                 print(str(i + 1) + ': executing ' + name)
-            execute(action_dict[name], self.session)
+            execute(action_dict[name], self.document)
 
-        #print('Result:\n' + self.session.text)
+        #print('Result:\n' + self.document.text)
 
     def get_random_action(self):
         while 1:
             name = choice(action_names)
-            if name not in ['quit_session', 'force_quit']:
+            if name not in ['quit_document', 'force_quit']:
                 break
         return name
 

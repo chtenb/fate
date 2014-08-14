@@ -4,14 +4,14 @@ We distinguish between functions that work selection-wise (global selectors)
 and function that work interval-wise (local selectors).
 Furthermore we have selectors that are based on regular expressions.
 
-Selectors may return None, in which case the session should not be affected.
+Selectors may return None, in which case the document should not be affected.
 Selectors may also return a result which is identical to the previous selection.
 The code that executes the action may want to check if this is the case, before applying.
 
 Because it is often handy to use selectors as building blocks for other computations,
 selectors return their result as a selection instead of executing them immediately.
 Secondly, one can pass a selection which should be used as starting point
-for the selector instead of the current selection of the session.
+for the selector instead of the current selection of the document.
 """
 import re
 from functools import partial
@@ -26,8 +26,8 @@ class SelectEverything(Selection):
 
     """Select the entire text."""
 
-    def __init__(self, session, selection=None, mode=None):
-        Selection.__init__(self, Interval(0, len(session.text)))
+    def __init__(self, document, selection=None, mode=None):
+        Selection.__init__(self, Interval(0, len(document.text)))
 actions.SelectEverything = SelectEverything
 
 
@@ -35,8 +35,8 @@ class SelectSingleInterval(Selection):
 
     """Reduce the selection to the single uppermost interval."""
 
-    def __init__(self, session, selection=None, mode=None):
-        selection = selection or session.selection
+    def __init__(self, document, selection=None, mode=None):
+        selection = selection or document.selection
         Selection.__init__(self, selection[0])
 actions.SelectSingleInterval = SelectSingleInterval
 
@@ -45,8 +45,8 @@ class Empty(Selection):
 
     """Reduce the selection to a single uppermost empty interval."""
 
-    def __init__(self, session, selection=None, mode=None):
-        selection = selection or session.selection
+    def __init__(self, document, selection=None, mode=None):
+        selection = selection or document.selection
         beg = selection[0][0]
         Selection.__init__(self, Interval(beg, beg))
 actions.Empty = Empty
@@ -56,8 +56,8 @@ class Join(Selection):
 
     """Join all intervals together."""
 
-    def __init__(self, session, selection=None, mode=None):
-        selection = selection or session.selection
+    def __init__(self, document, selection=None, mode=None):
+        selection = selection or document.selection
         Selection.__init__(self, Interval(selection[0][0], selection[-1][1]))
 actions.Join = Join
 
@@ -66,9 +66,9 @@ class Complement(Selection):
 
     """Return the complement."""
 
-    def __init__(self, session, selection=None, mode=None):
-        selection = selection or session.selection
-        Selection.__init__(self, selection.complement(session))
+    def __init__(self, document, selection=None, mode=None):
+        selection = selection or document.selection
+        Selection.__init__(self, selection.complement(document))
 actions.Complement = Complement
 
 
@@ -76,9 +76,9 @@ class EmptyBefore(Selection):
 
     """Return the empty interval before each interval."""
 
-    def __init__(self, session, selection=None, mode=None):
+    def __init__(self, document, selection=None, mode=None):
         Selection.__init__(self)
-        selection = selection or session.selection
+        selection = selection or document.selection
         for interval in selection:
             beg, _ = interval
             self.add(Interval(beg, beg))
@@ -89,9 +89,9 @@ class EmptyAfter(Selection):
 
     """Return the empty interval after each interval."""
 
-    def __init__(self, session, selection=None, mode=None):
+    def __init__(self, document, selection=None, mode=None):
         Selection.__init__(self)
-        selection = selection or session.selection
+        selection = selection or document.selection
         for interval in selection:
             _, end = interval
             self.add(Interval(end, end))
@@ -169,13 +169,13 @@ def select_around_interval(string, beg, end, fst, snd):
     return Interval(nbeg, nend)
 
 
-def SelectAroundChar(session, char=None, selection=None):
+def SelectAroundChar(document, char=None, selection=None):
     """
     Select around given character. If no character given, get it from user.
     Return None if not all intervals are surrounded.
     """
-    selection = selection or session.selection
-    char = char or session.ui.getchar()
+    selection = selection or document.selection
+    char = char or document.ui.getchar()
     result = Selection()
 
     # Check if we should check for a matching pair
@@ -184,7 +184,7 @@ def SelectAroundChar(session, char=None, selection=None):
         if char == fst or char == snd:
             # For each interval find the smallest surrounding pair
             for beg, end in selection:
-                match = select_around_interval(session.text, beg, end, fst, snd)
+                match = select_around_interval(document.text, beg, end, fst, snd)
                 if match == None:
                     return
                 result.add(match)
@@ -192,8 +192,8 @@ def SelectAroundChar(session, char=None, selection=None):
 
     # If not, we simple find the first surrounding occurances
     for beg, end in selection:
-        nend = session.text.find(char, end)
-        nbeg = session.text.rfind(char, 0, beg)
+        nend = document.text.find(char, end)
+        nbeg = document.text.rfind(char, 0, beg)
         if nend != -1 and nbeg != -1:
             result.add(Interval(nbeg, nend + 1))
         else:
@@ -202,13 +202,13 @@ def SelectAroundChar(session, char=None, selection=None):
 actions.SelectAroundChar = SelectAroundChar
 
 
-def SelectAround(session, selection=None):
+def SelectAround(document, selection=None):
     """Select around common surrounding character pair."""
-    selection = selection or session.selection
+    selection = selection or document.selection
     default_chars = ['{', '[', '(', '<', '\'', '"']
     candidates = []
     for char in default_chars:
-        candidate = SelectAroundChar(session, char, selection)
+        candidate = SelectAroundChar(document, char, selection)
         if candidate != None:
             candidates.append(candidate)
     if candidates:
@@ -228,13 +228,13 @@ def find_pattern(text, pattern, reverse=False, group=0):
 
 class SelectPattern(Selection):
 
-    def __init__(self, pattern, session, selection=None, mode=None,
+    def __init__(self, pattern, document, selection=None, mode=None,
                  reverse=False, group=0):
         Selection.__init__(self)
-        selection = selection or session.selection
-        mode = mode or session.mode
+        selection = selection or document.selection
+        mode = mode or document.mode
 
-        match_intervals = find_pattern(session.text, pattern, reverse, group)
+        match_intervals = find_pattern(document.text, pattern, reverse, group)
 
         # First select all occurences intersecting with selection,
         # and process according to mode
@@ -276,13 +276,13 @@ class SelectPattern(Selection):
 
 class SelectLocalPattern(Selection):
 
-    def __init__(self, pattern, session, selection=None, mode=None,
+    def __init__(self, pattern, document, selection=None, mode=None,
                  reverse=False, group=0, only_within=False, allow_same_interval=False):
         Selection.__init__(self)
-        selection = selection or session.selection
-        mode = mode or session.mode
+        selection = selection or document.selection
+        mode = mode or document.mode
 
-        match_intervals = find_pattern(session.text, pattern, reverse, group)
+        match_intervals = find_pattern(document.text, pattern, reverse, group)
 
         for interval in selection:
             beg, end = interval
@@ -361,32 +361,32 @@ actions.NextWhiteSpace = NextWhiteSpace
 actions.PreviousWhiteSpace = PreviousWhiteSpace
 
 
-def lock_selection(session):
+def lock_selection(document):
     """Lock current selection."""
-    if session.locked_selection == None:
-        session.locked_selection = Selection()
-    session.locked_selection += session.selection
-    assert not session.locked_selection.isempty
+    if document.locked_selection == None:
+        document.locked_selection = Selection()
+    document.locked_selection += document.selection
+    assert not document.locked_selection.isempty
 actions.lock = lock_selection
 
 
-def unlock_selection(session):
+def unlock_selection(document):
     """Remove current selection from locked selection."""
-    locked = session.locked_selection
+    locked = document.locked_selection
     if locked != None:
-        nselection = locked - session.selection
+        nselection = locked - document.selection
         if not nselection.isempty:
-            session.locked_selection = nselection
+            document.locked_selection = nselection
 actions.unlock = unlock_selection
 
 
-def release_locked_selection(session):
+def release_locked_selection(document):
     """Release locked selection."""
-    if session.locked_selection != None:
+    if document.locked_selection != None:
         # The text length may be changed after the locked selection was first created
         # So we must bound it to the current text length
-        newselection = session.locked_selection.bound(0, len(session.text))
+        newselection = document.locked_selection.bound(0, len(document.text))
         if not newselection.isempty:
-            session.selection = newselection
-        session.locked_selection = None
+            document.selection = newselection
+        document.locked_selection = None
 actions.release = release_locked_selection

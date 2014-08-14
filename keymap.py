@@ -5,17 +5,17 @@ The second one, `actions`, maps chars to ui actions,
 i.e. functions which take an UserInterface object.
 """
 from . import actions
-from .session import Session
+from .document import Document
 from . import actions
 
 
 default = {
-    'Ctrl-S': Session.write,
-    'Ctrl-Q': actions.quit_session,
+    'Ctrl-S': Document.write,
+    'Ctrl-Q': actions.quit_document,
     'Ctrl-X': actions.force_quit,
-    'Ctrl-O': actions.open_session,
-    'Ctrl-N': actions.next_session,
-    'Ctrl-P': actions.previous_session,
+    'Ctrl-O': actions.open_document,
+    'Ctrl-N': actions.next_document,
+    'Ctrl-P': actions.previous_document,
     'f': actions.local_find,
     'F': actions.local_find_backwards,
     '/': actions.search,
@@ -69,12 +69,12 @@ default = {
 }
 
 
-def print_keymap(session):
+def print_keymap(document):
     """Prints the keys with their explanation."""
     def print_key(key, action):
         """Prints single key with docstring."""
         print(key + ': ' + action.__docs__)
 
-    for key, action in session.keymap.items():
+    for key, action in document.keymap.items():
         print_key(key, action)
 

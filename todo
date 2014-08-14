@@ -1,4 +1,5 @@
 SHORT TERM
+rename session to document
 Think about how to decorate classes easily, without disabling subclassing
 Select around/inside (not finished yet)
 Incorporate testing with multiple sessions

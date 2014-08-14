@@ -1,5 +1,5 @@
 from unittest import TestCase, main
-from ..session import Session
+from ..document import Document
 from tempfile import gettempdir
 from shutil import copyfile
 from os.path import dirname, abspath
@@ -10,14 +10,14 @@ class BaseTestCase(TestCase):
     UserInterfaceClass = ProxyUserInterface
 
     def setUp(self):
-        Session.UserInterfaceClass = self.UserInterfaceClass
+        Document.UserInterfaceClass = self.UserInterfaceClass
         source = dirname(abspath(__file__)) + '/sample.py'
         destination = gettempdir() + '/test.py'
         copyfile(source, destination)
-        self.session = Session(destination)
+        self.document = Document(destination)
 
     def tearDown(self):
-        self.session.quit()
+        self.document.quit()
 
 if __name__ == '__main__':
     main()

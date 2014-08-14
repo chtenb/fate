@@ -64,23 +64,23 @@ class Selection:
         return (isinstance(obj, Selection)
                 and self._intervals == obj._intervals)
 
-    def __call__(self, session):
-        """Set self to be the current selection of the session."""
+    def __call__(self, document):
+        """Set self to be the current selection of the document."""
         if not self.isempty:
-            session.selection = self
+            document.selection = self
 
     @property
     def isempty(self):
         """Check if we have intervals."""
         return not bool(self._intervals)
 
-    def isvalid(self, session):
+    def isvalid(self, document):
         """Return False if selection is not valid, True otherwise."""
-        return not self.isempty and self._intervals[-1][1] <= len(session.text)
+        return not self.isempty and self._intervals[-1][1] <= len(document.text)
 
-    def content(self, session):
+    def content(self, document):
         """Return the content of self."""
-        return [session.text[max(0, beg):min(len(session.text), end)]
+        return [document.text[max(0, beg):min(len(document.text), end)]
                 for beg, end in self]
 
     def index(self, interval):
@@ -198,9 +198,9 @@ class Selection:
     def __rsub__(self, obj):
         return self - obj
 
-    def complement(self, session):
+    def complement(self, document):
         """Return the complementary selection of self."""
-        intervals = [interval for in_selection, interval in self.partition(session)
+        intervals = [interval for in_selection, interval in self.partition(document)
                      if not in_selection]
         return Selection(intervals)
 
@@ -214,14 +214,14 @@ class Selection:
                 result.add(Interval(beg, end))
         return result
 
-    def partition(self, session):
+    def partition(self, document):
         """
         Return a sorted list containing all intervals in self
         together with all complementary intervals.
         """
         positions = [pos for interval in self for pos in interval]
         positions.insert(0, 0)
-        positions.append(len(session.text))
+        positions.append(len(document.text))
         in_selection = False
 
         result = []

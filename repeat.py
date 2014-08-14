@@ -1,5 +1,5 @@
 """This module provides a repeat mechanism for user input."""
-from .session import Session
+from .document import Document
 from . import actions
 from functools import wraps
 
@@ -16,26 +16,26 @@ class RepeatData:
         self.recording_level = 0
 
 
-def init(session):
-    session.OnUserInput.add(record_input)
-    session.repeat_data = RepeatData()
+def init(document):
+    document.OnUserInput.add(record_input)
+    document.repeat_data = RepeatData()
 
-Session.OnSessionInit.add(init)
+Document.OnDocumentInit.add(init)
 
 
-def record_input(session, char):
-    data = session.repeat_data
+def record_input(document, char):
+    data = document.repeat_data
     if data.recording_level > 0:
         data.current_user_input.append(char)
 
 
-def start_recording(session):
-    data = session.repeat_data
+def start_recording(document):
+    data = document.repeat_data
     data.recording_level += 1
 
 
-def stop_recording(session):
-    data = session.repeat_data
+def stop_recording(document):
+    data = document.repeat_data
     data.recording_level -= 1
     if data.recording_level < 0:
         raise Exception('input_recording_level must not be < 0')
@@ -47,21 +47,21 @@ def stop_recording(session):
         data.current_action = None
 
 
-def repeat(session):
-    data = session.repeat_data
+def repeat(document):
+    data = document.repeat_data
     if data.last_action:
-        session.feed_input(data.last_user_input)
-        data.last_action(session)
+        document.feed_input(data.last_user_input)
+        data.last_action(document)
 actions.repeat = repeat
 
 
 def repeatable(action):
-    """Action decorator which stores action in last_action field in session."""
+    """Action decorator which stores action in last_action field in document."""
     @wraps(action)
-    def wrapper(session):
-        session.repeat_data.current_action = action
-        start_recording(session)
-        result = action(session)
-        stop_recording(session)
+    def wrapper(document):
+        document.repeat_data.current_action = action
+        start_recording(document)
+        result = action(document)
+        stop_recording(document)
         return result
     return wrapper

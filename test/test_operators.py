@@ -7,14 +7,14 @@ from .basetestcase import BaseTestCase
 class OperatorTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
-        NextWord(self.session)(self.session)
+        NextWord(self.document)(self.document)
 
     def test_insert(self):
         action = Insert('Foo ')
-        action(self.session)
+        action(self.document)
         expected = 'Foo import sys'
-        self.assertEqual(expected, self.session.text[:14])
+        self.assertEqual(expected, self.document.text[:14])
 
-        undo(self.session)
-        self.assertEqual('import sys', self.session.text[:10])
+        undo(self.document)
+        self.assertEqual('import sys', self.document.text[:10])
 

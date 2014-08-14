@@ -11,12 +11,12 @@ from .clipboard import copy, clear, paste_before
 from logging import debug
 from .repeat import repeatable
 
-def escape(session):
+def escape(document):
     """Escape"""
-    if session.mode != modes.SELECT:
-        modes.select_mode(session)
+    if document.mode != modes.SELECT:
+        modes.select_mode(document)
     else:
-        return Empty(session)
+        return Empty(document)
 actions.escape = escape
 
 OpenLineAfter = Compose(modes.select_mode, PreviousFullLine, SelectIndent, copy,

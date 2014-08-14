@@ -11,7 +11,7 @@ For this to work, the clipboard must be usable cross-history.
 """
 from .operation import Operation
 from . import actions
-from .session import Session
+from .document import Document
 
 
 class Clipboard:
@@ -39,24 +39,24 @@ class Clipboard:
             return
 
 
-def init(session):
-    session.clipboard = Clipboard()
-Session.OnSessionInit.add(init)
+def init(document):
+    document.clipboard = Clipboard()
+Document.OnDocumentInit.add(init)
 
 
-def copy(session):
+def copy(document):
     """Copy current selected content to clipboard."""
-    session.clipboard.push(session.selection.content(session))
+    document.clipboard.push(document.selection.content(document))
 actions.copy = copy
 
 
-def paste(session, before):
+def paste(document, before):
     """
     This is not an actor, but serves as helper function for PasteBefore and PasteAfter.
     """
-    if session.clipboard:
-        old_content = session.selection.content(session)
-        clipboard_content = session.clipboard.peek()
+    if document.clipboard:
+        old_content = document.selection.content(document)
+        clipboard_content = document.clipboard.peek()
         if not clipboard_content:
             return
         new_content = []
@@ -69,21 +69,21 @@ def paste(session, before):
         return new_content
 
 
-def paste_before(session):
+def paste_before(document):
     """Paste clipboard before current selection."""
-    operation = Operation(session, paste(session, before=True))
-    operation(session)
+    operation = Operation(document, paste(document, before=True))
+    operation(document)
 actions.paste_before = paste_before
 
 
-def paste_after(session):
+def paste_after(document):
     """Paste clipboard after current selection."""
-    operation = Operation(session, paste(session, before=False))
-    operation(session)
+    operation = Operation(document, paste(document, before=False))
+    operation(document)
 actions.paste_after = paste_after
 
 
-def clear(session):
+def clear(document):
     """Throw away the value on top of the clipboard stack."""
-    session.clipboard.pop()
+    document.clipboard.pop()
 actions.clear = clear

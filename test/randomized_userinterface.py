@@ -17,14 +17,14 @@ class RandomizedUserSimulator(UserInterface):
 
     """UserInterface which simulates some random behaviour for testing purposes."""
 
-    def __init__(self, session):
-        UserInterface.__init__(self, session)
+    def __init__(self, document):
+        UserInterface.__init__(self, document)
 
     def touch(self):
         pass
 
-    def quit(self, session):
-        assert session is self.session
+    def quit(self, document):
+        assert document is self.document
 
     def activate(self):
         pass

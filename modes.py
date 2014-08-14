@@ -4,20 +4,20 @@ SELECT, EXTEND, REDUCE = 'SELECT', 'EXTEND', 'REDUCE'
 from . import actions
 
 
-def reduce_mode(session):
+def reduce_mode(document):
     """Switch to reduce mode."""
-    session.mode = REDUCE
+    document.mode = REDUCE
 actions.reduce_mode = reduce_mode
 
 
-def extend_mode(session):
+def extend_mode(document):
     """Switch to extend mode."""
-    session.mode = EXTEND
+    document.mode = EXTEND
 actions.extend_mode = extend_mode
 
 
-def select_mode(session):
+def select_mode(document):
     """Switch to select mode."""
-    session.mode = SELECT
+    document.mode = SELECT
 actions.select_mode = select_mode
 

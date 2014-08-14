@@ -8,8 +8,8 @@ class UserInterface:
 
     """Abstract base class for userinteraces. """
 
-    def __init__(self, session):
-        self.session = session
+    def __init__(self, document):
+        self.document = document
 
     def touch(self):
         raise NotImplementedError("An abstract method is not callable.")

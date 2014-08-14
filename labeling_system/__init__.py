@@ -1,31 +1,31 @@
-from ..session import Session
+from ..document import Document
 from ..event import Event
 from .. import filetype_system
 from .labeling import Labeling
 from importlib import import_module
 import logging
 
-Session.OnGenerateLabeling = Event()
-Session.labeling = Labeling()
+Document.OnGenerateLabeling = Event()
+Document.labeling = Labeling()
 
 
-def load_filetype_syntax(session):
+def load_filetype_syntax(document):
     """If we have a filetype, try to import the corresponding labeling module."""
-    if session.filetype:
+    if document.filetype:
         try:
-            import_module(__name__ + '.' + session.filetype)
+            import_module(__name__ + '.' + document.filetype)
         except ImportError:
-            logging.info('No labeling script found for filetype ' + session.filetype)
+            logging.info('No labeling script found for filetype ' + document.filetype)
         else:
-            session.OnTextChanged.add(generate_labeling)
-            session.OnRead.add(generate_labeling)
+            document.OnTextChanged.add(generate_labeling)
+            document.OnRead.add(generate_labeling)
 
 
-def generate_labeling(session, *args):
+def generate_labeling(document, *args):
     """Create the labeling."""
-    session.labeling = Labeling()
-    session.OnGenerateLabeling.fire(session)
+    document.labeling = Labeling()
+    document.OnGenerateLabeling.fire(document)
 
-Session.OnSessionInit.add(load_filetype_syntax)
+Document.OnDocumentInit.add(load_filetype_syntax)
 
 logging.info('labeling system loaded')

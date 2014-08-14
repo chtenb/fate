@@ -6,16 +6,16 @@ The goal of a text editor is to make modifications to a text.
 More generally, the user should also be able to modify things other
 than text, such as options or other meta stuff.
 We store all relevant data for editing a text in a single object,
-and call this object a session.
+and call this object a document.
 
-To make modifications to a session, we define actions.
-An action is an abstract object that can make a modification to a session.
-An action must therefore be callable and accept a session as argument.
+To make modifications to a document, we define actions.
+An action is an abstract object that can make a modification to a document.
+An action must therefore be callable and accept a document as argument.
 
 In many cases it is useful to create actions on the fly.
 Callable objects that create and return actions are called 'action constructors'.
 
-A special type of action constructors are those that require a session as argument.
+A special type of action constructors are those that require a document as argument.
 Let us call these 'actors'.
 """
 
@@ -24,12 +24,12 @@ Let us call these 'actors'.
 # Actions: camelcase or camel_case
 
 
-def undo(session):
+def undo(document):
     """Undo last action."""
-    session.undotree.undo()
+    document.undotree.undo()
 
 
-def redo(session):
+def redo(document):
     """Redo last undo."""
-    session.undotree.redo()
+    document.undotree.redo()
 

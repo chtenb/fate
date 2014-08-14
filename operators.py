@@ -1,36 +1,36 @@
 """
 An operator is a special type of action, that applies an operation to a
-session. Strictly speaking, an operator is a function that is decorated
+document. Strictly speaking, an operator is a function that is decorated
 by operator, either directly or indirectly.
 """
 from . import actions
 from .operation import Operation
 
 
-def uppercase(session, selection=None):
+def uppercase(document, selection=None):
     """Delete content."""
-    selection = selection or session.selection
-    new_content = [s.upper() for s in selection.content(session)]
-    operation = Operation(session, new_content, selection)
-    operation(session)
+    selection = selection or document.selection
+    new_content = [s.upper() for s in selection.content(document)]
+    operation = Operation(document, new_content, selection)
+    operation(document)
 actions.uppercase = uppercase
 
 
-def lowercase(session, selection=None):
+def lowercase(document, selection=None):
     """Lowercase content."""
-    selection = selection or session.selection
-    new_content = [s.lower() for s in selection.content(session)]
-    operation = Operation(session, new_content, selection)
-    operation(session)
+    selection = selection or document.selection
+    new_content = [s.lower() for s in selection.content(document)]
+    operation = Operation(document, new_content, selection)
+    operation(document)
 actions.lowercase = lowercase
 
 
-def delete(session, selection=None):
+def delete(document, selection=None):
     """Delete content."""
-    selection = selection or session.selection
+    selection = selection or document.selection
     new_content = ['' for _ in selection]
-    operation = Operation(session, new_content, selection)
-    operation(session)
+    operation = Operation(document, new_content, selection)
+    operation(document)
 actions.delete = delete
 
 
@@ -44,11 +44,11 @@ class Append:
     def __init__(self, string):
         self.string = string
 
-    def __call__(self, session, selection=None):
-        selection = selection or session.selection
-        new_content = [content + self.string for content in selection.content(session)]
-        operation = Operation(session, new_content, selection)
-        operation(session)
+    def __call__(self, document, selection=None):
+        selection = selection or document.selection
+        new_content = [content + self.string for content in selection.content(document)]
+        operation = Operation(document, new_content, selection)
+        operation(document)
 
 
 class Insert:
@@ -58,11 +58,11 @@ class Insert:
     def __init__(self, string):
         self.string = string
 
-    def __call__(self, session, selection=None):
-        selection = selection or session.selection
-        new_content = [self.string + content for content in selection.content(session)]
-        operation = Operation(session, new_content, selection)
-        operation(session)
+    def __call__(self, document, selection=None):
+        selection = selection or document.selection
+        new_content = [self.string + content for content in selection.content(document)]
+        operation = Operation(document, new_content, selection)
+        operation(document)
 
 
 class Change:
@@ -72,9 +72,9 @@ class Change:
     def __init__(self, string):
         self.string = string
 
-    def __call__(self, session, selection=None):
-        selection = selection or session.selection
-        new_content = [self.string for content in selection.content(session)]
-        operation = Operation(session, new_content, selection)
-        operation(session)
+    def __call__(self, document, selection=None):
+        selection = selection or document.selection
+        new_content = [self.string for content in selection.content(document)]
+        operation = Operation(document, new_content, selection)
+        operation(document)
 

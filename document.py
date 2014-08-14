@@ -1,4 +1,4 @@
-"""A session represents the state of an editing session."""
+"""A document represents the state of an editing document."""
 from .event import Event
 from .selection import Selection, Interval
 from . import modes
@@ -7,13 +7,13 @@ from collections import deque
 
 import logging
 
-sessionlist = []
+documentlist = []
 
 
-class Session():
+class Document():
 
-    """Contains all objects of one file editing session"""
-    OnSessionInit = Event()
+    """Contains all objects of one file editing document"""
+    OnDocumentInit = Event()
     UserInterfaceClass = None
     _text = ''
     saved = True
@@ -27,7 +27,7 @@ class Session():
     locked_selection = None
 
     def __init__(self, filename=""):
-        sessionlist.append(self)
+        documentlist.append(self)
         self.OnTextChanged = Event()
         self.OnRead = Event()
         self.OnWrite = Event()
@@ -39,9 +39,9 @@ class Session():
         self.input_food = deque()
 
         if not self.UserInterfaceClass:
-            raise Exception('No class specified in Session.UserInterfaceClass.')
+            raise Exception('No class specified in Document.UserInterfaceClass.')
         if not issubclass(self.UserInterfaceClass, UserInterface):
-            raise Exception('Session.UserInterfaceClass not a subclass of UserInterface.')
+            raise Exception('Document.UserInterfaceClass not a subclass of UserInterface.')
 
         self.ui = self.UserInterfaceClass(self)
         self.OnQuit.add(self.ui.quit)
@@ -51,7 +51,7 @@ class Session():
         self.keymap = {}
         self.keymap.update(default)
 
-        self.OnSessionInit.fire(self)
+        self.OnDocumentInit.fire(self)
 
         if filename:
             self.read()
@@ -68,10 +68,10 @@ class Session():
         self.input_food.extend(chars)
 
     def quit(self):
-        """Quit session."""
-        logging.info('Quitting session ' + str(self))
+        """Quit document."""
+        logging.info('Quitting document ' + str(self))
         self.OnQuit.fire(self)
-        sessionlist.remove(self)
+        documentlist.remove(self)
 
     @property
     def selection(self):

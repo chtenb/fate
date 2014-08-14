@@ -8,16 +8,16 @@ class SelectorTest(BaseTestCase):
         BaseTestCase.setUp(self)
 
     def test_select_everything(self):
-        action = SelectEverything(self.session)
-        action(self.session)
-        expected = Selection([Interval(0, len(self.session.text))])
-        self.assertEqual(expected, self.session.selection)
+        action = SelectEverything(self.document)
+        action(self.document)
+        expected = Selection([Interval(0, len(self.document.text))])
+        self.assertEqual(expected, self.document.selection)
 
     def test_next_word(self):
-        action = NextWord(self.session)
-        action(self.session)
+        action = NextWord(self.document)
+        action(self.document)
         expected = Selection([Interval(0, 6)])
-        self.assertEqual(expected, self.session.selection)
+        self.assertEqual(expected, self.document.selection)
 
     def test_find_matching_pair1(self):
         string = 'ab(cde)fgh'
