@@ -16,7 +16,7 @@ action_names = list(action_dict.keys())
 
 class RandomizedActionTest(BaseTestCase):
     def setUp(self):
-        self.UserInterfaceClass = RandomizedUserSimulator
+        self.create_userinterface = RandomizedUserSimulator
         BaseTestCase.setUp(self)
 
     def test_random_actions(self):

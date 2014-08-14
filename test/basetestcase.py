@@ -10,7 +10,7 @@ class BaseTestCase(TestCase):
     UserInterfaceClass = ProxyUserInterface
 
     def setUp(self):
-        Document.UserInterfaceClass = self.UserInterfaceClass
+        Document.create_userinterface = self.UserInterfaceClass
         source = dirname(abspath(__file__)) + '/sample.py'
         destination = gettempdir() + '/test.py'
         copyfile(source, destination)

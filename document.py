@@ -15,7 +15,7 @@ class Document():
 
     """Contains all objects of one file editing document"""
     OnDocumentInit = Event()
-    UserInterfaceClass = None
+    create_userinterface = None
     _text = ''
     saved = True
     mode = modes.SELECT
@@ -39,12 +39,11 @@ class Document():
         self.selection = Selection(Interval(0, 0))
         self.input_food = deque()
 
-        if not self.UserInterfaceClass:
-            raise Exception('No class specified in Document.UserInterfaceClass.')
-        if not issubclass(self.UserInterfaceClass, UserInterface):
-            raise Exception('Document.UserInterfaceClass not a subclass of UserInterface.')
-
-        self.ui = self.UserInterfaceClass(self)
+        if not self.create_userinterface:
+            raise Exception('No function specified in Document.create_userinterface.')
+        self.ui = self.create_userinterface(self)
+        if not isinstance(self.ui, UserInterface):
+            raise Exception('document.ui not an instance of UserInterface.')
         self.OnQuit.add(self.ui.quit)
 
         # Load the default key map
