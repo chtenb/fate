@@ -20,8 +20,22 @@ class UserInterface:
     def activate(self):
         raise NotImplementedError("An abstract method is not callable.")
 
-    def getchar(self):
+    def getinput(self):
         raise NotImplementedError("An abstract method is not callable.")
+
+    def peekinput(self):
+        raise NotImplementedError("An abstract method is not callable.")
+
+    def getchar(self):
+        """
+        Get character typed by user.
+        Returns Cancel if interrupted by command.
+        """
+        userinput = self.peekinput()
+        if type(userinput) == str:
+            return self.getinput()
+        else:
+            return 'Cancel'
 
     def prompt(self, prompt_string='>'):
         raise NotImplementedError("An abstract method is not callable.")
