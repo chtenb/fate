@@ -1,9 +1,9 @@
 """
-An operator is a special type of action, that applies an operation to a
+An operator is a special type of command, that applies an operation to a
 document. Strictly speaking, an operator is a function that is decorated
 by operator, either directly or indirectly.
 """
-from . import actions
+from . import commands
 from .operation import Operation
 
 
@@ -13,7 +13,7 @@ def uppercase(document, selection=None):
     new_content = [s.upper() for s in selection.content(document)]
     operation = Operation(document, new_content, selection)
     operation(document)
-actions.uppercase = uppercase
+commands.uppercase = uppercase
 
 
 def lowercase(document, selection=None):
@@ -22,7 +22,7 @@ def lowercase(document, selection=None):
     new_content = [s.lower() for s in selection.content(document)]
     operation = Operation(document, new_content, selection)
     operation(document)
-actions.lowercase = lowercase
+commands.lowercase = lowercase
 
 
 def delete(document, selection=None):
@@ -31,10 +31,10 @@ def delete(document, selection=None):
     new_content = ['' for _ in selection]
     operation = Operation(document, new_content, selection)
     operation(document)
-actions.delete = delete
+commands.delete = delete
 
 
-# The classes Append and Insert are action constructors
+# The classes Append and Insert are command constructors
 
 
 class Append:

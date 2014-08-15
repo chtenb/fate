@@ -1,6 +1,6 @@
 from unittest import main
 from ..selectors import NextWord
-from ..actions import undo
+from ..commands import undo
 from ..clipboard import copy, paste_before
 from .basetestcase import BaseTestCase
 

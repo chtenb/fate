@@ -1,12 +1,12 @@
 """
-This module contains all kinds of actions and actors related to make selections.
+This module contains all kinds of commands and actors related to make selections.
 We distinguish between functions that work selection-wise (global selectors)
 and function that work interval-wise (local selectors).
 Furthermore we have selectors that are based on regular expressions.
 
 Selectors may return None, in which case the document should not be affected.
 Selectors may also return a result which is identical to the previous selection.
-The code that executes the action may want to check if this is the case, before applying.
+The code that executes the command may want to check if this is the case, before applying.
 
 Because it is often handy to use selectors as building blocks for other computations,
 selectors return their result as a selection instead of executing them immediately.
@@ -16,7 +16,7 @@ for the selector instead of the current selection of the document.
 import re
 from functools import partial
 
-from . import actions
+from . import commands
 from .selection import Selection, Interval
 from .modes import EXTEND, REDUCE
 
@@ -28,7 +28,7 @@ class SelectEverything(Selection):
 
     def __init__(self, document, selection=None, mode=None):
         Selection.__init__(self, Interval(0, len(document.text)))
-actions.SelectEverything = SelectEverything
+commands.SelectEverything = SelectEverything
 
 
 class SelectSingleInterval(Selection):
@@ -38,7 +38,7 @@ class SelectSingleInterval(Selection):
     def __init__(self, document, selection=None, mode=None):
         selection = selection or document.selection
         Selection.__init__(self, selection[0])
-actions.SelectSingleInterval = SelectSingleInterval
+commands.SelectSingleInterval = SelectSingleInterval
 
 
 class Empty(Selection):
@@ -49,7 +49,7 @@ class Empty(Selection):
         selection = selection or document.selection
         beg = selection[0][0]
         Selection.__init__(self, Interval(beg, beg))
-actions.Empty = Empty
+commands.Empty = Empty
 
 
 class Join(Selection):
@@ -59,7 +59,7 @@ class Join(Selection):
     def __init__(self, document, selection=None, mode=None):
         selection = selection or document.selection
         Selection.__init__(self, Interval(selection[0][0], selection[-1][1]))
-actions.Join = Join
+commands.Join = Join
 
 
 class Complement(Selection):
@@ -69,7 +69,7 @@ class Complement(Selection):
     def __init__(self, document, selection=None, mode=None):
         selection = selection or document.selection
         Selection.__init__(self, selection.complement(document))
-actions.Complement = Complement
+commands.Complement = Complement
 
 
 class EmptyBefore(Selection):
@@ -82,7 +82,7 @@ class EmptyBefore(Selection):
         for interval in selection:
             beg, _ = interval
             self.add(Interval(beg, beg))
-actions.EmptyBefore = EmptyBefore
+commands.EmptyBefore = EmptyBefore
 
 
 class EmptyAfter(Selection):
@@ -95,7 +95,7 @@ class EmptyAfter(Selection):
         for interval in selection:
             _, end = interval
             self.add(Interval(end, end))
-actions.EmptyAfter = EmptyAfter
+commands.EmptyAfter = EmptyAfter
 
 
 def find_matching_pair(string, pos, fst, snd):
@@ -199,7 +199,7 @@ def SelectAroundChar(document, char=None, selection=None):
         else:
             return None
     return result
-actions.SelectAroundChar = SelectAroundChar
+commands.SelectAroundChar = SelectAroundChar
 
 
 def SelectAround(document, selection=None):
@@ -214,7 +214,7 @@ def SelectAround(document, selection=None):
     if candidates:
         # Select smallest enclosing candidate
         return min(candidates, key=avg_interval_length)
-actions.SelectAround = SelectAround
+commands.SelectAround = SelectAround
 
 
 def find_pattern(text, pattern, reverse=False, group=0):
@@ -327,7 +327,7 @@ class SelectLocalPattern(Selection):
 
 SelectIndent = partial(SelectLocalPattern, r'(?m)^([ \t]*)', reverse=True, group=1,
         allow_same_interval=True)
-actions.SelectIndent = SelectIndent
+commands.SelectIndent = SelectIndent
 
 
 def pattern_pair(pattern, **kwargs):
@@ -339,26 +339,26 @@ def pattern_pair(pattern, **kwargs):
             partial(SelectLocalPattern, pattern, reverse=True, **kwargs))
 
 NextChar, PreviousChar = pattern_pair(r'(?s).')
-actions.NextChar = NextChar
-actions.PreviousChar = PreviousChar
+commands.NextChar = NextChar
+commands.PreviousChar = PreviousChar
 NextWord, PreviousWord = pattern_pair(r'\b\w+\b')
-actions.NextWord = NextWord
-actions.PreviousWord = PreviousWord
+commands.NextWord = NextWord
+commands.PreviousWord = PreviousWord
 NextClass, PreviousClass = pattern_pair(r'\w+|[ \t]+|[^\w \t\n]+')
-actions.NextClass = NextClass
-actions.PreviousClass = PreviousClass
+commands.NextClass = NextClass
+commands.PreviousClass = PreviousClass
 NextLine, PreviousLine = pattern_pair(r'(?m)^[ \t]*([^\n]*)', group=1)
-actions.NextLine = NextLine
-actions.PreviousLine = PreviousLine
+commands.NextLine = NextLine
+commands.PreviousLine = PreviousLine
 NextFullLine, PreviousFullLine = pattern_pair(r'[^\n]*\n?')
-actions.NextFullLine = NextFullLine
-actions.PreviousFullLine = PreviousFullLine
+commands.NextFullLine = NextFullLine
+commands.PreviousFullLine = PreviousFullLine
 NextParagraph, PreviousParagraph = pattern_pair(r'(?s)((?:[^\n][\n]?)+)')
-actions.NextParagraph = NextParagraph
-actions.PreviousParagraph = PreviousParagraph
+commands.NextParagraph = NextParagraph
+commands.PreviousParagraph = PreviousParagraph
 NextWhiteSpace, PreviousWhiteSpace = pattern_pair(r'\s')
-actions.NextWhiteSpace = NextWhiteSpace
-actions.PreviousWhiteSpace = PreviousWhiteSpace
+commands.NextWhiteSpace = NextWhiteSpace
+commands.PreviousWhiteSpace = PreviousWhiteSpace
 
 
 def lock_selection(document):
@@ -367,7 +367,7 @@ def lock_selection(document):
         document.locked_selection = Selection()
     document.locked_selection += document.selection
     assert not document.locked_selection.isempty
-actions.lock = lock_selection
+commands.lock = lock_selection
 
 
 def unlock_selection(document):
@@ -377,7 +377,7 @@ def unlock_selection(document):
         nselection = locked - document.selection
         if not nselection.isempty:
             document.locked_selection = nselection
-actions.unlock = unlock_selection
+commands.unlock = unlock_selection
 
 
 def release_locked_selection(document):
@@ -389,4 +389,4 @@ def release_locked_selection(document):
         if not newselection.isempty:
             document.selection = newselection
         document.locked_selection = None
-actions.release = release_locked_selection
+commands.release = release_locked_selection

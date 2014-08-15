@@ -1,9 +1,9 @@
 from unittest import main
 from .basetestcase import BaseTestCase
-from .. import actions
+from .. import commands
 from random import choice
 from ..command import publics
-from ..actiontools import execute
+from ..commandtools import execute
 from tempfile import gettempdir
 from sys import path
 from os import urandom
@@ -11,15 +11,15 @@ import random
 from ..runtest import args
 from .randomized_userinterface import RandomizedUserSimulator
 
-action_dict = publics(actions)
-action_names = list(action_dict.keys())
+command_dict = publics(commands)
+command_names = list(command_dict.keys())
 
 class RandomizedActionTest(BaseTestCase):
     def setUp(self):
         self.create_userinterface = RandomizedUserSimulator
         BaseTestCase.setUp(self)
 
-    def test_random_actions(self):
+    def test_random_commands(self):
         if args.no_randomized_tests:
             print('Skipping randomized tests')
         else:
@@ -32,14 +32,14 @@ class RandomizedActionTest(BaseTestCase):
                 else:
                     self.run_batch(seed, batch)
             else:
-                runs, actions = (5000, 50) if args.long else (500, 50)
+                runs, commands = (5000, 50) if args.long else (500, 50)
                 for run in range(runs):
                     print('Run ' + str(run + 1))
 
                     # Make sure to create a new document for each run
                     self.setUp()
                     seed = urandom(10)
-                    batch = [self.get_random_action() for _ in range(actions)]
+                    batch = [self.get_random_command() for _ in range(commands)]
 
                     self.run_batch(seed, batch)
 
@@ -60,13 +60,13 @@ class RandomizedActionTest(BaseTestCase):
         for i, name in enumerate(batch):
             if args.verbose:
                 print(str(i + 1) + ': executing ' + name)
-            execute(action_dict[name], self.document)
+            execute(command_dict[name], self.document)
 
         #print('Result:\n' + self.document.text)
 
-    def get_random_action(self):
+    def get_random_command(self):
         while 1:
-            name = choice(action_names)
+            name = choice(command_names)
             if name not in ['quit_document', 'force_quit']:
                 break
         return name

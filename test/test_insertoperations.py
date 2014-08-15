@@ -5,9 +5,9 @@ Auto indentation is covered.
 from unittest import main
 from ..selectors import NextLine, PreviousWord
 from ..insertoperations import ChangeAfter, ChangeBefore, ChangeInPlace, ChangeAround
-from ..actions import undo
+from ..commands import undo
 from .basetestcase import BaseTestCase
-from ..actiontools import execute
+from ..commandtools import execute
 
 class OperatorTest(BaseTestCase):
     def setUp(self):

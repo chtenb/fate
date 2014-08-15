@@ -1,5 +1,5 @@
 from . import modes
-from . import actions
+from . import commands
 from .operation import Operation
 import re
 from .selectors import NextFullLine
@@ -112,7 +112,7 @@ class ChangeBefore(InsertOperation):
                        for i in range(len(document.selection))]
         return Operation(document, new_content)
 
-actions.ChangeBefore = ChangeBefore
+commands.ChangeBefore = ChangeBefore
 
 
 class ChangeAfter(InsertOperation):
@@ -161,7 +161,7 @@ class ChangeAfter(InsertOperation):
                        for i in range(len(document.selection))]
         return Operation(document, new_content)
 
-actions.ChangeAfter = repeatable(ChangeAfter)
+commands.ChangeAfter = repeatable(ChangeAfter)
 
 
 @repeatable
@@ -179,7 +179,7 @@ class ChangeInPlace(ChangeAfter):
         new_content = [self.insertions[i % l] for i in range(len(document.selection))]
         return Operation(document, new_content)
 
-actions.ChangeInPlace = ChangeInPlace
+commands.ChangeInPlace = ChangeInPlace
 
 
 @repeatable
@@ -249,4 +249,4 @@ class ChangeAround(InsertOperation):
                                + second_string)
         return Operation(document, new_content)
 
-actions.ChangeAround = ChangeAround
+commands.ChangeAround = ChangeAround

@@ -1,9 +1,9 @@
 """
 This module contains the classes ActionTree and Node, to store
-the action history.
+the command history.
 """
 from logging import debug
-from . import actions
+from . import commands
 from . import modes
 from .document import Document
 
@@ -11,7 +11,7 @@ from .document import Document
 class UndoTree:
 
     """
-    Stores the action history as a tree with undo/redo functionality.
+    Stores the command history as a tree with undo/redo functionality.
     """
     sequence = None
     sequence_depth = 0
@@ -22,35 +22,35 @@ class UndoTree:
         self.current_node = self.root
 
     def undo(self):
-        """Undo previous action set current_node to its parent."""
+        """Undo previous command set current_node to its parent."""
         if self.sequence != None:
-            raise Exception('Cannot perform undo; a sequence of actions is being added')
+            raise Exception('Cannot perform undo; a sequence of commands is being added')
 
         if self.current_node.parent:
-            for action in reversed(self.current_node.actions):
-                action.undo(self.document)
+            for command in reversed(self.current_node.commands):
+                command.undo(self.document)
             self.current_node = self.current_node.parent
 
     def redo(self, child_index=-1):
-        """Redo most recent next action."""
+        """Redo most recent next command."""
         if self.sequence != None:
-            raise Exception('Cannot perform redo; a sequence of actions is being added')
+            raise Exception('Cannot perform redo; a sequence of commands is being added')
 
         if self.current_node and self.current_node.children:
             l = len(self.current_node.children)
             assert -l <= child_index < l
 
             self.current_node = self.current_node.children[child_index]
-            for action in self.current_node.actions:
-                action.do(self.document)
+            for command in self.current_node.commands:
+                command.do(self.document)
 
-    def add(self, action):
-        """Add a new undoable action."""
+    def add(self, command):
+        """Add a new undoable command."""
         if self.sequence:
-            self.sequence.add_action(action)
+            self.sequence.add_command(command)
         else:
             node = Node(self.current_node)
-            node.add_action(action)
+            node.add_command(command)
             self.current_node.add_child(node)
             self.current_node = node
 
@@ -61,7 +61,7 @@ class UndoTree:
         """
         if self.sequence != None:
             raise Exception(
-                'Cannot perform hard undo; a sequence of actions is being added'
+                'Cannot perform hard undo; a sequence of commands is being added'
             )
 
         if self.current_node.parent:
@@ -72,7 +72,7 @@ class UndoTree:
     def start_sequence(self):
         """
         Indicate start of a sequence.
-        All incoming actions should be gathered and put into one compound action.
+        All incoming commands should be gathered and put into one compound command.
         """
         if self.sequence_depth == 0:
             self.sequence = Node(self.current_node)
@@ -86,7 +86,7 @@ class UndoTree:
             raise Exception('Cannot end sequence; no sequence present.')
 
         if self.sequence_depth == 1:
-            if self.sequence.actions != []:
+            if self.sequence.commands != []:
                 self.current_node.add_child(self.sequence)
                 self.current_node = self.sequence
             self.sequence_depth = 0
@@ -99,17 +99,17 @@ class Node:
 
     """
     Node of an ActionTree.
-    Each node can have a single parent, a list of actions and a list of children.
+    Each node can have a single parent, a list of commands and a list of children.
     """
 
     def __init__(self, parent):
         self.parent = parent
-        self.actions = []
+        self.commands = []
         self.children = []
 
-    def add_action(self, action):
-        """Add an action to node."""
-        self.actions.append(action)
+    def add_command(self, command):
+        """Add an command to node."""
+        self.commands.append(command)
 
     def add_child(self, node):
         """Add a child to node."""
@@ -205,4 +205,4 @@ class UndoMode:
         node = document.undotree.current_node
         return node.parent.children.index(node) if node.parent != None else 0
 
-actions.undo_mode = UndoMode()
+commands.undo_mode = UndoMode()

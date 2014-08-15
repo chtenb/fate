@@ -1,8 +1,8 @@
-"""This module contains more complex actions that are built of other primitive actions."""
+"""This module contains more complex commands that are built of other primitive commands."""
 
 from . import modes
-from . import actions
-from .actiontools import Compose
+from . import commands
+from .commandtools import Compose
 from .selectors import (Empty, EmptyBefore, PreviousFullLine,
                         SelectIndent, NextFullLine, NextChar, PreviousChar)
 from .operators import Append, Insert, delete
@@ -17,24 +17,24 @@ def escape(document):
         modes.select_mode(document)
     else:
         return Empty(document)
-actions.escape = escape
+commands.escape = escape
 
 OpenLineAfter = Compose(modes.select_mode, PreviousFullLine, SelectIndent, copy,
                         NextFullLine, Append('\n'), PreviousChar, EmptyBefore,
                         paste_before, clear, ChangeAfter, name='OpenLineAfter',
                         docs='Open a line after interval')
-actions.OpenLineAfter = repeatable(OpenLineAfter)
+commands.OpenLineAfter = repeatable(OpenLineAfter)
 
 OpenLineBefore = Compose(modes.select_mode, NextFullLine, SelectIndent, copy,
                          NextFullLine, Insert('\n'), NextChar, EmptyBefore,
                          paste_before, clear, ChangeAfter, name='OpenLineBefore',
                          docs='Open a line before interval')
-actions.OpenLineBefore = repeatable(OpenLineBefore)
+commands.OpenLineBefore = repeatable(OpenLineBefore)
 
 Cut = Compose(copy, delete, name='Cut', docs='Copy and delete selected text.')
-actions.Cut = Cut
+commands.Cut = Cut
 
 CutChange = Compose(Cut, ChangeInPlace,
                     name='CutChange', docs='Copy and change selected text.')
-actions.CutChange = repeatable(CutChange)
+commands.CutChange = repeatable(CutChange)
 

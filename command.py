@@ -1,7 +1,7 @@
-from . import actions
+from . import commands
 from re import match
 from logging import debug
-from .actiontools import execute
+from .commandtools import execute
 
 
 def publics(obj):
@@ -10,7 +10,7 @@ def publics(obj):
 
 
 def get_scope(document):
-    scope = publics(actions)
+    scope = publics(commands)
     scope.update({'self': document})
     return scope
 

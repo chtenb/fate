@@ -1,80 +1,80 @@
 """
 This module contains the key mapping as two dictionaries from chars to functions.
-The first one, `actions`, maps chars to actions.
-The second one, `actions`, maps chars to ui actions,
+The first one, `commands`, maps chars to commands.
+The second one, `commands`, maps chars to ui commands,
 i.e. functions which take an UserInterface object.
 """
-from . import actions
+from . import commands
 from .document import Document
-from . import actions
+from . import commands
 
 
 default = {
     'Ctrl-S': Document.write,
-    'Ctrl-Q': actions.quit_document,
-    'Ctrl-X': actions.force_quit,
-    'Ctrl-O': actions.open_document,
-    'Ctrl-N': actions.next_document,
-    'Ctrl-P': actions.previous_document,
-    'f': actions.local_find,
-    'F': actions.local_find_backwards,
-    '/': actions.search,
-    '*': actions.search_current_content,
-    'n': actions.search_next,
-    'N': actions.search_previous,
-    ':': actions.command_mode,
-    'j': actions.NextLine,
-    'k': actions.PreviousLine,
-    'J': actions.NextFullLine,
-    'K': actions.PreviousFullLine,
-    'l': actions.NextChar,
-    'h': actions.PreviousChar,
-    'w': actions.NextWord,
-    'b': actions.PreviousWord,
-    'W': actions.NextClass,
-    'B': actions.PreviousClass,
-    '}': actions.NextParagraph,
-    '{': actions.PreviousParagraph,
-    ')': actions.SelectAround,
-    ']': actions.SelectAroundChar,
-    'm': actions.Join,
-    'z': actions.Complement,
-    'A': actions.SelectEverything,
-    'I': actions.SelectIndent,
-    'v': actions.lock,
-    'V': actions.unlock,
-    'R': actions.release,
-    'u': actions.undo,
-    'U': actions.redo,
-    'Ctrl-U': actions.undo_mode,
-    'y': actions.copy,
-    'Y': actions.clear,
-    'p': actions.paste_after,
-    'P': actions.paste_after,
-    'r': actions.reduce_mode,
-    'e': actions.extend_mode,
-    'd': actions.delete,
-    'i': actions.ChangeBefore,
-    'a': actions.ChangeAfter,
-    's': actions.ChangeAround,
-    'c': actions.ChangeInPlace,
-    'Esc': actions.escape,
-    'o': actions.OpenLineAfter,
-    'O': actions.OpenLineBefore,
-    'x': actions.Cut,
-    'X': actions.CutChange,
-    '.': actions.repeat,
-    '~': actions.uppercase,
-    '`': actions.lowercase,
+    'Ctrl-Q': commands.quit_document,
+    'Ctrl-X': commands.force_quit,
+    'Ctrl-O': commands.open_document,
+    'Ctrl-N': commands.next_document,
+    'Ctrl-P': commands.previous_document,
+    'f': commands.local_find,
+    'F': commands.local_find_backwards,
+    '/': commands.search,
+    '*': commands.search_current_content,
+    'n': commands.search_next,
+    'N': commands.search_previous,
+    ':': commands.command_mode,
+    'j': commands.NextLine,
+    'k': commands.PreviousLine,
+    'J': commands.NextFullLine,
+    'K': commands.PreviousFullLine,
+    'l': commands.NextChar,
+    'h': commands.PreviousChar,
+    'w': commands.NextWord,
+    'b': commands.PreviousWord,
+    'W': commands.NextClass,
+    'B': commands.PreviousClass,
+    '}': commands.NextParagraph,
+    '{': commands.PreviousParagraph,
+    ')': commands.SelectAround,
+    ']': commands.SelectAroundChar,
+    'm': commands.Join,
+    'z': commands.Complement,
+    'A': commands.SelectEverything,
+    'I': commands.SelectIndent,
+    'v': commands.lock,
+    'V': commands.unlock,
+    'R': commands.release,
+    'u': commands.undo,
+    'U': commands.redo,
+    'Ctrl-U': commands.undo_mode,
+    'y': commands.copy,
+    'Y': commands.clear,
+    'p': commands.paste_after,
+    'P': commands.paste_after,
+    'r': commands.reduce_mode,
+    'e': commands.extend_mode,
+    'd': commands.delete,
+    'i': commands.ChangeBefore,
+    'a': commands.ChangeAfter,
+    's': commands.ChangeAround,
+    'c': commands.ChangeInPlace,
+    'Esc': commands.escape,
+    'o': commands.OpenLineAfter,
+    'O': commands.OpenLineBefore,
+    'x': commands.Cut,
+    'X': commands.CutChange,
+    '.': commands.repeat,
+    '~': commands.uppercase,
+    '`': commands.lowercase,
 }
 
 
 def print_keymap(document):
     """Prints the keys with their explanation."""
-    def print_key(key, action):
+    def print_key(key, command):
         """Prints single key with docstring."""
-        print(key + ': ' + action.__docs__)
+        print(key + ': ' + command.__docs__)
 
-    for key, action in document.keymap.items():
-        print_key(key, action)
+    for key, command in document.keymap.items():
+        print_key(key, command)
 

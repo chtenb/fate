@@ -1,6 +1,6 @@
 """This module provides a repeat mechanism for user input."""
 from .document import Document
-from . import actions
+from . import commands
 from functools import wraps
 
 
@@ -10,9 +10,9 @@ class RepeatData:
 
     def __init__(self):
         self.last_user_input = []
-        self.last_action = None
+        self.last_command = None
         self.current_user_input = []
-        self.current_action = None
+        self.current_command = None
         self.recording_level = 0
 
 
@@ -42,26 +42,26 @@ def stop_recording(document):
 
     if data.recording_level == 0:
         data.last_user_input = data.current_user_input
-        data.last_action = data.current_action
+        data.last_command = data.current_command
         data.current_user_input = []
-        data.current_action = None
+        data.current_command = None
 
 
 def repeat(document):
     data = document.repeat_data
-    if data.last_action:
+    if data.last_command:
         document.feed_input(data.last_user_input)
-        data.last_action(document)
-actions.repeat = repeat
+        data.last_command(document)
+commands.repeat = repeat
 
 
-def repeatable(action):
-    """Action decorator which stores action in last_action field in document."""
-    @wraps(action)
+def repeatable(command):
+    """Action decorator which stores command in last_command field in document."""
+    @wraps(command)
     def wrapper(document):
-        document.repeat_data.current_action = action
+        document.repeat_data.current_command = command
         start_recording(document)
-        result = action(document)
+        result = command(document)
         stop_recording(document)
         return result
     return wrapper

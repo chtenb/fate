@@ -1,78 +1,78 @@
 """
-This module contains several base classes and decorators for creating actions.
+This module contains several base classes and decorators for creating commands.
 """
 from logging import debug
 
 
-def execute(action, document):
-    """Call obj as an action recursively while callable."""
-    while callable(action):
-        action = action(document)
-    return action
+def execute(command, document):
+    """Call obj as an command recursively while callable."""
+    while callable(command):
+        command = command(document)
+    return command
 
 
 class Undoable:
 
     """
-    For some actions, we want to be able to undo them.
+    For some commands, we want to be able to undo them.
     Let us define the class Undoable for that.
 
-    Note that, all actions can be made trivially undoable,
-    by storing the document before and after applying the action.
+    Note that, all commands can be made trivially undoable,
+    by storing the document before and after applying the command.
     This is however not desirable for reasons of space.
     Therefore we leave the specific implementation
     of the undo method to the concrete subclasses.
     """
 
     def __call__(self, document):
-        """Add action to the undotree and execute it."""
+        """Add command to the undotree and execute it."""
         document.undotree.add(self)
         self.do(document)
 
     def undo(self, document):
-        """Undo action."""
+        """Undo command."""
         raise NotImplementedError("An abstract method is not callable.")
 
     def do(self, document):
         """
-        Execute action without it being added to the undotree again,
+        Execute command without it being added to the undotree again,
         e.g. for performing a redo.
         """
         raise NotImplementedError("An abstract method is not callable.")
 
 
-# There is a complication with implementing composed actions.
+# There is a complication with implementing composed commands.
 # Suppose we want to create a compound selection which involves a the mode
 # of the document to change to extend mode at some point.
 # Then extend mode must be executed at creation time,
 # in order to create the intended selection.
 # However, this violates the principle that the document must not be
-# touched while only creating an action.
-# The solution is that compositions don't return an action and thus cannot be inspected
+# touched while only creating an command.
+# The solution is that compositions don't return an command and thus cannot be inspected
 # If this functionality is required nonetheless, the composition must be defined in an
-# action body
+# command body
 
 class Compose:
 
     """
-    In order to be able to conveniently chain actions, we provide a
-    function that composes a sequence of actions into a single action.
-    The undoable subactions should be undoable as a whole.
+    In order to be able to conveniently chain commands, we provide a
+    function that composes a sequence of commands into a single command.
+    The undoable subcommands should be undoable as a whole.
     """
 
-    def __init__(self, *subactions, name='', docs=''):
-        self.subactions = subactions
+    def __init__(self, *subcommands, name='', docs=''):
+        self.subcommands = subcommands
         self.__name__ = name
         self.__docs__ = docs
 
     def __call__(self, document):
-        # Execute subactions
+        # Execute subcommands
         document.undotree.start_sequence()
-        for action in self.subactions:
+        for command in self.subcommands:
             while 1:
-                debug(action)
-                result = action(document)
+                debug(command)
+                result = command(document)
                 if not callable(result):
                     break
-                action = result
+                command = result
         document.undotree.end_sequence()

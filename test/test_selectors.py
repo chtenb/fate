@@ -8,14 +8,14 @@ class SelectorTest(BaseTestCase):
         BaseTestCase.setUp(self)
 
     def test_select_everything(self):
-        action = SelectEverything(self.document)
-        action(self.document)
+        command = SelectEverything(self.document)
+        command(self.document)
         expected = Selection([Interval(0, len(self.document.text))])
         self.assertEqual(expected, self.document.selection)
 
     def test_next_word(self):
-        action = NextWord(self.document)
-        action(self.document)
+        command = NextWord(self.document)
+        command(self.document)
         expected = Selection([Interval(0, 6)])
         self.assertEqual(expected, self.document.selection)
 

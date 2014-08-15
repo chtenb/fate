@@ -28,9 +28,9 @@ logging.basicConfig(level=logging.DEBUG,
 
 info('Starting fate.')
 
-# Load modules exposing actions, to make sure the actions module contains all actions
-from . import (actions, selectors, operators, clipboard, compoundactions, uiactions,
-        modes, insertoperations, actiontools, repeat, undotree)
+# Load modules exposing commands, to make sure the commands module contains all commands
+from . import (commands, selectors, operators, clipboard, compoundcommands, uicommands,
+        modes, insertoperations, commandtools, repeat, undotree)
 from . import document
 
 # Load standard plugins
@@ -62,7 +62,7 @@ def run():
         char = document.activedocument.ui.getchar()
 
         if char in document.activedocument.keymap:
-            action = document.activedocument.keymap[char]
-            while callable(action):
-                action = action(document.activedocument)
+            command = document.activedocument.keymap[char]
+            while callable(command):
+                command = command(document.activedocument)
 
