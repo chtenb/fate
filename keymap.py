@@ -6,8 +6,9 @@ i.e. functions which take an UserInterface object.
 """
 from . import commands
 from .document import Document
-from . import commands
 
+# TODO integrate this in the project
+cancel = 'Esc'
 
 default = {
     'Ctrl-S': Document.write,

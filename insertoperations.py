@@ -1,12 +1,15 @@
+import re
 from . import modes
 from . import commands
 from .operation import Operation
-import re
-from .selectors import NextFullLine
+from .operators import Append, Insert
 from .selection import Selection, Interval
 from .repeat import repeatable
-
-from logging import debug
+from .commandtools import Compose
+from .selectors import (EmptyBefore, PreviousFullLine,
+                        SelectIndent, NextFullLine, NextChar, PreviousChar)
+from .clipboard import copy, clear, paste_before, Cut
+from . import modes
 
 modes.INSERT = 'INSERT'
 modes.APPEND = 'APPEND'
@@ -250,3 +253,20 @@ class ChangeAround(InsertOperation):
         return Operation(document, new_content)
 
 commands.ChangeAround = ChangeAround
+
+
+OpenLineAfter = Compose(modes.select_mode, PreviousFullLine, SelectIndent, copy,
+                        NextFullLine, Append('\n'), PreviousChar, EmptyBefore,
+                        paste_before, clear, ChangeAfter, name='OpenLineAfter',
+                        docs='Open a line after interval')
+commands.OpenLineAfter = repeatable(OpenLineAfter)
+
+OpenLineBefore = Compose(modes.select_mode, NextFullLine, SelectIndent, copy,
+                         NextFullLine, Insert('\n'), NextChar, EmptyBefore,
+                         paste_before, clear, ChangeAfter, name='OpenLineBefore',
+                         docs='Open a line before interval')
+commands.OpenLineBefore = repeatable(OpenLineBefore)
+
+CutChange = Compose(Cut, ChangeInPlace,
+                    name='CutChange', docs='Copy and change selected text.')
+commands.CutChange = repeatable(CutChange)

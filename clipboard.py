@@ -12,6 +12,8 @@ For this to work, the clipboard must be usable cross-history.
 from .operation import Operation
 from . import commands
 from .document import Document
+from .commandtools import Compose
+from .operators import delete
 
 
 class Clipboard:
@@ -87,3 +89,8 @@ def clear(document):
     """Throw away the value on top of the clipboard stack."""
     document.clipboard.pop()
 commands.clear = clear
+
+
+Cut = Compose(copy, delete, name='Cut', docs='Copy and delete selected text.')
+commands.Cut = Cut
+

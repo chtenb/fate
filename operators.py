@@ -78,3 +78,4 @@ class Change:
         operation = Operation(document, new_content, selection)
         operation(document)
 
+

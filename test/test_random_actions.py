@@ -2,7 +2,7 @@ from unittest import main
 from .basetestcase import BaseTestCase
 from .. import commands
 from random import choice
-from ..command import publics
+from ..commandmode import publics
 from ..commandtools import execute
 from tempfile import gettempdir
 from sys import path

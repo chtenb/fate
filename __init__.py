@@ -29,8 +29,9 @@ logging.basicConfig(level=logging.DEBUG,
 info('Starting fate.')
 
 # Load modules exposing commands, to make sure the commands module contains all commands
-from . import (commands, selectors, operators, clipboard, compoundcommands, uicommands,
-        modes, insertoperations, commandtools, repeat, undotree)
+from . import (commands, selectors, operators, clipboard, searchcommands, modes,
+               insertoperations, commandtools, repeat, undotree, miscellaneouscommands,
+               documentcommands)
 from . import document
 
 # Load standard plugins
@@ -65,4 +66,3 @@ def run():
             command = document.activedocument.keymap[key]
             while callable(command):
                 command = command(document.activedocument)
-
