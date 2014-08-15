@@ -14,6 +14,15 @@ class UserInterface:
     def touch(self):
         """
         Must be an atomic operation which forces a redraw of the screen.
+        E.g. it should set a boolean somewhere such that the drawing thread notices
+        that a redraw is required.
+        """
+        raise NotImplementedError("An abstract method is not callable.")
+
+    def activate(self):
+        """
+        When this userinterface must become active (e.g. if the user switches to
+        our document), this function gets called.
         """
         raise NotImplementedError("An abstract method is not callable.")
 
@@ -23,25 +32,32 @@ class UserInterface:
         """
         raise NotImplementedError("An abstract method is not callable.")
 
-    def activate(self):
-        raise NotImplementedError("An abstract method is not callable.")
-
     def getinput(self):
+        """
+        Get the next input from the user.
+        This can either be a key (in string representation) or a command.
+        """
         raise NotImplementedError("An abstract method is not callable.")
 
     def peekinput(self):
+        """
+        Same as getinput, but don't actually consume the input.
+        """
+        raise NotImplementedError("An abstract method is not callable.")
+
+    def prompt(self, prompt_string='>'):
+        """
+        Prompt the user for an input string.
+        """
         raise NotImplementedError("An abstract method is not callable.")
 
     def getkey(self):
         """
         Get character typed by user.
-        Returns Cancel if interrupted by command.
+        Returns Cancel if interrupted by a command.
         """
         userinput = self.peekinput()
         if type(userinput) == str:
             return self.getinput()
         else:
             return 'Cancel'
-
-    def prompt(self, prompt_string='>'):
-        raise NotImplementedError("An abstract method is not callable.")

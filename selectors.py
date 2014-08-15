@@ -18,9 +18,17 @@ from functools import partial
 
 from . import commands
 from .selection import Selection, Interval
-from .modes import EXTEND, REDUCE
+from . import modes
 
-from logging import debug
+
+def escape(document):
+    """Escape"""
+    if document.mode != modes.SELECT:
+        modes.select_mode(document)
+    else:
+        return Empty(document)
+commands.escape = escape
+
 
 class SelectEverything(Selection):
 
@@ -101,7 +109,7 @@ commands.EmptyAfter = EmptyAfter
 def find_matching_pair(string, pos, fst, snd):
     """Find matching pair of characters fst and snd around (inclusive) position pos."""
     assert 0 <= pos < len(string)
-    
+
     level = 0
     i = pos
     beg = None
@@ -243,9 +251,9 @@ class SelectPattern(Selection):
 
         if new_intervals:
             new_selection = Selection(new_intervals)
-            if mode == EXTEND:
+            if mode == modes.EXTEND:
                 new_selection.add(new_intervals)
-            elif mode == REDUCE:
+            elif mode == modes.REDUCE:
                 new_selection.substract(new_intervals)
 
             if new_selection and selection != new_selection:
@@ -264,9 +272,9 @@ class SelectPattern(Selection):
             new_selection = Selection(Interval(mbeg, mend))
             # If match is in the right direction
             if not reverse and mend > beg or reverse and mbeg < end:
-                if mode == EXTEND:
+                if mode == modes.EXTEND:
                     new_selection = selection.add(new_selection)
-                elif mode == REDUCE:
+                elif mode == modes.REDUCE:
                     new_selection = selection.substract(new_selection)
 
                 if new_selection and selection != new_selection:
@@ -304,9 +312,9 @@ class SelectLocalPattern(Selection):
                 # or is empty interval adjacent to current interval in right direction
                 if (not reverse and mend > beg
                         or reverse and mbeg < end):
-                    if mode == EXTEND:
+                    if mode == modes.EXTEND:
                         new_interval = Interval(min(beg, mbeg), max(end, mend))
-                    elif mode == REDUCE:
+                    elif mode == modes.REDUCE:
                         if reverse:
                             mend = max(end, mend)
                         else:
@@ -326,7 +334,7 @@ class SelectLocalPattern(Selection):
             self.add(new_interval)
 
 SelectIndent = partial(SelectLocalPattern, r'(?m)^([ \t]*)', reverse=True, group=1,
-        allow_same_interval=True)
+                       allow_same_interval=True)
 commands.SelectIndent = SelectIndent
 
 
