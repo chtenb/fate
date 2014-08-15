@@ -29,14 +29,14 @@ class InsertOperation:
             self.preview_operation.do(document)
 
             document.ui.touch()
-            char = document.getchar()
+            key = document.getkey()
 
-            if char == 'Esc':
+            if key == 'Esc':
                 self.preview_operation.undo(document)
                 document.mode = modes.SELECT
                 break
 
-            self.insert(document, char)
+            self.insert(document, key)
 
             self.preview_operation.undo(document)
 

@@ -154,9 +154,9 @@ class UndoMode:
 
             # Proceed according to user input
             while 1:
-                char = document.ui.getchar()
-                if char in self.keymap:
-                    self.keymap[char](document)
+                key = document.ui.getkey()
+                if key in self.keymap:
+                    self.keymap[key](document)
                     break
 
     def stop(self, document):

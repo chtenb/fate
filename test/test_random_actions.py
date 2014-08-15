@@ -67,7 +67,7 @@ class RandomizedActionTest(BaseTestCase):
     def get_random_command(self):
         while 1:
             name = choice(command_names)
-            if name not in ['quit_document', 'force_quit']:
+            if name not in ['quit_document', 'force_quit', 'open_document']:
                 break
         return name
 

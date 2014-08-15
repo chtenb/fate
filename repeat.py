@@ -23,10 +23,10 @@ def init(document):
 Document.OnDocumentInit.add(init)
 
 
-def record_input(document, char):
+def record_input(document, key):
     data = document.repeat_data
     if data.recording_level > 0:
-        data.current_user_input.append(char)
+        data.current_user_input.append(key)
 
 
 def start_recording(document):

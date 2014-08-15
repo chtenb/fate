@@ -53,14 +53,14 @@ commands.previous_document = previous_document
 
 
 def local_find(document):
-    char = document.ui.getchar()
-    SelectLocalPattern(re.escape(char), document)(document)
+    key = document.ui.getkey()
+    SelectLocalPattern(re.escape(key), document)(document)
 commands.local_find = local_find
 
 
 def local_find_backwards(document):
-    char = document.ui.getchar()
-    SelectLocalPattern(re.escape(char), document, reverse=True)(document)
+    key = document.ui.getkey()
+    SelectLocalPattern(re.escape(key), document, reverse=True)(document)
 commands.local_find_backwards = local_find_backwards
 
 

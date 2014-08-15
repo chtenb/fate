@@ -1,7 +1,5 @@
 from ..userinterface import UserInterface
-from queue import Queue
-
-from logging import debug
+from collections import deque
 
 
 class ProxyUserInterface(UserInterface):
@@ -10,15 +8,15 @@ class ProxyUserInterface(UserInterface):
 
     def __init__(self, document):
         UserInterface.__init__(self, document)
-        self.char_queue = Queue()
+        self.key_queue = deque()
 
     def feed(self, string):
         """
-        Queue a sequence of characters which will be returned by the getchar function,
+        Queue a sequence of characters which will be returned by the getkey function,
         when called.
         """
-        for char in string:
-            self.char_queue.put(char)
+        for key in string:
+            self.key_queue.appendleft(key)
 
     def touch(self):
         pass
@@ -29,14 +27,23 @@ class ProxyUserInterface(UserInterface):
     def activate(self):
         pass
 
-    def getchar(self):
+    def getinput(self):
         """
-        Return characters from the char_queue.
+        Pop first key from the key_queue.
         When no more characters are available, return Esc.
         """
-        debug(1)
-        if not self.char_queue.empty():
-            return self.char_queue.get()
+        if self.key_queue:
+            return self.key_queue.pop()
+        else:
+            return 'Esc'
+
+    def peekinput(self):
+        """
+        Return first key from the key_queue.
+        When no more characters are available, return Esc.
+        """
+        if self.key_queue:
+            return self.key_queue[-1]
         else:
             return 'Esc'
 

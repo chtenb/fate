@@ -175,7 +175,7 @@ def SelectAroundChar(document, char=None, selection=None):
     Return None if not all intervals are surrounded.
     """
     selection = selection or document.selection
-    char = char or document.ui.getchar()
+    char = char or document.ui.getkey()
     result = Selection()
 
     # Check if we should check for a matching pair

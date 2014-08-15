@@ -1,7 +1,7 @@
 """
-This module contains the key mapping as two dictionaries from chars to functions.
-The first one, `commands`, maps chars to commands.
-The second one, `commands`, maps chars to ui commands,
+This module contains the key mapping as two dictionaries from keys to functions.
+The first one, `commands`, maps keys to commands.
+The second one, `commands`, maps keys to ui commands,
 i.e. functions which take an UserInterface object.
 """
 from . import commands

@@ -32,7 +32,7 @@ class UserInterface:
     def peekinput(self):
         raise NotImplementedError("An abstract method is not callable.")
 
-    def getchar(self):
+    def getkey(self):
         """
         Get character typed by user.
         Returns Cancel if interrupted by command.

@@ -56,16 +56,16 @@ class Document():
         if filename:
             self.read()
 
-    def getchar(self):
+    def getkey(self):
         if self.input_food:
-            char = self.input_food.popleft()
+            key = self.input_food.popleft()
         else:
-            char = self.ui.getchar()
-        self.OnUserInput.fire(self, char)
-        return char
+            key = self.ui.getkey()
+        self.OnUserInput.fire(self, key)
+        return key
 
-    def feed_input(self, chars):
-        self.input_food.extend(chars)
+    def feed_input(self, keys):
+        self.input_food.extend(keys)
 
     def quit(self):
         """Quit document."""

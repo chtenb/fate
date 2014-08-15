@@ -59,10 +59,10 @@ def run():
     """Main input loop for fate."""
     while document.activedocument != None:
         document.activedocument.ui.touch()
-        char = document.activedocument.ui.getchar()
+        key = document.activedocument.ui.getkey()
 
-        if char in document.activedocument.keymap:
-            command = document.activedocument.keymap[char]
+        if key in document.activedocument.keymap:
+            command = document.activedocument.keymap[key]
             while callable(command):
                 command = command(document.activedocument)
 
