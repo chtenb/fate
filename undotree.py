@@ -5,7 +5,10 @@ the command history.
 from logging import debug
 from . import commands
 from . import modes
-from .document import Document
+from .document import (
+    Document, next_document, previous_document, quit_document,
+    quit_all, open_document, force_quit
+)
 
 
 class UndoTree:
@@ -123,6 +126,19 @@ Document.OnDocumentInit.add(init)
 modes.UNDO = 'UNDO'
 
 
+# Some commands for interacting with the undo tree
+def undo(document):
+    """Undo last command."""
+    document.undotree.undo()
+commands.undo = undo
+
+
+def redo(document):
+    """Redo last undo."""
+    document.undotree.redo()
+commands.redo = redo
+
+
 class UndoMode:
 
     """
@@ -138,30 +154,52 @@ class UndoMode:
             'Down': self.down,
             'Esc': self.stop
         }
+        self.allowedcommands = [
+            next_document, previous_document, quit_document,
+            quit_all, open_document, force_quit
+        ]
 
     def __call__(self, document):
         document.mode = modes.UNDO
 
-        self.running = True
-        while self.running:
-            document.ui.touch()
+        document.ui.touch()
 
-            # Make sure the child_index is set to the index we now have
-            self.child_index = self.current_index(document)
+        # Make sure the child_index is set to the index we now have
+        self.child_index = self.current_index(document)
 
-            #debug('length: ' + str(len(undotree.current_node.children)))
-            #debug('index: ' + str(child_index))
+        # Notify the the document that we are in undomode now
+        document.persistentcommand = self
 
-            # Proceed according to user input
-            while 1:
-                key = document.ui.getkey()
-                if key in self.keymap:
-                    self.keymap[key](document)
-                    break
+        #debug('length: ' + str(len(undotree.current_node.children)))
+        #debug('index: ' + str(child_index))
+
+        # Proceed according to user input
+        # while 1:
+        #key = document.ui.getkey()
+        # if key in self.keymap:
+        # self.keymap[key](document)
+        # break
+
+    def processinput(self, document, userinput):
+        if type(userinput) == str:
+            key = userinput
+            if key in self.keymap:
+                self.keymap[key](document)
+                return
+            if key in document.keymap:
+                command = document.keymap[key]
+        else:
+            command = userinput
+
+        if command in self.allowedcommands:
+            command(document)
+
+    def __str__(self):
+        return 'UNDO'
 
     def stop(self, document):
         document.mode = modes.SELECT
-        self.running = False
+        document.persistentcommand = None
 
     def left(self, document):
         # We can always just call undo; if there is no parent it will do nothing

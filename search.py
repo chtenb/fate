@@ -1,6 +1,9 @@
 import re
 from . import commands
 from .selectors import SelectPattern, SelectLocalPattern
+from .document import Document
+
+Document.search_pattern = ''
 
 
 def local_find(document):

@@ -23,13 +23,3 @@ Let us call these 'actors'.
 # Action constructors: CamelCase
 # Actions: camelcase or camel_case
 
-
-def undo(document):
-    """Undo last command."""
-    document.undotree.undo()
-
-
-def redo(document):
-    """Redo last undo."""
-    document.undotree.redo()
-

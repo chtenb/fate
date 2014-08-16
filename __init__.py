@@ -29,9 +29,8 @@ logging.basicConfig(level=logging.DEBUG,
 info('Starting fate.')
 
 # Load modules exposing commands, to make sure the commands module contains all commands
-from . import (commands, selectors, operators, clipboard, searchcommands, modes,
-               insertoperations, commandtools, repeat, undotree, documentcommands)
-from . import document
+from . import (document, selectors, operators, clipboard, search, modes,
+               insertoperations, commandtools, repeat, undotree)
 
 # Load standard plugins
 from . import filetype_system
@@ -58,10 +57,15 @@ else:
 def run():
     """Main input loop for fate."""
     while document.activedocument != None:
-        document.activedocument.ui.touch()
-        key = document.activedocument.ui.getkey()
+        doc = document.activedocument
+        doc.ui.touch()
+        key = doc.ui.getkey()
 
-        if key in document.activedocument.keymap:
-            command = document.activedocument.keymap[key]
+        if doc.persistentcommand != None:
+            # We are not in normalmode
+            doc.persistentcommand.processinput(doc, key)
+        elif key in doc.keymap:
+            # We are in normalmode
+            command = doc.keymap[key]
             while callable(command):
-                command = command(document.activedocument)
+                command = command(doc)
