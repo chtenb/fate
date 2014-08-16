@@ -30,8 +30,7 @@ info('Starting fate.')
 
 # Load modules exposing commands, to make sure the commands module contains all commands
 from . import (commands, selectors, operators, clipboard, searchcommands, modes,
-               insertoperations, commandtools, repeat, undotree, miscellaneouscommands,
-               documentcommands)
+               insertoperations, commandtools, repeat, undotree, documentcommands)
 from . import document
 
 # Load standard plugins
