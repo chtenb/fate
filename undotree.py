@@ -9,6 +9,7 @@ from .document import (
     Document, next_document, previous_document, quit_document,
     quit_all, open_document, force_quit
 )
+from .mode import Mode
 
 
 class UndoTree:
@@ -139,7 +140,7 @@ def redo(document):
 commands.redo = redo
 
 
-class UndoMode:
+class UndoMode(Mode):
 
     """
     Walk around in undo tree using arrow keys.
@@ -147,6 +148,7 @@ class UndoMode:
     """
 
     def __init__(self):
+        Mode.__init__(self)
         self.keymap = {
             'Left': self.left,
             'Right': self.right,
@@ -179,20 +181,6 @@ class UndoMode:
         # if key in self.keymap:
         # self.keymap[key](document)
         # break
-
-    def processinput(self, document, userinput):
-        if type(userinput) == str:
-            key = userinput
-            if key in self.keymap:
-                self.keymap[key](document)
-                return
-            if key in document.keymap:
-                command = document.keymap[key]
-        else:
-            command = userinput
-
-        if command in self.allowedcommands:
-            command(document)
 
     def __str__(self):
         return 'UNDO'

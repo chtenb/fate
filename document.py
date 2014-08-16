@@ -179,4 +179,4 @@ def goto_document(index):
     def wrapper(document):
         documentlist[index].activate()
     return wrapper
-commands.goto_document = goto_document
+

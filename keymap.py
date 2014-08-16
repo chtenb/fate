@@ -11,12 +11,12 @@ from .document import Document
 cancel = 'Esc'
 
 default = {
-    'Ctrl-S': Document.write,
-    'Ctrl-Q': commands.quit_document,
-    'Ctrl-X': commands.force_quit,
-    'Ctrl-O': commands.open_document,
-    'Ctrl-N': commands.next_document,
-    'Ctrl-P': commands.previous_document,
+    'Ctrl-s': Document.write,
+    'Ctrl-q': commands.quit_document,
+    'Ctrl-x': commands.force_quit,
+    'Ctrl-o': commands.open_document,
+    'Ctrl-n': commands.next_document,
+    'Ctrl-p': commands.previous_document,
     'f': commands.local_find,
     'F': commands.local_find_backwards,
     '/': commands.search,
@@ -47,7 +47,7 @@ default = {
     'R': commands.release,
     'u': commands.undo,
     'U': commands.redo,
-    'Ctrl-U': commands.undo_mode,
+    'Ctrl-u': commands.undo_mode,
     'y': commands.copy,
     'Y': commands.clear,
     'p': commands.paste_after,
