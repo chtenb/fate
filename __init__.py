@@ -59,13 +59,19 @@ def run():
     while document.activedocument != None:
         doc = document.activedocument
         doc.ui.touch()
-        key = doc.ui.getkey()
+        userinput = doc.ui.getinput()
 
         if doc.persistentcommand != None:
             # We are not in normalmode
-            doc.persistentcommand.processinput(doc, key)
-        elif key in doc.keymap:
+            doc.persistentcommand.processinput(doc, userinput)
+        else:
             # We are in normalmode
-            command = doc.keymap[key]
+            if type(userinput) == str:
+                key = userinput
+                if key in doc.keymap:
+                    command = doc.keymap[key]
+            else:
+                command = userinput
+
             while callable(command):
                 command = command(doc)
