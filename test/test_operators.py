@@ -1,5 +1,4 @@
-from unittest import main
-from ..selectors import NextWord
+from ..selectors import nextword
 from ..operators import Insert
 from ..commands import undo
 from .basetestcase import BaseTestCase
@@ -7,7 +6,7 @@ from .basetestcase import BaseTestCase
 class OperatorTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
-        NextWord(self.document)(self.document)
+        nextword(self.document)(self.document)
 
     def test_insert(self):
         command = Insert('Foo ')

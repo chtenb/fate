@@ -2,8 +2,7 @@
 This module provides testcases for insertoperations.
 Auto indentation is covered.
 """
-from unittest import main
-from ..selectors import NextLine, PreviousWord
+from ..selectors import nextline, previousword
 from ..insertoperations import ChangeAfter, ChangeBefore, ChangeInPlace, ChangeAround
 from ..commands import undo
 from .basetestcase import BaseTestCase
@@ -12,7 +11,7 @@ from ..commandtools import execute
 class OperatorTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
-        execute(NextLine, self.document)
+        execute(nextline, self.document)
 
     def test_change_after(self):
         self.document.ui.feed('\nasdf\b\b \n \n \n\n\b\b\n')
@@ -44,7 +43,7 @@ class OperatorTest(BaseTestCase):
     def test_change_around(self):
         self.document.ui.feed('\n\n  (hi)')
         execute(ChangeAfter, self.document)
-        execute(PreviousWord, self.document)
+        execute(previousword, self.document)
         self.document.ui.feed('\n')
         execute(ChangeAround, self.document)
         expected = 'import sys\n\n  (\n  hi\n  )\n'
