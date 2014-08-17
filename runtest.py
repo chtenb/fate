@@ -1,7 +1,9 @@
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('-r', '--rerun', help='rerun the latest test batch',
+parser.add_argument('-r', '--rerun', help='rerun the latest testcase',
                     action='store_true')
+parser.add_argument('-s', '--seed', help='run a testcase with given seed',
+                    action='store')
 parser.add_argument('-l', '--long', help='start a long testing document',
                     action='store_true')
 parser.add_argument('-n', '--no-randomized-tests',

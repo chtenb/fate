@@ -27,7 +27,9 @@ class RandomizedActionTest(BaseTestCase):
             print('Skipping randomized tests')
             return
 
-        if args.rerun:
+        if args.seed != None:
+            self.run_seeded_testcase(int(args.seed))
+        elif args.rerun:
             self.run_last_testcase()
         else:
             self.run_new_testcases()
@@ -38,15 +40,15 @@ class RandomizedActionTest(BaseTestCase):
             with open(gettempdir() + '/last_test_seed_fate.tmp') as f:
                 seed = int(f.read())
         except IOError:
-            raise Exception('Can\'t rerun batch: no previous batch exists.')
+            raise Exception('Can\'t rerun testcase: no previous testcase exists.')
         else:
             self.run_seeded_testcase(seed)
 
     def run_seeded_testcase(self, seed):
         """Run a testcase based on given seed."""
         random.seed(seed)
-        batch = [self.get_random_command() for _ in range(self.commands_per_run)]
-        self.run_batch(seed, batch)
+        testcase = [self.get_random_command() for _ in range(self.commands_per_run)]
+        self.run_testcase(seed, testcase)
 
     def run_new_testcases(self):
         """Run newly generated testcases."""
@@ -60,10 +62,10 @@ class RandomizedActionTest(BaseTestCase):
             seed = int.from_bytes(urandom(10), byteorder='big')
             random.seed(seed)
 
-            batch = [self.get_random_command() for _ in range(self.commands_per_run)]
-            self.run_batch(seed, batch)
+            testcase = [self.get_random_command() for _ in range(self.commands_per_run)]
+            self.run_testcase(seed, testcase)
 
-    def run_batch(self, seed, batch):
+    def run_testcase(self, seed, testcase):
         savefile = gettempdir() + '/last_test_seed_fate.tmp'
 
         if args.verbose:
@@ -75,7 +77,7 @@ class RandomizedActionTest(BaseTestCase):
         with open(savefile, 'w') as f:
             f.write(str(seed))
 
-        for i, name in enumerate(batch):
+        for i, name in enumerate(testcase):
             if args.verbose:
                 print(str(i + 1) + ': executing ' + name)
             execute(command_dict[name], self.document)
