@@ -1,5 +1,6 @@
 SHORT TERM
 Make randomized test depend on seed only, such that we can reproduce if we have the seed
+Implement all existing modes as persisten commands
 Implement commandmode as a persistent command, similar to undomode
 integrate Cancel key in place of Esc
 Select around/inside (not finished yet)
