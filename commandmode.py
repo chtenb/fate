@@ -5,8 +5,8 @@ from .commandtools import execute
 
 
 def command_mode(document):
-    document.ui.command_mode()
-commands.command_mode = command_mode
+    pass
+commands.commandmode = command_mode
 
 
 def publics(obj):

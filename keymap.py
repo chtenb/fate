@@ -7,7 +7,7 @@ i.e. functions which take an UserInterface object.
 from . import commands
 from .document import Document
 
-# TODO integrate this in the project
+# TODO integrate this in the rest of fate
 cancel = 'Esc'
 
 default = {
@@ -23,7 +23,7 @@ default = {
     '*': commands.search_current_content,
     'n': commands.search_next,
     'N': commands.search_previous,
-    ':': commands.command_mode,
+    ':': commands.commandmode,
     'j': commands.NextLine,
     'k': commands.PreviousLine,
     'J': commands.NextFullLine,
