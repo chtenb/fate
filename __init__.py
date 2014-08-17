@@ -29,8 +29,8 @@ logging.basicConfig(level=logging.DEBUG,
 info('Starting fate.')
 
 # Load modules exposing commands, to make sure the commands module contains all commands
-from . import (document, selectors, operators, clipboard, search, modes,
-               insertoperations, commandtools, repeat, undotree)
+from . import (clipboard, commandmode, commandtools, document, insertoperations,
+               operators, repeat, search, selectors, undotree)
 
 # Load standard plugins
 from . import filetype_system
