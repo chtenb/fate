@@ -1,8 +1,8 @@
 SHORT TERM
-Make randomized test depend on seed only, such that we can reproduce if we have the seed
-Implement all existing modes as persisten commands
+Implement all existing modes as persistent commands
 Implement commandmode as a persistent command, similar to undomode
-integrate Cancel key in place of Esc
+Think about possibility to add remap support (i.e. map keys forall modes)
+    This is a generalization of the cancelkey feature
 Select around/inside (not finished yet)
 Enhance selector set
 Incorporate testing with multiple sessions

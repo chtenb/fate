@@ -1,5 +1,4 @@
 """This module defines the class Operation."""
-from . import modes
 from .commandtools import Undoable
 from .selection import Selection, Interval
 
@@ -46,7 +45,6 @@ class Operation(Undoable):
     def do(self, document):
         """Execute operation."""
         self._apply(document)
-        document.mode = modes.SELECT
 
     def undo(self, document):
         """Undo operation."""
@@ -86,6 +84,5 @@ class Operation(Undoable):
                 result.append(string)
 
         document.text = ''.join(result)
-        document.selection_mode = modes.SELECT
         document.selection = new_selection
 

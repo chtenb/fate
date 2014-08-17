@@ -2,14 +2,13 @@
 This module contains the classes ActionTree and Node, to store
 the command history.
 """
-from logging import debug
 from . import commands
-from . import modes
 from .document import (
     Document, next_document, previous_document, quit_document,
     quit_all, open_document, force_quit
 )
 from .mode import Mode
+from logging import debug
 
 
 class UndoTree:
@@ -124,7 +123,6 @@ def init(document):
     document.undotree = UndoTree(document)
 Document.OnDocumentInit.add(init)
 
-modes.UNDO = 'UNDO'
 
 
 # Some commands for interacting with the undo tree
@@ -154,7 +152,7 @@ class UndoMode(Mode):
             'Right': self.right,
             'Up': self.up,
             'Down': self.down,
-            'Esc': self.stop
+            'Cancel': self.stop
         }
         self.allowedcommands = [
             next_document, previous_document, quit_document,
@@ -162,32 +160,42 @@ class UndoMode(Mode):
         ]
 
     def __call__(self, document):
-        document.mode = modes.UNDO
-
         document.ui.touch()
 
         # Make sure the child_index is set to the index we now have
         self.child_index = self.current_index(document)
 
         # Notify the the document that we are in undomode now
-        document.persistentcommand = self
+        document.mode = self
 
         #debug('length: ' + str(len(undotree.current_node.children)))
         #debug('index: ' + str(child_index))
 
-        # Proceed according to user input
-        # while 1:
-        #key = document.ui.getkey()
-        # if key in self.keymap:
-        # self.keymap[key](document)
-        # break
-
     def __str__(self):
         return 'UNDO'
 
+    def processinput(self, document, userinput):
+        # If a direct command is given: execute if we allow it
+        if type(userinput) != str and userinput in self.allowedcommands:
+            userinput(document)
+            return
+
+        # If a key in our keymap is given: execute it
+        if userinput in self.keymap:
+            command = self.keymap[userinput]
+            command(document)
+            return
+
+        # If a key in document.keymap is given: execute if we allow it
+        if userinput in document.keymap:
+            command = document.keymap[userinput]
+            if command in self.allowedcommands:
+                command(document)
+
+
     def stop(self, document):
-        document.mode = modes.SELECT
-        document.persistentcommand = None
+        debug('Exiting undo mode')
+        document.mode = None
 
     def left(self, document):
         # We can always just call undo; if there is no parent it will do nothing
@@ -231,4 +239,4 @@ class UndoMode(Mode):
         node = document.undotree.current_node
         return node.parent.children.index(node) if node.parent != None else 0
 
-commands.undo_mode = UndoMode()
+commands.undomode = UndoMode()

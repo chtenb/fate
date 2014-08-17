@@ -14,20 +14,68 @@ Secondly, one can pass a selection which should be used as starting point
 for the selector instead of the current selection of the document.
 """
 import re
-from functools import partial
+from functools import partial, wraps
 
 from . import commands
 from .selection import Selection, Interval
-from . import modes
+from .mode import Mode
 
 
-def escape(document):
-    """Escape"""
-    if document.mode != modes.SELECT:
-        modes.select_mode(document)
-    else:
-        return Empty(document)
-commands.escape = escape
+class ExtendMode(Mode):
+
+    """
+    Extend current selection by new selection.
+    This mode merely functions as flag, since selectors can decide
+    for themselves how to react on extendmode.
+    """
+
+    def __str__(self):
+        return 'EXTEND'
+
+    def processinput(self, document, userinput):
+        if userinput == 'Cancel':
+            document.mode = None
+        else:
+            self.normalmode(document, userinput)
+commands.extendmode = ExtendMode()
+
+
+class ReduceMode(Mode):
+
+    """
+    Reduce current selection by new selection.
+    This mode merely functions as flag, since selectors can decide
+    for themselves how to react on reducemode.
+    """
+
+    def __str__(self):
+        return 'REDUCE'
+
+    def processinput(self, document, userinput):
+        if userinput == 'Cancel':
+            document.mode = None
+        else:
+            self.normalmode(document, userinput)
+commands.reducemode = ReduceMode()
+
+
+def selector(command):
+    @wraps(command)
+    def wrapper(document, selection=None, mode=None, preview=False):
+        selection = selection or document.selection
+        mode = mode or str(document.mode)
+        selection = command(document, selection, mode)
+        if preview:
+            return selection
+        selection(document)
+    return wrapper
+
+
+@selector
+def selectall(document, selection, mode):
+    """Select the entire text."""
+    return Selection(Interval(0, len(document.text)))
+commands.selectall = selectall
 
 
 class SelectEverything(Selection):
@@ -251,9 +299,9 @@ class SelectPattern(Selection):
 
         if new_intervals:
             new_selection = Selection(new_intervals)
-            if mode == modes.EXTEND:
+            if mode == 'EXTEND':
                 new_selection.add(new_intervals)
-            elif mode == modes.REDUCE:
+            elif mode == 'REDUCE':
                 new_selection.substract(new_intervals)
 
             if new_selection and selection != new_selection:
@@ -272,9 +320,9 @@ class SelectPattern(Selection):
             new_selection = Selection(Interval(mbeg, mend))
             # If match is in the right direction
             if not reverse and mend > beg or reverse and mbeg < end:
-                if mode == modes.EXTEND:
+                if mode == 'EXTEND':
                     new_selection = selection.add(new_selection)
-                elif mode == modes.REDUCE:
+                elif mode == 'REDUCE':
                     new_selection = selection.substract(new_selection)
 
                 if new_selection and selection != new_selection:
@@ -312,9 +360,9 @@ class SelectLocalPattern(Selection):
                 # or is empty interval adjacent to current interval in right direction
                 if (not reverse and mend > beg
                         or reverse and mbeg < end):
-                    if mode == modes.EXTEND:
+                    if mode == 'EXTEND':
                         new_interval = Interval(min(beg, mbeg), max(end, mend))
-                    elif mode == modes.REDUCE:
+                    elif mode == 'REDUCE':
                         if reverse:
                             mend = max(end, mend)
                         else:

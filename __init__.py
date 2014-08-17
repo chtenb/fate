@@ -9,7 +9,7 @@ from tempfile import gettempdir
 from queue import Queue
 import logging
 from logging.handlers import QueueHandler, QueueListener
-from logging import FileHandler, info
+from logging import FileHandler, info, debug
 
 # We provide internal access to the logs through a queue
 # To be accessed by a QueueListener
@@ -61,9 +61,16 @@ def run():
         doc.ui.touch()
         userinput = doc.ui.getinput()
 
-        if doc.persistentcommand != None:
+        # If the cancel key has been pressed, convert input to Cancel
+        if userinput == doc.cancelkey:
+            userinput = 'Cancel'
+
+        debug('Input: ' + str(userinput))
+
+
+        if doc.mode != None:
             # We are not in normalmode
-            doc.persistentcommand.processinput(doc, userinput)
+            doc.mode.processinput(doc, userinput)
         else:
             # We are in normalmode
             if type(userinput) == str:

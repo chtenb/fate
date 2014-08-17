@@ -44,17 +44,9 @@ class RandomizedActionTest(BaseTestCase):
         else:
             self.run_seeded_testcase(seed)
 
-    def run_seeded_testcase(self, seed):
-        """Run a testcase based on given seed."""
-        random.seed(seed)
-        testcase = [self.get_random_command() for _ in range(self.commands_per_run)]
-        self.run_testcase(seed, testcase)
-
     def run_new_testcases(self):
         """Run newly generated testcases."""
         for run in range(self.runs):
-            print('Run ' + str(run + 1))
-
             # Make sure to create a new document for each run
             self.setUp()
 
@@ -62,20 +54,27 @@ class RandomizedActionTest(BaseTestCase):
             seed = int.from_bytes(urandom(10), byteorder='big')
             random.seed(seed)
 
-            testcase = [self.get_random_command() for _ in range(self.commands_per_run)]
-            self.run_testcase(seed, testcase)
+            print('Run {} (seed={})'.format(run + 1, seed))
 
-    def run_testcase(self, seed, testcase):
+            self.run_seeded_testcase(seed)
+
+    def run_seeded_testcase(self, seed):
+        """Run a testcase based on given seed."""
         savefile = gettempdir() + '/last_test_seed_fate.tmp'
-
         if args.verbose:
             print('Saving run into ' + savefile)
-            print('Seed: ' + str(seed))
-            print('Text:\n' + str(self.document.text))
-            print('Selection: ' + str(self.document.selection))
-
         with open(savefile, 'w') as f:
             f.write(str(seed))
+
+        random.seed(seed)
+        testcase = [self.get_random_command() for _ in range(self.commands_per_run)]
+        self.run_testcase(testcase)
+
+    def run_testcase(self, testcase):
+        """Run the given testcase."""
+        if args.verbose:
+            print('Sample text:\n' + str(self.document.text))
+            print('Starting selection: ' + str(self.document.selection))
 
         for i, name in enumerate(testcase):
             if args.verbose:

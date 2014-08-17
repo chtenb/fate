@@ -7,11 +7,11 @@ i.e. functions which take an UserInterface object.
 from . import commands
 from .document import Document
 
-# TODO integrate this in the rest of fate
-cancel = 'Esc'
+Document.cancelkey = 'Esc' # Esc is now remapped to Cancel
 
 default = {
-    'Ctrl-s': Document.write,
+    'Cancel': commands.Empty, # In normalmode the cancel key empties selection
+    'Ctrl-s': commands.save,
     'Ctrl-q': commands.quit_document,
     'Ctrl-x': commands.force_quit,
     'Ctrl-o': commands.open_document,
@@ -47,19 +47,18 @@ default = {
     'R': commands.release,
     'u': commands.undo,
     'U': commands.redo,
-    'Ctrl-u': commands.undo_mode,
+    'Ctrl-u': commands.undomode,
     'y': commands.copy,
     'Y': commands.clear,
     'p': commands.paste_after,
     'P': commands.paste_after,
-    'r': commands.reduce_mode,
-    'e': commands.extend_mode,
+    'r': commands.reducemode,
+    'e': commands.extendmode,
     'd': commands.delete,
     'i': commands.ChangeBefore,
     'a': commands.ChangeAfter,
     's': commands.ChangeAround,
     'c': commands.ChangeInPlace,
-    'Esc': commands.escape,
     'o': commands.OpenLineAfter,
     'O': commands.OpenLineBefore,
     'x': commands.Cut,

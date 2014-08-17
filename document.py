@@ -1,7 +1,7 @@
 """A document represents the state of an editing document."""
 from .event import Event
 from .selection import Selection, Interval
-from . import modes, commands
+from . import commands
 from .userinterface import UserInterface
 from collections import deque
 
@@ -18,7 +18,7 @@ class Document():
     create_userinterface = None
     _text = ''
     saved = True
-    mode = modes.SELECT
+    mode = None
     persistentcommand = None  # TODO: Replace self.mode by this
 
     expandtab = False
@@ -174,9 +174,15 @@ def previous_document(document):
     ndocument.ui.activate()
 commands.previous_document = previous_document
 
+
+def save(document):
+    """Save document text to file."""
+    document.write()
+commands.save = save
+
+
 def goto_document(index):
     """Command constructor to go to the document at given index."""
     def wrapper(document):
         documentlist[index].activate()
     return wrapper
-

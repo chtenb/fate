@@ -1,30 +1,21 @@
 import re
-from . import modes
 from . import commands
 from .operation import Operation
 from .operators import Append, Insert
 from .selection import Selection, Interval
 from .repeat import repeatable
 from .commandtools import Compose
-from .selectors import (EmptyBefore, PreviousFullLine,
-                        SelectIndent, NextFullLine, NextChar, PreviousChar)
+from .selectors import (EmptyBefore, PreviousFullLine, SelectIndent,
+                        NextFullLine, NextChar, PreviousChar)
 from .clipboard import copy, clear, paste_before, Cut
-from . import modes
-
-modes.INSERT = 'INSERT'
-modes.APPEND = 'APPEND'
-modes.SURROUND = 'SURROUND'
+from .mode import cancel
 
 
 class InsertOperation:
 
     """Abstract class for operations dealing with insertion of text."""
 
-    mode = modes.INSERT
-
     def __init__(self, document):
-        document.mode = self.mode
-
         # Then keep updating it according to the users changes
         while 1:
             # Execute the operation (excludes adding it to the undotree)
@@ -36,7 +27,6 @@ class InsertOperation:
 
             if key == 'Esc':
                 self.preview_operation.undo(document)
-                document.mode = modes.SELECT
                 break
 
             self.insert(document, key)
@@ -75,8 +65,6 @@ class ChangeBefore(InsertOperation):
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
-
-    mode = modes.INSERT
 
     def __init__(self, document):
         self.insertions = [''] * len(document.selection)
@@ -124,8 +112,6 @@ class ChangeAfter(InsertOperation):
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
-
-    mode = modes.APPEND
 
     def __init__(self, document):
         self.insertions = [''] * len(document.selection)
@@ -193,8 +179,6 @@ class ChangeAround(InsertOperation):
     and adds `insertions` at the head of each interval.
     """
 
-    mode = modes.SURROUND
-
     def __init__(self, document):
         # Insertions before and after can differ because of autoindentation
         self.insertions_before = [''] * len(document.selection)
@@ -255,13 +239,13 @@ class ChangeAround(InsertOperation):
 commands.ChangeAround = ChangeAround
 
 
-OpenLineAfter = Compose(modes.select_mode, PreviousFullLine, SelectIndent, copy,
+OpenLineAfter = Compose(cancel, PreviousFullLine, SelectIndent, copy,
                         NextFullLine, Append('\n'), PreviousChar, EmptyBefore,
                         paste_before, clear, ChangeAfter, name='OpenLineAfter',
                         docs='Open a line after interval')
 commands.OpenLineAfter = repeatable(OpenLineAfter)
 
-OpenLineBefore = Compose(modes.select_mode, NextFullLine, SelectIndent, copy,
+OpenLineBefore = Compose(cancel, NextFullLine, SelectIndent, copy,
                          NextFullLine, Insert('\n'), NextChar, EmptyBefore,
                          paste_before, clear, ChangeAfter, name='OpenLineBefore',
                          docs='Open a line before interval')
