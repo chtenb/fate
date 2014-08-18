@@ -35,7 +35,7 @@ class ProxyUserInterface(UserInterface):
         if self.key_queue:
             return self.key_queue.pop()
         else:
-            return 'Esc'
+            return 'Cancel'
 
     def peekinput(self):
         """
@@ -45,7 +45,7 @@ class ProxyUserInterface(UserInterface):
         if self.key_queue:
             return self.key_queue[-1]
         else:
-            return 'Esc'
+            return 'Cancel'
 
     def command_mode(self):
         pass

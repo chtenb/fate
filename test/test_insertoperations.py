@@ -4,7 +4,7 @@ Auto indentation is covered.
 """
 from ..selectors import nextline, previousword
 from ..insertoperations import ChangeAfter, ChangeBefore, ChangeInPlace, ChangeAround
-from ..commands import undo
+from ..undotree import undo
 from .basetestcase import BaseTestCase
 from ..commandtools import execute
 
