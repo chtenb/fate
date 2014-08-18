@@ -184,5 +184,5 @@ commands.save = save
 def goto_document(index):
     """Command constructor to go to the document at given index."""
     def wrapper(document):
-        documentlist[index].activate()
+        documentlist[index].ui.activate()
     return wrapper

@@ -1,4 +1,5 @@
 SHORT TERM
+Add document.activate to call ui.activate
 Implement all existing modes as persistent commands
 Implement commandmode as a persistent command, similar to undomode
 Think about possibility to add remap support (i.e. map keys forall modes)
