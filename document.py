@@ -1,6 +1,6 @@
 """A document represents the state of an editing document."""
-from .event import Event
 from .selection import Selection, Interval
+from .event import Event
 from . import commands
 from .userinterface import UserInterface
 from collections import deque
@@ -19,7 +19,6 @@ class Document():
     _text = ''
     saved = True
     mode = None
-    persistentcommand = None  # TODO: Replace self.mode by this
 
     expandtab = False
     tabwidth = 4
@@ -33,11 +32,9 @@ class Document():
         self.OnRead = Event()
         self.OnWrite = Event()
         self.OnQuit = Event()
-        self.OnUserInput = Event()
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
-        self.input_food = deque()
 
         if not self.create_userinterface:
             raise Exception('No function specified in Document.create_userinterface.')
@@ -56,21 +53,28 @@ class Document():
         if filename:
             self.read()
 
-    def getkey(self):
-        if self.input_food:
-            key = self.input_food.popleft()
-        else:
-            key = self.ui.getkey()
-        self.OnUserInput.fire(self, key)
-        return key
-
-    def feed_input(self, keys):
-        self.input_food.extend(keys)
-
     def quit(self):
         """Quit document."""
         logging.info('Quitting document ' + str(self))
         self.OnQuit.fire(self)
+        global activedocument
+        index = documentlist.index(self)
+
+        #debug(str(documentlist))
+        #debug("self: " + str(self.document))
+        #debug("index: " + str(index))
+        #self.getkey()
+
+        if len(documentlist) == 1:
+            activedocument = None
+            return
+
+        if index < len(documentlist) - 1:
+            nextdocument = documentlist[index + 1]
+        else:
+            nextdocument = documentlist[index - 1]
+
+        activedocument = nextdocument
         documentlist.remove(self)
 
     @property
@@ -179,6 +183,12 @@ def save(document):
     """Save document text to file."""
     document.write()
 commands.save = save
+
+
+def load(document):
+    """Load document text from file."""
+    document.read()
+commands.load = load
 
 
 def goto_document(index):

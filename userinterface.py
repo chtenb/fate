@@ -2,7 +2,8 @@
 This module contains the abstract base class for userinterfaces.
 A userinterface should subclass this.
 """
-
+from collections import deque
+from .event import Event
 
 class UserInterface:
 
@@ -10,6 +11,8 @@ class UserInterface:
 
     def __init__(self, document):
         self.document = document
+        self.inputqueue = deque()
+        self.OnUserInput = Event()
 
     def touch(self):
         """
@@ -32,24 +35,36 @@ class UserInterface:
         """
         raise NotImplementedError("An abstract method is not callable.")
 
-    def getinput(self):
+    def prompt(self, prompt_string='>'):
+        """
+        Prompt the user for an input string.
+        """
+        raise NotImplementedError("An abstract method is not callable.")
+
+    def _getuserinput(self):
         """
         Get the next input from the user.
         This can either be a key (in string representation) or a command.
         """
         raise NotImplementedError("An abstract method is not callable.")
 
+    def getinput(self):
+        """
+        Pop and return the first object from the input queue.
+        """
+        if not self.inputqueue:
+            self.inputqueue.appendleft(self.getuserinput())
+        result = self.inputqueue.pop()
+        self.OnUserInput.fire(self, result)
+        return result
+
     def peekinput(self):
         """
-        Same as getinput, but don't actually consume the input.
+        Return the first object from the input queue.
         """
-        raise NotImplementedError("An abstract method is not callable.")
-
-    def prompt(self, prompt_string='>'):
-        """
-        Prompt the user for an input string.
-        """
-        raise NotImplementedError("An abstract method is not callable.")
+        if not self.inputqueue:
+            self.inputqueue.appendleft(self.getuserinput())
+        return self.inputqueue[-1]
 
     def getkey(self):
         """
@@ -61,3 +76,7 @@ class UserInterface:
             return self.getinput()
         else:
             return 'Cancel'
+
+    def feedinput(self, userinput):
+        self.inputqueue.append(userinput)
+
