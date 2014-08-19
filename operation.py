@@ -70,19 +70,7 @@ class Operation(Undoable):
         assert len(new_selection) == len(old_selection)
         assert len(new_content) == len(self.old_content)
 
-        partition = old_selection.partition(document)
-        partition_content = [(in_selection, document.text[beg:end])
-                             for in_selection, (beg, end) in partition]
-
-        count = 0
-        result = []
-        for in_selection, string in partition_content:
-            if in_selection:
-                result.append(new_content[count])
-                count += 1
-            else:
-                result.append(string)
-
-        document.text = ''.join(result)
+        document.text.apply(self)
         document.selection = new_selection
+        document.OnTextChanged.fire(document)
 

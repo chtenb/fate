@@ -77,8 +77,11 @@ def run():
                 key = userinput
                 if key in doc.keymap:
                     command = doc.keymap[key]
+                else:
+                    command = None
             else:
                 command = userinput
 
-            while callable(command):
-                command = command(doc)
+            if command != None:
+                while callable(command):
+                    command = command(doc)
