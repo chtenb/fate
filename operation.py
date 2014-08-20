@@ -52,14 +52,17 @@ class Operation(Undoable):
 
     def _apply(self, document, inverse=False):
         """Apply self to the document."""
+        # TODO remove underscores and clean up
         if inverse:
             old_selection = self.compute_new_selection()
             new_selection = self.old_selection
             new_content = self.old_content
+            operation = Operation(document, new_content, old_selection)
         else:
             new_selection = self.compute_new_selection()
             old_selection = self.old_selection
             new_content = self.new_content
+            operation = self
 
         #print(document.text)
         #print('old: ' + str(old_selection))
@@ -70,7 +73,7 @@ class Operation(Undoable):
         assert len(new_selection) == len(old_selection)
         assert len(new_content) == len(self.old_content)
 
-        document.text.apply(self)
+        document.text.apply(operation)
         document.selection = new_selection
         document.OnTextChanged.fire(document)
 

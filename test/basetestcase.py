@@ -8,7 +8,7 @@ from .proxyuserinterface import ProxyUserInterface
 
 class BaseTestCase(TestCase):
 
-    UserInterfaceClass = ProxyUserInterface
+    create_userinterface = ProxyUserInterface
     sampletext = """import sys
 
 class Foo(Bar):
@@ -24,7 +24,7 @@ class Foo(Bar):
     def setUp(self, sampletext=None):
         if sampletext != None:
             self.sampletext = sampletext
-        document.Document.create_userinterface = self.UserInterfaceClass
+        document.Document.create_userinterface = self.create_userinterface
         #source = dirname(abspath(__file__)) + '/sample.py'
         #copyfile(source, destination)
         destination = gettempdir() + '/test.py'

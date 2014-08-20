@@ -53,7 +53,7 @@ class UserInterface:
         Pop and return the first object from the input queue.
         """
         if not self.inputqueue:
-            self.inputqueue.appendleft(self.getuserinput())
+            self.inputqueue.appendleft(self._getuserinput())
         result = self.inputqueue.pop()
         self.OnUserInput.fire(self, result)
         return result
@@ -63,7 +63,7 @@ class UserInterface:
         Return the first object from the input queue.
         """
         if not self.inputqueue:
-            self.inputqueue.appendleft(self.getuserinput())
+            self.inputqueue.appendleft(self._getuserinput())
         return self.inputqueue[-1]
 
     def getkey(self):

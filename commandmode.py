@@ -1,7 +1,7 @@
-from . import commands
 from re import match
 from logging import debug
 from .commandtools import execute
+from . import commands
 
 
 def command_mode(document):

@@ -1,4 +1,13 @@
+import os
+import sys
+
+path_to_fate = os.path.dirname(os.path.abspath(__file__)) + '/../'
+sys.path.insert(0, path_to_fate)
+
+
 import argparse
+from fate.test import testargs
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--rerun', help='rerun the latest testcase',
                     action='store_true')
@@ -13,16 +22,13 @@ parser.add_argument('-v', '--verbose', help='run in verbose mode',
 parser.add_argument('-m', '--module', help='run single module',
                     action='store')
 args = parser.parse_args()
+testargs.args = args
 
-import os
-import sys
+
 from unittest import defaultTestLoader as loader, TextTestRunner
 
-path_to_fate = os.path.dirname(os.path.abspath(__file__)) + '/../'
-sys.path.insert(0, path_to_fate)
-
 if args.module:
-    print('fate.' + args.module)
+    print('Loading fate.' + args.module)
     suite = loader.loadTestsFromName('fate.' + args.module)
 else:
     suite = loader.discover('fate')

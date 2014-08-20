@@ -12,6 +12,7 @@ Incorporate testing with multiple sessions
 Unittests for pattern select machinery
 Think about how to decorate classes easily, without disabling subclassing
 drag text operation
+User unittest.subTest contextmanager to improve tests
 
 LONG TERM
 Make labeling generation asynchronous

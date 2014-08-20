@@ -1,13 +1,12 @@
+import random
+import os
+from tempfile import gettempdir
 from .basetestcase import BaseTestCase
 from .. import commands
-from random import choice
 from ..commandmode import publics
 from ..commandtools import execute
-from tempfile import gettempdir
-from os import urandom
-import random
-from ..runtest import args
 from .randomizeduserinterface import RandomizedUserSimulator
+from .testargs import args
 
 command_dict = publics(commands)
 command_names = list(command_dict.keys())
@@ -18,18 +17,21 @@ command_names.sort()
 class RandomizedActionTest(BaseTestCase):
 
     def setUp(self):
+        #from ..runtest import args
+        self.args = args
+
         self.create_userinterface = RandomizedUserSimulator
         BaseTestCase.setUp(self)
         self.runs, self.commands_per_run = (5000, 50) if args.long else (500, 50)
 
     def test_random_commands(self):
-        if args.no_randomized_tests:
+        if self.args.no_randomized_tests:
             print('Skipping randomized tests')
             return
 
-        if args.seed != None:
-            self.run_seeded_testcase(int(args.seed))
-        elif args.rerun:
+        if self.args.seed != None:
+            self.run_seeded_testcase(int(self.args.seed))
+        elif self.args.rerun:
             self.run_last_testcase()
         else:
             self.run_new_testcases()
@@ -51,7 +53,7 @@ class RandomizedActionTest(BaseTestCase):
             self.setUp()
 
             # Generate a new seed
-            seed = int.from_bytes(urandom(10), byteorder='big')
+            seed = int.from_bytes(os.urandom(10), byteorder='big')
             random.seed(seed)
 
             print('Run {} (seed={})'.format(run + 1, seed))
@@ -61,7 +63,7 @@ class RandomizedActionTest(BaseTestCase):
     def run_seeded_testcase(self, seed):
         """Run a testcase based on given seed."""
         savefile = gettempdir() + '/last_test_seed_fate.tmp'
-        if args.verbose:
+        if self.args.verbose:
             print('Saving run into ' + savefile)
         with open(savefile, 'w') as f:
             f.write(str(seed))
@@ -72,18 +74,18 @@ class RandomizedActionTest(BaseTestCase):
 
     def run_testcase(self, testcase):
         """Run the given testcase."""
-        if args.verbose:
+        if self.args.verbose:
             print('Sample text:\n' + str(self.document.text))
             print('Starting selection: ' + str(self.document.selection))
 
         for i, name in enumerate(testcase):
-            if args.verbose:
+            if self.args.verbose:
                 print(str(i + 1) + ': executing ' + name)
             execute(command_dict[name], self.document)
 
     def get_random_command(self):
         while 1:
-            name = choice(command_names)
+            name = random.choice(command_names)
             if name not in ['quit_document', 'force_quit', 'open_document']:
                 break
         return name

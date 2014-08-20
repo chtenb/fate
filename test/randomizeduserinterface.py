@@ -31,7 +31,7 @@ class RandomizedUserSimulator(UserInterface):
     def activate(self):
         pass
 
-    def getinput(self):
+    def _getuserinput(self):
         nextkey = self.nextkey
         self.nextkey = random.choice(key_space)
         return nextkey
