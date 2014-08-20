@@ -13,7 +13,6 @@ parser.add_argument('-v', '--verbose', help='run in verbose mode',
 parser.add_argument('-m', '--module', help='run single module',
                     action='store')
 args = parser.parse_args()
-print(args.module)
 
 import os
 import sys
@@ -23,6 +22,7 @@ path_to_fate = os.path.dirname(os.path.abspath(__file__)) + '/../'
 sys.path.insert(0, path_to_fate)
 
 if args.module:
+    print('fate.' + args.module)
     suite = loader.loadTestsFromName('fate.' + args.module)
 else:
     suite = loader.discover('fate')

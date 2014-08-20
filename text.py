@@ -5,7 +5,7 @@ class Text(str):
 
     """
     Text datastructure implemented by a single string.
-    We feature a preview mechanism.
+    Features a preview mechanism.
     """
 
     def __init__(self, string):
@@ -16,20 +16,31 @@ class Text(str):
         return self.get_interval(0, len(self))
 
     def __repr__(self):
-        return str(self)
+        return 'Text("{}")'.format(self)
 
     def __len__(self):
         operation = self.preview_operation
+
         if operation != None:
             less = sum(len(interval) for interval in operation.old_selection)
             more = sum(len(interval) for interval in operation.compute_new_selection())
-            return len(self.string) - less + more
+            result = len(self.string) - less + more
         else:
-            return len(self.string)
+            result = len(self.string)
+
+        # Alternative, faster way to compute it
+        if operation != None:
+            diff = operation.compute_new_selection()[-1][1] - operation.old_selection[-1][1]
+            alt_result = len(self.string) + diff
+        else:
+            alt_result = len(self.string)
+
+        assert alt_result == result
+        return result
 
     def __getitem__(self, index):
         if type(index) == slice:
-            beg, end = index.start, index.stop
+            beg, end = index.start or 0, index.stop or len(self)
             return self.get_interval(beg, end)
         else:
             return self.get_position(index)
@@ -46,10 +57,25 @@ class Text(str):
     def get_position(self, pos):
         """Lookup character at the given position."""
         if self.preview_operation != None:
-            for beg, end in self.preview_operation.old_selection:
-                print(str(beg) + ',' + str(end))
-                if beg <= pos < end:
-                    return self.preview_operation.new_content[pos - beg]
+            oldselection = self.preview_operation.old_selection
+            newselection = self.preview_operation.compute_new_selection()
+
+            for i in range(len(oldselection)):
+                beg, end = oldselection[i]
+                nbeg, nend = newselection[i]
+                lengthdiff = nend - end
+                #print(str(beg) + ',' + str(end))
+                #print(str(nbeg) + ',' + str(nend))
+                #print(lengthdiff)
+                if nbeg <= pos < nend:
+                    # if pos is part of new content
+                    return self.preview_operation.new_content[i][pos - nbeg]
+                elif pos < nbeg:
+                    # We know that pos is not part of new content if
+                    # current interval is beyond pos
+                    lengthdiff = nbeg - beg
+                    return self.string[pos - lengthdiff]
+            return self.string[pos - lengthdiff]
         return self.string[pos]
 
     def get_interval(self, beg, end):
