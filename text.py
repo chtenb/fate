@@ -87,10 +87,14 @@ class Text(str):
         return [self.get_interval(beg, end) for beg, end in selection]
 
     def preview(self, operation):
-        """Preview an operation."""
+        """
+        Preview an operation.
+        NOTE: regular expressions still work with the original string.
+        Setting a preview operation only affects __getitem__.
+        """
         self.preview_operation = operation
 
-    def apply(self, operation):
+    def apply(self, document, operation):
         """Apply the given operation to the text."""
         self.preview_operation = None
 
@@ -107,4 +111,4 @@ class Text(str):
             else:
                 result.append(string)
 
-        self.string = ''.join(result)
+        document._text = Text(''.join(result))

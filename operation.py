@@ -73,7 +73,7 @@ class Operation(Undoable):
         assert len(new_selection) == len(old_selection)
         assert len(new_content) == len(self.old_content)
 
-        document.text.apply(operation)
+        document.text.apply(document, operation)
         document.selection = new_selection
         document.OnTextChanged.fire(document)
 
