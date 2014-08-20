@@ -1,5 +1,4 @@
 """This module contains the Interval and the Selection class."""
-from logging import debug
 
 
 class Interval:
@@ -14,9 +13,6 @@ class Interval:
 
     def __str__(self):
         return '({},{})'.format(self.beg, self.end)
-
-    def __len__(self):
-        return self.end - self.beg
 
     def __eq__(self, obj):
         return (isinstance(obj, Interval)
@@ -52,7 +48,7 @@ class Selection:
 
     def __init__(self, intervals=None):
         self._intervals = []
-        if intervals != None:
+        if intervals:
             self.add(intervals)
 
     def __getitem__(self, index):
@@ -76,7 +72,7 @@ class Selection:
     @property
     def isempty(self):
         """Check if we have intervals."""
-        return not self._intervals
+        return not bool(self._intervals)
 
     def isvalid(self, document):
         """Return False if selection is not valid, True otherwise."""
@@ -84,7 +80,7 @@ class Selection:
 
     def content(self, document):
         """Return the content of self."""
-        return [document.text.get_interval(max(0, beg), min(len(document.text), end))
+        return [document.text[max(0, beg):min(len(document.text), end)]
                 for beg, end in self]
 
     def index(self, interval):
@@ -204,8 +200,8 @@ class Selection:
 
     def complement(self, document):
         """Return the complementary selection of self."""
-        intervals = [interval for in_selection, interval
-                     in self.partition(len(document.text)) if not in_selection]
+        intervals = [interval for in_selection, interval in self.partition(document)
+                     if not in_selection]
         return Selection(intervals)
 
     def bound(self, lower_bound, upper_bound):
@@ -218,14 +214,14 @@ class Selection:
                 result.add(Interval(beg, end))
         return result
 
-    def partition(self, text_length):
+    def partition(self, document):
         """
         Return a sorted list containing all intervals in self
         together with all complementary intervals.
         """
         positions = [pos for interval in self for pos in interval]
         positions.insert(0, 0)
-        positions.append(text_length)
+        positions.append(len(document.text))
         in_selection = False
 
         result = []

@@ -3,7 +3,6 @@ from .selection import Selection, Interval
 from .event import Event
 from . import commands
 from .userinterface import UserInterface
-from .text import Text
 from collections import deque
 
 import logging
@@ -17,6 +16,7 @@ class Document():
     """Contains all objects of one file editing document"""
     OnDocumentInit = Event()
     create_userinterface = None
+    _text = ''
     saved = True
     mode = None
 
@@ -32,8 +32,6 @@ class Document():
         self.OnRead = Event()
         self.OnWrite = Event()
         self.OnQuit = Event()
-
-        self._text = Text('')
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
@@ -93,6 +91,12 @@ class Document():
     def text(self):
         return self._text
 
+    @text.setter
+    def text(self, value):
+        self._text = value
+        self.saved = False
+        self.OnTextChanged.fire(self)
+
     def read(self, filename=None):
         """Read text from file."""
         filename = filename or self.filename
@@ -100,7 +104,7 @@ class Document():
         if filename:
             try:
                 with open(filename, 'r') as fd:
-                    self._text = Text(fd.read())
+                    self.text = fd.read()
                 self.saved = True
                 self.OnRead.fire(self)
             except (FileNotFoundError, PermissionError) as e:
