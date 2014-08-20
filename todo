@@ -1,5 +1,7 @@
 SHORT TERM
 finish text datastructure (tests)
+    Problem: regex can't handle the mutable string datastructure
+    Regex is needed for computing the indentation though
 think about moving character queue to core to enable feeding
 Add document.activate to call ui.activate
 Implement all existing modes as persistent commands

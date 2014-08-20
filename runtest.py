@@ -6,7 +6,7 @@ sys.path.insert(0, path_to_fate)
 
 
 import argparse
-from fate.test import testargs
+from fate.test import cmdargs
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--rerun', help='rerun the latest testcase',
@@ -22,7 +22,7 @@ parser.add_argument('-v', '--verbose', help='run in verbose mode',
 parser.add_argument('-m', '--module', help='run single module',
                     action='store')
 args = parser.parse_args()
-testargs.args = args
+cmdargs.args = args
 
 
 from unittest import defaultTestLoader as loader, TextTestRunner

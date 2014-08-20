@@ -6,7 +6,7 @@ from .. import commands
 from ..commandmode import publics
 from ..commandtools import execute
 from .randomizeduserinterface import RandomizedUserSimulator
-from .testargs import args
+from .cmdargs import args
 
 command_dict = publics(commands)
 command_names = list(command_dict.keys())
@@ -17,7 +17,6 @@ command_names.sort()
 class RandomizedActionTest(BaseTestCase):
 
     def setUp(self):
-        #from ..runtest import args
         self.args = args
 
         self.create_userinterface = RandomizedUserSimulator

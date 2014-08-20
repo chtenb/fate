@@ -46,17 +46,12 @@ class InsertMode(Mode):
         self.insert(doc, userinput)
 
         # Update operation
-        # TODO: this is gonna be easier if text allows preview operations
-        if self.preview_operation != None:
-            self.preview_operation.undo(doc)
-
         # Execute the operation (excludes adding it to the undotree)
         self.preview_operation = self.compute_operation(doc)
-        self.preview_operation.do(doc)
+        doc.text.preview(self.preview_operation)
 
     def stop(self, doc):
         if self.preview_operation != None:
-            self.preview_operation.undo(doc)
             self.preview_operation(doc)
         doc.mode = None
 

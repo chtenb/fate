@@ -78,5 +78,5 @@ class UserInterface:
             return 'Cancel'
 
     def feedinput(self, userinput):
-        self.inputqueue.append(userinput)
+        self.inputqueue.appendleft(userinput)
 

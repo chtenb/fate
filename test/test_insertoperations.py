@@ -15,7 +15,27 @@ class OperatorTest(BaseTestCase):
         BaseTestCase.setUp(self)
         execute(nextline, self.document)
 
-    def test_change_after(self):
+    def deactivate(self, doc):
+        document.activedocument = None
+
+    def test_change_before(self):
+        self.document.ui.feedinput(ChangeBefore)
+        for char in '\nasdf\b\b \n \n \n\n\b\b\n':
+            self.document.ui.feedinput(char)
+        self.document.ui.feedinput('Cancel')
+        self.document.ui.feedinput(self.deactivate)
+        run()
+        expected = '\nas \n \n  \n  \n\nimport sys'
+        print('-----------------------------------------')
+        print(expected)
+        print(self.document.text[:len(expected)])
+        print('-----------------------------------------')
+        self.assertEqual(expected, self.document.text[:len(expected)])
+
+        undo(self.document)
+        self.assertEqual('import sys\n\n', self.document.text[:12])
+
+    def xtest_change_after(self):
         self.document.ui.feedinput(ChangeAfter)
         for char in '\nasdf\b\b \n \n \n\n\b\b\n':
             self.document.ui.feedinput(char)
@@ -23,18 +43,6 @@ class OperatorTest(BaseTestCase):
         self.document.ui.feedinput(self.deactivate)
         run()
         expected = 'import sys\nas \n \n  \n  \n\n'
-        self.assertEqual(expected, self.document.text[:len(expected)])
-
-        undo(self.document)
-        self.assertEqual('import sys\n\n', self.document.text[:12])
-
-    def deactivate(self, doc):
-        document.activedocument = None
-
-    def xtest_change_before(self):
-        self.document.ui.feed('\nasdf\b\b \n \n \n\n\b\b\n')
-        execute(ChangeBefore, self.document)
-        expected = '\nas \n \n  \n  \n\nimport sys'
         self.assertEqual(expected, self.document.text[:len(expected)])
 
         undo(self.document)

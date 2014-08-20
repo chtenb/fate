@@ -67,7 +67,6 @@ def run():
 
         debug('Input: ' + str(userinput))
 
-
         if doc.mode != None:
             # We are not in normalmode
             doc.mode.processinput(doc, userinput)

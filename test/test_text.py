@@ -2,6 +2,8 @@ from itertools import chain, combinations, combinations_with_replacement
 from .basetestcase import BaseTestCase
 from ..operation import Operation
 from ..selection import Selection, Interval
+from ..text import Text
+import re
 
 
 class TextTest(BaseTestCase):
@@ -12,10 +14,14 @@ class TextTest(BaseTestCase):
     def test_default(self):
         self.assertEqual(self.sampletext, str(self.document.text))
 
+        text = Text('asdf')
+        print(re.findall('a', text))
+        print(text.find('f'))
+
     def test_apply(self):
         self.document.selection = Selection((Interval(7, 10), Interval(18, 20)))
         operation = Operation(self.document, ['abc', 'Abc'])
-        self.document.text.apply(operation)
+        self.document.text.apply(self.document, operation)
         expected = (self.sampletext[:7] + 'abc' + self.sampletext[10:18]
                     + 'Abc' + self.sampletext[20:])
         self.assertEqual(expected, str(self.document.text))
@@ -43,7 +49,7 @@ class TextTest(BaseTestCase):
             self.document.selection = selection
             self.document.text.preview(operation)
             previewtext = str(self.document.text)
-            self.document.text.apply(operation)
+            self.document.text.apply(self.document, operation)
             finaltext = str(self.document.text)
 
             # print(previewtext)

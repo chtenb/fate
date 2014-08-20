@@ -1,6 +1,5 @@
 """This module contains the trivial string datastructure."""
 
-
 class Text(str):
 
     """
@@ -20,22 +19,12 @@ class Text(str):
 
     def __len__(self):
         operation = self.preview_operation
-
         if operation != None:
-            less = sum(len(interval) for interval in operation.old_selection)
-            more = sum(len(interval) for interval in operation.compute_new_selection())
-            result = len(self.string) - less + more
+            diff = operation.compute_new_selection()[-1][1] - operation.old_selection[-1][1]
+            result = len(self.string) + diff
         else:
             result = len(self.string)
 
-        # Alternative, faster way to compute it
-        if operation != None:
-            diff = operation.compute_new_selection()[-1][1] - operation.old_selection[-1][1]
-            alt_result = len(self.string) + diff
-        else:
-            alt_result = len(self.string)
-
-        assert alt_result == result
         return result
 
     def __getitem__(self, index):
