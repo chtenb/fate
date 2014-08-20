@@ -74,7 +74,7 @@ class Document():
         else:
             nextdocument = documentlist[index - 1]
 
-        activedocument = nextdocument
+        nextdocument.activate()
         documentlist.remove(self)
 
     @property
