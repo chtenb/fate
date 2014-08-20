@@ -4,7 +4,6 @@ A userinterface should subclass this.
 """
 from collections import deque
 from .event import Event
-from .document import activedocument
 
 class UserInterface:
 
@@ -23,20 +22,20 @@ class UserInterface:
         """
         raise NotImplementedError("An abstract method is not callable.")
 
+    def activate(self):
+        """
+        Manage activation of a new document.
+        """
+        from . import document
+        document.activedocument = self
+        self._activate()
+
     def _activate(self):
         """
         When this userinterface must become active (e.g. if the user switches to
         our document), this function gets called.
         """
         raise NotImplementedError("An abstract method is not callable.")
-
-    def activate(self):
-        """
-        Manage activation of a new document.
-        """
-        global activedocument
-        activedocument = self
-        self._activate()
 
     def notify(self, message):
         """
