@@ -84,7 +84,8 @@ class Document():
     @selection.setter
     def selection(self, value):
         # Make sure only valid selections are applied
-        assert isinstance(value, Selection) and value.isvalid(self)
+        assert isinstance(value, Selection)
+        assert value.isvalid(self)
         self._selection = value
 
     @property

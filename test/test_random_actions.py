@@ -6,8 +6,8 @@ from ..commandtools import execute
 from tempfile import gettempdir
 from os import urandom
 import random
-from ..runtest import args
 from .randomized_userinterface import RandomizedUserSimulator
+from ..cmdargs import args
 
 command_dict = publics(commands)
 command_names = list(command_dict.keys())

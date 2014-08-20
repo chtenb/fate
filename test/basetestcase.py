@@ -7,10 +7,10 @@ from .proxy_userinterface import ProxyUserInterface
 
 class BaseTestCase(TestCase):
 
-    UserInterfaceClass = ProxyUserInterface
+    create_userinterface = ProxyUserInterface
 
     def setUp(self):
-        document.Document.create_userinterface = self.UserInterfaceClass
+        document.Document.create_userinterface = self.create_userinterface
         source = dirname(abspath(__file__)) + '/sample.py'
         destination = gettempdir() + '/test.py'
         copyfile(source, destination)
