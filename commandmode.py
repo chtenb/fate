@@ -1,7 +1,12 @@
-from . import actions
+from . import commands
 from re import match
 from logging import debug
-from .actiontools import execute
+from .commandtools import execute
+
+
+def command_mode(document):
+    pass
+commands.commandmode = command_mode
 
 
 def publics(obj):
@@ -9,16 +14,16 @@ def publics(obj):
     return dict((name, obj) for name, obj in vars(obj).items() if not name.startswith('_'))
 
 
-def get_scope(session):
-    scope = publics(actions)
-    scope.update({'self': session})
+def get_scope(document):
+    scope = publics(commands)
+    scope.update({'self': document})
     return scope
 
 
-def get_completions(session, string):
+def get_completions(document, string):
     """Get completions given a string."""
     yield (string, '')
-    scope = get_scope(session)
+    scope = get_scope(document)
 
     # If string is a completable identifier
     if match(r'^[\w.]*$', string) == None:
@@ -44,9 +49,9 @@ def get_completions(session, string):
                 yield (name, repr(obj))
 
 
-def evaluate(session, command):
+def evaluate(document, command):
     """Evaluate a command."""
-    scope = get_scope(session)
+    scope = get_scope(document)
 
     try:
         result = eval(command, scope)
@@ -59,5 +64,4 @@ def evaluate(session, command):
     except Exception as e:
         return command + ' : ' + str(e)
     else:
-        return execute(result, session)
-
+        return execute(result, document)

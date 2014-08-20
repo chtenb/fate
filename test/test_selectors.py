@@ -1,23 +1,22 @@
 from unittest import main
 from ..selection import Interval, Selection
-from ..selectors import SelectEverything, NextWord, find_matching_pair
+from ..selectors import selectall, nextword, find_matching_pair
 from .basetestcase import BaseTestCase
 
 class SelectorTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
 
-    def test_select_everything(self):
-        action = SelectEverything(self.session)
-        action(self.session)
-        expected = Selection([Interval(0, len(self.session.text))])
-        self.assertEqual(expected, self.session.selection)
+    def test_selectall(self):
+        selectall(self.document)
+        expected = Selection([Interval(0, len(self.document.text))])
+        self.assertEqual(expected, self.document.selection)
 
     def test_next_word(self):
-        action = NextWord(self.session)
-        action(self.session)
+        command = nextword(self.document)
+        command(self.document)
         expected = Selection([Interval(0, 6)])
-        self.assertEqual(expected, self.session.selection)
+        self.assertEqual(expected, self.document.selection)
 
     def test_find_matching_pair1(self):
         string = 'ab(cde)fgh'

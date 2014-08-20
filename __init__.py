@@ -9,7 +9,7 @@ from tempfile import gettempdir
 from queue import Queue
 import logging
 from logging.handlers import QueueHandler, QueueListener
-from logging import FileHandler, info
+from logging import FileHandler, info, debug
 
 # We provide internal access to the logs through a queue
 # To be accessed by a QueueListener
@@ -28,9 +28,9 @@ logging.basicConfig(level=logging.DEBUG,
 
 info('Starting fate.')
 
-# Load modules exposing actions, to make sure the actions module contains all actions
-from . import (actions, selectors, operators, clipboard, compoundactions, uiactions,
-        modes, insertoperations, actiontools)
+# Load modules exposing commands, to make sure the commands module contains all commands
+from . import (clipboard, commandmode, commandtools, document, insertoperations,
+               operators, repeat, search, selectors, undotree)
 
 # Load standard plugins
 from . import filetype_system
@@ -51,3 +51,34 @@ else:
         info('User script loaded.')
     else:
         info('No user script is present in .fate directory.')
+
+
+# Expose main loop function to the userinterface
+def run():
+    """Main input loop for fate."""
+    while document.activedocument != None:
+        doc = document.activedocument
+        doc.ui.touch()
+        userinput = doc.ui.getinput()
+
+        # If the cancel key has been pressed, convert input to Cancel
+        if userinput == doc.cancelkey:
+            userinput = 'Cancel'
+
+        debug('Input: ' + str(userinput))
+
+
+        if doc.mode != None:
+            # We are not in normalmode
+            doc.mode.processinput(doc, userinput)
+        else:
+            # We are in normalmode
+            if type(userinput) == str:
+                key = userinput
+                if key in doc.keymap:
+                    command = doc.keymap[key]
+            else:
+                command = userinput
+
+            while callable(command):
+                command = command(doc)

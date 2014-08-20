@@ -1,82 +1,107 @@
-from . import modes
-from . import actions
-from .operation import Operation
 import re
-from .selectors import NextFullLine
+from . import commands
+from .operation import Operation
+from .operators import Append, Insert, delete
 from .selection import Selection, Interval
+from .repeat import repeatable
+from .commandtools import Compose
+from .selectors import (emptybefore, previousfullline, selectindent,
+                        nextfullline, nextchar, previouschar)
+from .clipboard import copy, clear, paste_before, Cut
+from .mode import cancel, Mode
+from . import document
 
-from logging import debug
 
-modes.INSERT = 'INSERT'
-modes.APPEND = 'APPEND'
-modes.SURROUND = 'SURROUND'
-
-
-class InsertOperation:
+class InsertMode(Mode):
 
     """Abstract class for operations dealing with insertion of text."""
 
-    def __init__(self, session, selection):
-        selection = selection or session.selection
-        self.operation = Operation(session, selection=selection)
-        self.mode = modes.INSERT
+    def __init__(self, doc):
+        Mode.__init__(self)
+        self.allowedcommands = [document.next_document, document.previous_document]
+        doc.mode = self
 
-    def __call__(self, session):
-        """Execute action."""
-        # Execute the operation (includes adding it to the undotree)
-        self.operation(session)
-        session.mode = self.mode
-        # Then keep updating it according to the users changes
-        while 1:
-            session.ui.touch()
-            char = session.ui.getchar()
-            if char == 'Esc':
-                session.mode = modes.SELECT
-                break
-            self.new_selection = self.operation.compute_new_selection()
-            self.insert(session, char)
-            # Make the changes to the session
-            self.operation.undo(session)
-            self.operation.new_content = self.new_content
-            self.operation.do(session)
+        # Init trivial starting operation
+        self.preview_operation = self.compute_operation(doc)
 
-    @property
-    def new_content(self):
-        raise NotImplementedError("An abstract method is not callable.")
+    def processinput(self, doc, userinput):
+        if type(userinput) != str:
+            if userinput in self.allowedcommands:
+                userinput(doc)
+            return
 
-    def insert(self, session, string):
+        # If userinput is Cancel, exit the insert mode
+        if userinput == 'Cancel':
+            self.stop(doc)
+            return
+
+        # If userinput is not a character literal, don't insert it literally
+        if len(userinput) > 1:
+            if userinput in doc.keymap:
+                command = doc.keymap[userinput]
+                if command in self.allowedcommands:
+                    command(doc)
+            return
+
+        self.insert(doc, userinput)
+
+        # Update operation
+        # TODO: this is gonna be easier if text allows preview operations
+        if self.preview_operation != None:
+            self.preview_operation.undo(doc)
+
+        # Execute the operation (excludes adding it to the undotree)
+        self.preview_operation = self.compute_operation(doc)
+        self.preview_operation.do(doc)
+
+    def stop(self, doc):
+        if self.preview_operation != None:
+            self.preview_operation.undo(doc)
+            self.preview_operation(doc)
+        doc.mode = None
+
+    def __str__(self):
+        return 'INSERT'
+
+    def compute_operation(self, doc):
+        """Compute operation based on insertions and deletions."""
+        raise NotImplementedError('An abstract method is not callable.')
+
+    def insert(self, doc, string):
         """
         Insert a string (typically a char) in the operation.
-        By only autoindenting on a single \n, we potentially allow proper pasting.
         """
-        raise NotImplementedError("An abstract method is not callable.")
+        raise NotImplementedError('An abstract method is not callable.')
 
 
-def get_indent(session, pos):
+def get_indent(doc, pos):
     """Get the indentation of the line containing position pos."""
-    line = NextFullLine(session, selection=Selection(intervals=Interval(pos, pos)))
-    string = line.content(session)[0]
+    line = nextfullline(doc, selection=Selection(intervals=Interval(pos, pos)))
+    string = line.content(doc)[0]
     match = re.search(r'^[ \t]*', string)
-    debug('pos: ' + str(pos))
-    debug('line: ' + string)
-    debug('match: ' + str((match.start(), match.end())))
+    #debug('pos: ' + str(pos))
+    #debug('line: ' + string)
+    #debug('match: ' + str((match.start(), match.end())))
     assert match.start() == 0
     return string[match.start(): match.end()]
 
 
-class ChangeBefore(InsertOperation):
+@repeatable
+class ChangeBefore(InsertMode):
+
     """
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
-    def __init__(self, session, selection=None):
-        InsertOperation.__init__(self, session, selection)
-        self.insertions = [''] * len(self.operation.old_selection)
-        self.deletions = [0] * len(self.operation.old_selection)
-        self.mode = modes.INSERT
 
-    def insert(self, session, string):
-        for i in range(len(self.new_selection)):
+    def __init__(self, doc):
+        self.insertions = [''] * len(doc.selection)
+        self.deletions = [0] * len(doc.selection)
+
+        InsertMode.__init__(self, doc)
+
+    def insert(self, doc, string):
+        for i in range(len(doc.selection)):
             if string == '\b':
                 # TODO remove multiple whitespaces if possible
                 # Remove one char
@@ -84,37 +109,49 @@ class ChangeBefore(InsertOperation):
                     self.insertions[i] = self.insertions[i][:-1]
                 else:
                     self.deletions[i] += 1
-            elif string == '\n':
+            elif string == '\n' and doc.autoindent:
                 # Add indent after \n
-                cursor_pos = self.new_selection[i][0] + len(self.insertions[i])
-                indent = get_indent(session, cursor_pos)
+                new_selection = self.preview_operation.compute_new_selection()
+                cursor_pos = new_selection[i][0] + len(self.insertions[i])
+                indent = get_indent(doc, cursor_pos)
                 self.insertions[i] += string + indent
-            elif string == '\t' and session.expandtab:
-                self.insertions[i] += ' ' * session.tabwidth
+            elif string == '\t' and doc.expandtab:
+                self.insertions[i] += ' ' * doc.tabwidth
             else:
                 # Add string
                 self.insertions[i] += str(string)
 
-    @property
-    def new_content(self):
-        return [self.insertions[i]
-                + self.operation.old_content[i][self.deletions[i]:]
-                for i in range(len(self.operation.old_content))]
-actions.ChangeBefore = ChangeBefore
+    def compute_operation(self, doc):
+        # It can happen that this operation is repeated in a situation
+        # with a larger number of intervals.
+        # Therefore we take indices modulo the length of the lists
+        l = len(self.insertions)
+        new_content = [self.insertions[i % l]
+                       + doc.selection.content(doc)[i % l][self.deletions[i % l]:]
+                       for i in range(len(doc.selection))]
+        return Operation(doc, new_content)
 
-class ChangeAfter(InsertOperation):
+commands.ChangeBefore = ChangeBefore
+
+
+class ChangeAfter(InsertMode):
+
     """
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
-    def __init__(self, session, selection=None):
-        InsertOperation.__init__(self, session, selection)
-        self.insertions = [''] * len(self.operation.old_selection)
-        self.deletions = [0] * len(self.operation.old_selection)
-        self.mode = modes.APPEND
 
-    def insert(self, session, string):
-        for i in range(len(self.new_selection)):
+    def __init__(self, doc):
+        self.insertions = [''] * len(doc.selection)
+        self.deletions = [0] * len(doc.selection)
+
+        InsertMode.__init__(self, doc)
+
+    def __str__(self):
+        return 'APPEND'
+
+    def insert(self, doc, string):
+        for i in range(len(doc.selection)):
             if string == '\b':
                 # TODO remove multiple whitespaces if possible
                 # remove one char
@@ -122,50 +159,73 @@ class ChangeAfter(InsertOperation):
                     self.insertions[i] = self.insertions[i][:-1]
                 else:
                     self.deletions[i] += 1
-            elif string == '\n':
+            elif string == '\n' and doc.autoindent:
                 # add indent after \n
-                cursor_pos = self.new_selection[i][1]
-                indent = get_indent(session, cursor_pos)
+                new_selection = self.preview_operation.compute_new_selection()
+                cursor_pos = new_selection[i][1]
+                indent = get_indent(doc, cursor_pos)
                 self.insertions[i] += string + indent
-            elif string == '\t' and session.expandtab:
-                self.insertions[i] += ' ' * session.tabwidth
+            elif string == '\t' and doc.expandtab:
+                self.insertions[i] += ' ' * doc.tabwidth
             else:
                 # add string
                 self.insertions[i] += str(string)
 
-    @property
-    def new_content(self):
-        return [self.operation.old_content[i][:-self.deletions[i] or None]
-                + self.insertions[i]
-                for i in range(len(self.operation.old_content))]
-actions.ChangeAfter = ChangeAfter
+    def compute_operation(self, doc):
+        # It can happen that this operation is repeated in a situation
+        # with a larger number of intervals.
+        # Therefore we take indices modulo the length of the lists
+        l = len(self.insertions)
+        new_content = [doc.selection.content(doc)[i % l][:-self.deletions[i % l] or None]
+                       + self.insertions[i % l]
+                       for i in range(len(doc.selection))]
+        return Operation(doc, new_content)
 
+commands.ChangeAfter = repeatable(ChangeAfter)
+
+
+# TODO: write ChangeInPlace as composition of delete and ChangeBefore
+@repeatable
 class ChangeInPlace(ChangeAfter):
+
     """
     Interactive Operation which adds `insertions` in place of each interval.
     """
-    @property
-    def new_content(self):
-        return [self.insertions[i] for i in range(len(self.operation.old_content))]
-actions.ChangeInPlace = ChangeInPlace
+
+    def compute_operation(self, doc):
+        # It can happen that this operation is repeated in a situation
+        # with a larger number of intervals.
+        # Therefore we take indices modulo the length of the lists
+        l = len(self.insertions)
+        new_content = [self.insertions[i % l] for i in range(len(doc.selection))]
+        return Operation(doc, new_content)
+
+commands.ChangeInPlace = ChangeInPlace
+
+commands.ChangeInPlace = Compose(delete, ChangeBefore)
 
 
-class ChangeAround(InsertOperation):
+@repeatable
+class ChangeAround(InsertMode):
 
     """
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
-    def __init__(self, session, selection=None):
-        InsertOperation.__init__(self, session, selection)
-        # Insertions before and after can change because of autoindentation
-        self.insertions_before = [''] * len(self.operation.old_selection)
-        self.insertions_after = [''] * len(self.operation.old_selection)
-        self.deletions = [0] * len(self.operation.old_selection)
-        self.mode = modes.SURROUND
 
-    def insert(self, session, string):
-        for i in range(len(self.new_selection)):
+    def __init__(self, doc):
+        # Insertions before and after can differ because of autoindentation
+        self.insertions_before = [''] * len(doc.selection)
+        self.insertions_after = [''] * len(doc.selection)
+        self.deletions = [0] * len(doc.selection)
+
+        InsertMode.__init__(self, doc)
+
+    def __str__(self):
+        return 'SURROUND'
+
+    def insert(self, doc, string):
+        for i in range(len(doc.selection)):
             if string == '\b':
                 # TODO remove multiple whitespaces if possible
                 # remove one char
@@ -176,36 +236,58 @@ class ChangeAround(InsertOperation):
                         self.insertions_after[i] = self.insertions_after[i][:-1]
                 else:
                     self.deletions[i] += 1
-            elif string == '\n':
+            elif string == '\n' and doc.autoindent:
                 # add indent after \n
-                cursor_pos_before = self.new_selection[i][0]
-                cursor_pos_after = self.new_selection[i][1]
-                indent_before = get_indent(session, cursor_pos_before)
-                indent_after = get_indent(session, cursor_pos_after)
+                new_selection = self.preview_operation.compute_new_selection()
+                cursor_pos_before = new_selection[i][0]
+                cursor_pos_after = new_selection[i][1]
+                indent_before = get_indent(doc, cursor_pos_before)
+                indent_after = get_indent(doc, cursor_pos_after)
                 self.insertions_before[i] += indent_before + string
                 self.insertions_after[i] += string + indent_after
-            elif string == '\t' and session.expandtab:
-                self.insertions_before[i] += ' ' * session.tabwidth
-                self.insertions_after[i] += ' ' * session.tabwidth
+            elif string == '\t' and doc.expandtab:
+                self.insertions_before[i] += ' ' * doc.tabwidth
+                self.insertions_after[i] += ' ' * doc.tabwidth
             else:
                 # add string
                 self.insertions_before[i] += str(string)
                 self.insertions_after[i] += str(string)
 
-    @property
-    def new_content(self):
+    def compute_operation(self, doc):
+        # It can happen that this operation is repeated in a situation
+        # with a larger number of intervals.
+        # Therefore we take indices modulo the length of the lists
+        l = len(self.insertions_after)
         character_pairs = [('{', '}'), ('[', ']'), ('(', ')'), ('<', '>')]
-        result = []
-        for i in range(len(self.operation.old_content)):
-            first_string = self.insertions_before[i][::-1]
-            second_string = self.insertions_after[i]
+        new_content = []
+        for i in range(len(doc.selection)):
+            first_string = self.insertions_before[i % l][::-1]
+            second_string = self.insertions_after[i % l]
             for first, second in character_pairs:
                 first_string = first_string.replace(second, first)
                 second_string = second_string.replace(first, second)
 
-            beg, end = self.deletions[i], -self.deletions[i] or None
-            result.append(first_string
-                    + self.operation.old_content[i][beg:end]
-                    + second_string)
-        return result
-actions.ChangeAround = ChangeAround
+            beg, end = self.deletions[i % l], -self.deletions[i % l] or None
+            new_content.append(first_string
+                               + doc.selection.content(doc)[i % l][beg:end]
+                               + second_string)
+        return Operation(doc, new_content)
+
+commands.ChangeAround = ChangeAround
+
+
+OpenLineAfter = Compose(cancel, previousfullline, selectindent, copy,
+                        nextfullline, Append('\n'), previouschar, emptybefore,
+                        paste_before, clear, ChangeAfter, name='OpenLineAfter',
+                        docs='Open a line after interval')
+commands.OpenLineAfter = repeatable(OpenLineAfter)
+
+OpenLineBefore = Compose(cancel, nextfullline, selectindent, copy,
+                         nextfullline, Insert('\n'), nextchar, emptybefore,
+                         paste_before, clear, ChangeAfter, name='OpenLineBefore',
+                         docs='Open a line before interval')
+commands.OpenLineBefore = repeatable(OpenLineBefore)
+
+CutChange = Compose(Cut, ChangeInPlace,
+                    name='CutChange', docs='Copy and change selected text.')
+commands.CutChange = repeatable(CutChange)

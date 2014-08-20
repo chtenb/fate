@@ -1,106 +1,139 @@
 """
-This module contains all kinds of actions and actors related to make selections.
+This module contains all kinds of commands and actors related to make selections.
 We distinguish between functions that work selection-wise (global selectors)
 and function that work interval-wise (local selectors).
 Furthermore we have selectors that are based on regular expressions.
 
-Selectors may return None, in which case the session should not be affected.
+Selectors may return None, in which case the document should not be affected.
 Selectors may also return a result which is identical to the previous selection.
-The code that executes the action may want to check if this is the case, before applying.
+The code that executes the command may want to check if this is the case, before applying.
 
 Because it is often handy to use selectors as building blocks for other computations,
 selectors return their result as a selection instead of executing them immediately.
 Secondly, one can pass a selection which should be used as starting point
-for the selector instead of the current selection of the session.
+for the selector instead of the current selection of the document.
 """
 import re
-from functools import partial
+from functools import partial, wraps
 
-from . import actions
+from . import commands
 from .selection import Selection, Interval
-from .modes import EXTEND, REDUCE
+from .mode import Mode
 
-from logging import debug
 
-class SelectEverything(Selection):
+class ExtendMode(Mode):
 
+    """
+    Extend current selection by new selection.
+    This mode merely functions as flag, since selectors can decide
+    for themselves how to react on extendmode.
+    """
+
+    def __str__(self):
+        return 'EXTEND'
+
+    def processinput(self, document, userinput):
+        if userinput == 'Cancel':
+            document.mode = None
+        else:
+            self.normalmode(document, userinput)
+commands.extendmode = ExtendMode()
+
+
+class ReduceMode(Mode):
+
+    """
+    Reduce current selection by new selection.
+    This mode merely functions as flag, since selectors can decide
+    for themselves how to react on reducemode.
+    """
+
+    def __str__(self):
+        return 'REDUCE'
+
+    def processinput(self, document, userinput):
+        if userinput == 'Cancel':
+            document.mode = None
+        else:
+            self.normalmode(document, userinput)
+commands.reducemode = ReduceMode()
+
+
+def selector(command):
+    """Decorator to make it more convenient to write selectors."""
+    @wraps(command)
+    def wrapper(document, selection=None, mode=None, preview=False):
+        selection = selection or document.selection
+        mode = mode or str(document.mode)
+        selection = command(document, selection, mode)
+        if preview:
+            return selection
+        selection(document)
+    return wrapper
+
+
+@selector
+def selectall(document, selection, mode):
     """Select the entire text."""
-
-    def __init__(self, session, selection=None, mode=None):
-        Selection.__init__(self, Interval(0, len(session.text)))
-actions.SelectEverything = SelectEverything
+    return Selection(Interval(0, len(document.text)))
+commands.selectall = selectall
 
 
-class SelectSingleInterval(Selection):
-
+@selector
+def select_single_interval(document, selection, mode):
     """Reduce the selection to the single uppermost interval."""
-
-    def __init__(self, session, selection=None, mode=None):
-        selection = selection or session.selection
-        Selection.__init__(self, selection[0])
-actions.SelectSingleInterval = SelectSingleInterval
+    return Selection(selection[0])
+commands.select_single_interval = select_single_interval
 
 
-class Empty(Selection):
-
+@selector
+def empty(document, selection, mode):
     """Reduce the selection to a single uppermost empty interval."""
-
-    def __init__(self, session, selection=None, mode=None):
-        selection = selection or session.selection
-        beg = selection[0][0]
-        Selection.__init__(self, Interval(beg, beg))
-actions.Empty = Empty
+    beg = selection[0][0]
+    return Selection(Interval(beg, beg))
+commands.empty = empty
 
 
-class Join(Selection):
-
+@selector
+def join(document, selection, mode):
     """Join all intervals together."""
-
-    def __init__(self, session, selection=None, mode=None):
-        selection = selection or session.selection
-        Selection.__init__(self, Interval(selection[0][0], selection[-1][1]))
-actions.Join = Join
+    return Selection(Interval(selection[0][0], selection[-1][1]))
+commands.join = join
 
 
-class Complement(Selection):
-
+@selector
+def complement(document, selection, mode):
     """Return the complement."""
-
-    def __init__(self, session, selection=None, mode=None):
-        selection = selection or session.selection
-        Selection.__init__(self, selection.complement(session))
-actions.Complement = Complement
+    return Selection(selection.complement(document))
+commands.complement = complement
 
 
-class EmptyBefore(Selection):
-
+@selector
+def emptybefore(document, selection, mode):
     """Return the empty interval before each interval."""
-
-    def __init__(self, session, selection=None, mode=None):
-        Selection.__init__(self)
-        selection = selection or session.selection
-        for interval in selection:
-            beg, _ = interval
-            self.add(Interval(beg, beg))
-actions.EmptyBefore = EmptyBefore
+    intervals = []
+    for interval in selection:
+        beg, _ = interval
+        intervals.append(Interval(beg, beg))
+    return Selection(intervals)
+commands.emptybefore = emptybefore
 
 
-class EmptyAfter(Selection):
-
+@selector
+def emptyafter(document, selection, mode):
     """Return the empty interval after each interval."""
-
-    def __init__(self, session, selection=None, mode=None):
-        Selection.__init__(self)
-        selection = selection or session.selection
-        for interval in selection:
-            _, end = interval
-            self.add(Interval(end, end))
-actions.EmptyAfter = EmptyAfter
+    intervals = []
+    for interval in selection:
+        _, end = interval
+        intervals.append(Interval(end, end))
+    return Selection(intervals)
+commands.emptyafter = emptyafter
 
 
 def find_matching_pair(string, pos, fst, snd):
     """Find matching pair of characters fst and snd around (inclusive) position pos."""
     assert 0 <= pos < len(string)
+
     level = 0
     i = pos
     beg = None
@@ -168,13 +201,15 @@ def select_around_interval(string, beg, end, fst, snd):
     return Interval(nbeg, nend)
 
 
-def SelectAroundChar(session, char=None, selection=None):
+def selectaround_char(document, char=None, selection=None):
     """
     Select around given character. If no character given, get it from user.
     Return None if not all intervals are surrounded.
     """
-    selection = selection or session.selection
-    char = char or session.ui.getchar()
+    selection = selection or document.selection
+    char = char or document.ui.getkey()
+    if char == 'Cancel':
+        return
     result = Selection()
 
     # Check if we should check for a matching pair
@@ -183,7 +218,7 @@ def SelectAroundChar(session, char=None, selection=None):
         if char == fst or char == snd:
             # For each interval find the smallest surrounding pair
             for beg, end in selection:
-                match = select_around_interval(session.text, beg, end, fst, snd)
+                match = select_around_interval(document.text, beg, end, fst, snd)
                 if match == None:
                     return
                 result.add(match)
@@ -191,32 +226,32 @@ def SelectAroundChar(session, char=None, selection=None):
 
     # If not, we simple find the first surrounding occurances
     for beg, end in selection:
-        nend = session.text.find(char, end)
-        nbeg = session.text.rfind(char, 0, beg)
+        nend = document.text.find(char, end)
+        nbeg = document.text.rfind(char, 0, beg)
         if nend != -1 and nbeg != -1:
             result.add(Interval(nbeg, nend + 1))
         else:
-            return None
+            return
     return result
-actions.SelectAroundChar = SelectAroundChar
+commands.selectaround_char = selectaround_char
 
 
-def SelectAround(session, selection=None):
+def selectaround(document, selection=None):
     """Select around common surrounding character pair."""
-    selection = selection or session.selection
+    selection = selection or document.selection
     default_chars = ['{', '[', '(', '<', '\'', '"']
     candidates = []
     for char in default_chars:
-        candidate = SelectAroundChar(session, char, selection)
+        candidate = selectaround_char(document, char, selection)
         if candidate != None:
             candidates.append(candidate)
     if candidates:
         # Select smallest enclosing candidate
         return min(candidates, key=avg_interval_length)
-actions.SelectAround = SelectAround
+commands.selectaround = selectaround
 
 
-def find_pattern(text, pattern, reverse=False, group=0):
+def findpattern(text, pattern, reverse=False, group=0):
     """Find intervals that match given pattern."""
     matches = re.finditer(pattern, text)
     if reverse:
@@ -225,167 +260,165 @@ def find_pattern(text, pattern, reverse=False, group=0):
             for match in matches]
 
 
-class SelectPattern(Selection):
+def selectpattern(pattern, document, selection=None, mode=None,
+                  reverse=False, group=0):
+    newselection = Selection()
+    selection = selection or document.selection
+    mode = mode or document.mode
 
-    def __init__(self, pattern, session, selection=None, mode=None,
-                 reverse=False, group=0):
-        Selection.__init__(self)
-        selection = selection or session.selection
-        mode = mode or session.mode
+    match_intervals = findpattern(document.text, pattern, reverse, group)
 
-        match_intervals = find_pattern(session.text, pattern, reverse, group)
+    # First select all occurences intersecting with selection,
+    # and process according to mode
+    new_intervals = [interval for interval in match_intervals
+                     if selection.intersects(interval)]
 
-        # First select all occurences intersecting with selection,
-        # and process according to mode
-        new_intervals = [interval for interval in match_intervals
-                         if selection.intersects(interval)]
+    if new_intervals:
+        new_selection = Selection(new_intervals)
+        if mode == 'EXTEND':
+            new_selection.add(new_intervals)
+        elif mode == 'REDUCE':
+            new_selection.substract(new_intervals)
 
-        if new_intervals:
-            new_selection = Selection(new_intervals)
-            if mode == EXTEND:
-                new_selection.add(new_intervals)
-            elif mode == REDUCE:
-                new_selection.substract(new_intervals)
+        if new_selection and selection != new_selection:
+            newselection.add(new_selection)
+            return newselection
+
+    # If that doesnt change the selection,
+    # start selecting one by one, and process according to mode
+    new_intervals = []
+    if reverse:
+        beg, end = selection[-1]
+    else:
+        beg, end = selection[0]
+
+    for mbeg, mend in match_intervals:
+        new_selection = Selection(Interval(mbeg, mend))
+        # If match is in the right direction
+        if not reverse and mend > beg or reverse and mbeg < end:
+            if mode == 'EXTEND':
+                new_selection = selection.add(new_selection)
+            elif mode == 'REDUCE':
+                new_selection = selection.substract(new_selection)
 
             if new_selection and selection != new_selection:
-                self.add(new_selection)
-                return
+                newselection.add(new_selection)
+                return newselection
 
-        # If that doesn't change the selection,
-        # start selecting one by one, and process according to mode
-        new_intervals = []
-        if reverse:
-            beg, end = selection[-1]
-        else:
-            beg, end = selection[0]
+    return newselection
+
+
+def select_local_pattern(pattern, document, selection=None, mode=None, reverse=False,
+                         group=0, only_within=False, allow_same_interval=False):
+    newselection = Selection()
+    selection = selection or document.selection
+    mode = mode or document.mode
+
+    match_intervals = findpattern(document.text, pattern, reverse, group)
+
+    for interval in selection:
+        beg, end = interval
+        new_interval = None
 
         for mbeg, mend in match_intervals:
-            new_selection = Selection(Interval(mbeg, mend))
-            # If match is in the right direction
-            if not reverse and mend > beg or reverse and mbeg < end:
-                if mode == EXTEND:
-                    new_selection = selection.add(new_selection)
-                elif mode == REDUCE:
-                    new_selection = selection.substract(new_selection)
-
-                if new_selection and selection != new_selection:
-                    self.add(new_selection)
-                    return
-
-
-class SelectLocalPattern(Selection):
-
-    def __init__(self, pattern, session, selection=None, mode=None,
-                 reverse=False, group=0, only_within=False, allow_same_interval=False):
-        Selection.__init__(self)
-        selection = selection or session.selection
-        mode = mode or session.mode
-
-        match_intervals = find_pattern(session.text, pattern, reverse, group)
-
-        for interval in selection:
-            beg, end = interval
-            new_interval = None
-
-            for mbeg, mend in match_intervals:
                 # If only_within is True,
                 # match must be within current interval
-                if only_within and not (beg <= mbeg and mend <= end):
-                    continue
+            if only_within and not (beg <= mbeg and mend <= end):
+                continue
 
-                # If allow_same_interval is True, allow same interval as original
-                if allow_same_interval and (beg, end) == (mbeg, mend):
+            # If allow_same_interval is True, allow same interval as original
+            if allow_same_interval and (beg, end) == (mbeg, mend):
+                new_interval = Interval(mbeg, mend)
+                break
+
+            # If match is valid, i.e. overlaps
+            # or is beyond current interval in right direction
+            # or is empty interval adjacent to current interval in right direction
+            if (not reverse and mend > beg
+                    or reverse and mbeg < end):
+                if mode == 'EXTEND':
+                    new_interval = Interval(min(beg, mbeg), max(end, mend))
+                elif mode == 'REDUCE':
+                    if reverse:
+                        mend = max(end, mend)
+                    else:
+                        mbeg = min(beg, mbeg)
+                    new_interval = interval - Interval(mbeg, mend)
+                else:
                     new_interval = Interval(mbeg, mend)
+
+                if new_interval and new_interval != interval:
                     break
 
-                # If match is valid, i.e. overlaps
-                # or is beyond current interval in right direction
-                # or is empty interval adjacent to current interval in right direction
-                if (not reverse and mend > beg
-                        or reverse and mbeg < end):
-                    if mode == EXTEND:
-                        new_interval = Interval(min(beg, mbeg), max(end, mend))
-                    elif mode == REDUCE:
-                        if reverse:
-                            mend = max(end, mend)
-                        else:
-                            mbeg = min(beg, mbeg)
-                        new_interval = interval - Interval(mbeg, mend)
-                    else:
-                        new_interval = Interval(mbeg, mend)
+        # If no suitable result for this interval, return original selection
+        if not new_interval:
+            return selection
 
-                    if new_interval and new_interval != interval:
-                        break
+        newselection.add(new_interval)
+    return newselection
 
-            # If no suitable result for this interval, return original selection
-            if not new_interval:
-                self._intervals = selection._intervals
-                return
-
-            self.add(new_interval)
-
-SelectIndent = partial(SelectLocalPattern, r'(?m)^([ \t]*)', reverse=True, group=1,
-        allow_same_interval=True)
-actions.SelectIndent = SelectIndent
+selectindent = partial(select_local_pattern, r'(?m)^([ \t]*)', reverse=True, group=1,
+                       allow_same_interval=True)
+commands.selectindent = selectindent
 
 
-def pattern_pair(pattern, **kwargs):
+def patternpair(pattern, **kwargs):
     """
     Return two local pattern selectors for given pattern,
     one matching forward and one matching backward.
     """
-    return (partial(SelectLocalPattern, pattern, **kwargs),
-            partial(SelectLocalPattern, pattern, reverse=True, **kwargs))
+    return (partial(select_local_pattern, pattern, **kwargs),
+            partial(select_local_pattern, pattern, reverse=True, **kwargs))
 
-NextChar, PreviousChar = pattern_pair(r'(?s).')
-actions.NextChar = NextChar
-actions.PreviousChar = PreviousChar
-NextWord, PreviousWord = pattern_pair(r'\b\w+\b')
-actions.NextWord = NextWord
-actions.PreviousWord = PreviousWord
-NextClass, PreviousClass = pattern_pair(r'\w+|[ \t]+|[^\w \t\n]+')
-actions.NextClass = NextClass
-actions.PreviousClass = PreviousClass
-NextLine, PreviousLine = pattern_pair(r'(?m)^[ \t]*([^\n]*)', group=1)
-actions.NextLine = NextLine
-actions.PreviousLine = PreviousLine
-NextFullLine, PreviousFullLine = pattern_pair(r'[^\n]*\n?')
-actions.NextFullLine = NextFullLine
-actions.PreviousFullLine = PreviousFullLine
-NextParagraph, PreviousParagraph = pattern_pair(r'(?s)((?:[^\n][\n]?)+)')
-actions.NextParagraph = NextParagraph
-actions.PreviousParagraph = PreviousParagraph
-NextWhiteSpace, PreviousWhiteSpace = pattern_pair(r'\s')
-actions.NextWhiteSpace = NextWhiteSpace
-actions.PreviousWhiteSpace = PreviousWhiteSpace
+nextchar, previouschar = patternpair(r'(?s).')
+commands.nextchar = nextchar
+commands.previouschar = previouschar
+nextword, previousword = patternpair(r'\b\w+\b')
+commands.nextword = nextword
+commands.previousword = previousword
+nextclass, previousclass = patternpair(r'\w+|[ \t]+|[^\w \t\n]+')
+commands.nextclass = nextclass
+commands.previousclass = previousclass
+nextline, previousline = patternpair(r'(?m)^[ \t]*([^\n]*)', group=1)
+commands.nextline = nextline
+commands.previousline = previousline
+nextfullline, previousfullline = patternpair(r'[^\n]*\n?')
+commands.nextfullline = nextfullline
+commands.previousfullline = previousfullline
+nextparagraph, previousparagraph = patternpair(r'(?s)((?:[^\n][\n]?)+)')
+commands.nextparagraph = nextparagraph
+commands.previousparagraph = previousparagraph
+nextwhitespace, previouswhitespace = patternpair(r'\s')
+commands.nextwhitespace = nextwhitespace
+commands.previouswhitespace = previouswhitespace
 
 
-def lock_selection(session):
+def lock_selection(document):
     """Lock current selection."""
-    if session.locked_selection == None:
-        session.locked_selection = Selection()
-    session.locked_selection += session.selection
-    assert not session.locked_selection.isempty
-actions.lock = lock_selection
+    if document.locked_selection == None:
+        document.locked_selection = Selection()
+    document.locked_selection += document.selection
+    assert not document.locked_selection.isempty
+commands.lock = lock_selection
 
 
-def unlock_selection(session):
+def unlock_selection(document):
     """Remove current selection from locked selection."""
-    locked = session.locked_selection
+    locked = document.locked_selection
     if locked != None:
-        nselection = locked - session.selection
+        nselection = locked - document.selection
         if not nselection.isempty:
-            session.locked_selection = nselection
-actions.unlock = unlock_selection
+            document.locked_selection = nselection
+commands.unlock = unlock_selection
 
 
-def release_locked_selection(session):
+def release_locked_selection(document):
     """Release locked selection."""
-    if session.locked_selection != None:
+    if document.locked_selection != None:
         # The text length may be changed after the locked selection was first created
         # So we must bound it to the current text length
-        newselection = session.locked_selection.bound(0, len(session.text))
+        newselection = document.locked_selection.bound(0, len(document.text))
         if not newselection.isempty:
-            session.selection = newselection
-        session.locked_selection = None
-actions.release = release_locked_selection
+            document.selection = newselection
+        document.locked_selection = None
+commands.release = release_locked_selection

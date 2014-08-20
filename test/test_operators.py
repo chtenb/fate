@@ -1,20 +1,19 @@
-from unittest import main
-from ..selectors import NextWord
+from ..selectors import nextword
 from ..operators import Insert
-from ..actions import undo
+from ..commands import undo
 from .basetestcase import BaseTestCase
 
 class OperatorTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
-        NextWord(self.session)(self.session)
+        nextword(self.document)(self.document)
 
     def test_insert(self):
-        action = Insert('Foo ')
-        action(self.session)
+        command = Insert('Foo ')
+        command(self.document)
         expected = 'Foo import sys'
-        self.assertEqual(expected, self.session.text[:14])
+        self.assertEqual(expected, self.document.text[:14])
 
-        undo(self.session)
-        self.assertEqual('import sys', self.session.text[:10])
+        undo(self.document)
+        self.assertEqual('import sys', self.document.text[:10])
 

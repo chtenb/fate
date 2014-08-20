@@ -1,79 +1,80 @@
 """
-This module contains the key mapping as two dictionaries from chars to functions.
-The first one, `actions`, maps chars to actions.
-The second one, `actions`, maps chars to ui actions,
+This module contains the key mapping as two dictionaries from keys to functions.
+The first one, `commands`, maps keys to commands.
+The second one, `commands`, maps keys to ui commands,
 i.e. functions which take an UserInterface object.
 """
-from . import actions
-from .session import Session
-from . import actions
+from . import commands
+from .document import Document
 
+Document.cancelkey = 'Esc' # Esc is now remapped to Cancel
 
 default = {
-    'Ctrl-S': Session.write,
-    'Ctrl-Q': actions.quit_session,
-    'Ctrl-O': actions.open_session,
-    'Ctrl-N': actions.next_session,
-    'Ctrl-P': actions.previous_session,
-    'f': actions.local_find,
-    'F': actions.local_find_backwards,
-    '/': actions.search,
-    '*': actions.search_current_content,
-    'n': actions.search_next,
-    'N': actions.search_previous,
-    ':': actions.command_mode,
-    'j': actions.NextLine,
-    'k': actions.PreviousLine,
-    'J': actions.NextFullLine,
-    'K': actions.PreviousFullLine,
-    'l': actions.NextChar,
-    'h': actions.PreviousChar,
-    'w': actions.NextWord,
-    'b': actions.PreviousWord,
-    'W': actions.NextClass,
-    'B': actions.PreviousClass,
-    '}': actions.NextParagraph,
-    '{': actions.PreviousParagraph,
-    ')': actions.SelectAround,
-    ']': actions.SelectAroundChar,
-    'm': actions.Join,
-    'z': actions.Complement,
-    'A': actions.SelectEverything,
-    'I': actions.SelectIndent,
-    'v': actions.lock,
-    'V': actions.unlock,
-    'R': actions.release,
-    'u': actions.undo,
-    'U': actions.redo,
-    'Ctrl-U': actions.undo_mode,
-    'y': actions.copy,
-    'Y': actions.clear,
-    'p': actions.paste_after,
-    'P': actions.paste_after,
-    'r': actions.reduce_mode,
-    'e': actions.extend_mode,
-    'd': actions.delete,
-    'i': actions.ChangeBefore,
-    'a': actions.ChangeAfter,
-    's': actions.ChangeAround,
-    'c': actions.ChangeInPlace,
-    'Esc': actions.escape,
-    'o': actions.OpenLineAfter,
-    'O': actions.OpenLineBefore,
-    'x': actions.Cut,
-    'X': actions.CutChange,
-    '.': actions.repeat,
-    '~': actions.uppercase,
-    '`': actions.lowercase,
+    'Cancel': commands.empty, # In normalmode the cancel key empties selection
+    'Ctrl-s': commands.save,
+    'Ctrl-q': commands.quit_document,
+    'Ctrl-x': commands.force_quit,
+    'Ctrl-o': commands.open_document,
+    'Ctrl-n': commands.next_document,
+    'Ctrl-p': commands.previous_document,
+    'f': commands.local_find,
+    'F': commands.local_find_backwards,
+    '/': commands.search,
+    '*': commands.search_current_content,
+    'n': commands.search_next,
+    'N': commands.search_previous,
+    ':': commands.commandmode,
+    'j': commands.nextline,
+    'k': commands.previousline,
+    'J': commands.nextfullline,
+    'K': commands.previousfullline,
+    'l': commands.nextchar,
+    'h': commands.previouschar,
+    'w': commands.nextword,
+    'b': commands.previousword,
+    'W': commands.nextclass,
+    'B': commands.previousclass,
+    '}': commands.nextparagraph,
+    '{': commands.previousparagraph,
+    ')': commands.selectaround,
+    ']': commands.selectaround_char,
+    'm': commands.join,
+    'z': commands.complement,
+    'A': commands.selectall,
+    'I': commands.selectindent,
+    'v': commands.lock,
+    'V': commands.unlock,
+    'R': commands.release,
+    'u': commands.undo,
+    'U': commands.redo,
+    'Ctrl-u': commands.undomode,
+    'y': commands.copy,
+    'Y': commands.clear,
+    'p': commands.paste_after,
+    'P': commands.paste_after,
+    'r': commands.reducemode,
+    'e': commands.extendmode,
+    'd': commands.delete,
+    'i': commands.ChangeBefore,
+    'a': commands.ChangeAfter,
+    's': commands.ChangeAround,
+    'c': commands.ChangeInPlace,
+    'o': commands.OpenLineAfter,
+    'O': commands.OpenLineBefore,
+    'x': commands.Cut,
+    'X': commands.CutChange,
+    '.': commands.repeat,
+    '~': commands.uppercase,
+    '`': commands.lowercase,
 }
 
 
-def print_keymap(session):
+def print_keymap(document):
     """Prints the keys with their explanation."""
-    def print_key(key, action):
+    def print_key(key, command):
         """Prints single key with docstring."""
-        print(key + ': ' + action.__docs__)
+        print(key + ': ' + command.__docs__)
 
-    for key, action in session.keymap.items():
-        print_key(key, action)
+    for key, command in document.keymap.items():
+        print_key(key, command)
 

@@ -1,44 +1,30 @@
 from ..userinterface import UserInterface
-from queue import Queue
-
-from logging import debug
+from collections import deque
+from document import quit_document
 
 
 class ProxyUserInterface(UserInterface):
 
     """UserInterface which simulates some random behaviour for testing purposes."""
 
-    def __init__(self, session):
-        UserInterface.__init__(self, session)
-        self.char_queue = Queue()
-
-    def feed(self, string):
-        """
-        Queue a sequence of characters which will be returned by the getchar function,
-        when called.
-        """
-        for char in string:
-            self.char_queue.put(char)
+    def __init__(self, document):
+        UserInterface.__init__(self, document)
 
     def touch(self):
         pass
 
-    def quit(self, session):
-        assert session is self.session
+    def quit(self, document):
+        assert document is self.document
 
     def activate(self):
         pass
 
-    def getchar(self):
+    def _getuserinput(self):
         """
-        Return characters from the char_queue.
-        When no more characters are available, return Esc.
+        Get input from user.
+        Since we have no user, this raises an exception.
         """
-        debug(1)
-        if not self.char_queue.empty():
-            return self.char_queue.get()
-        else:
-            return 'Esc'
+        raise Exception('Inputqueue is empty.')
 
     def command_mode(self):
         pass

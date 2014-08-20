@@ -1,16 +1,19 @@
 """
-This module contains the class definition for the clipboard and some related actions.
+This module contains the class definition for the clipboard and some related commands.
 
-Clipboard related actions (copy, paste) should not be undoable.
+Clipboard related commands (copy, paste) should not be undoable.
 Suppose the user notices that he made a major mistake
-and wants to undo a bunch of actions.
+and wants to undo a bunch of commands.
 However, he may still want to keep some intermediate modifications.
 Then he should be able to copy several things, go back in history,
 and put those modifications where he wants.
 For this to work, the clipboard must be usable cross-history.
 """
 from .operation import Operation
-from . import actions
+from . import commands
+from .document import Document
+from .commandtools import Compose
+from .operators import delete
 
 
 class Clipboard:
@@ -38,19 +41,24 @@ class Clipboard:
             return
 
 
-def copy(session):
+def init(document):
+    document.clipboard = Clipboard()
+Document.OnDocumentInit.add(init)
+
+
+def copy(document):
     """Copy current selected content to clipboard."""
-    session.clipboard.push(session.selection.content(session))
-actions.copy = copy
+    document.clipboard.push(document.selection.content(document))
+commands.copy = copy
 
 
-def paste(session, before):
+def paste(document, before):
     """
     This is not an actor, but serves as helper function for PasteBefore and PasteAfter.
     """
-    if session.clipboard:
-        old_content = session.selection.content(session)
-        clipboard_content = session.clipboard.peek()
+    if document.clipboard:
+        old_content = document.selection.content(document)
+        clipboard_content = document.clipboard.peek()
         if not clipboard_content:
             return
         new_content = []
@@ -63,21 +71,26 @@ def paste(session, before):
         return new_content
 
 
-def paste_before(session):
+def paste_before(document):
     """Paste clipboard before current selection."""
-    operation = Operation(session, paste(session, before=True))
-    operation(session)
-actions.paste_before = paste_before
+    operation = Operation(document, paste(document, before=True))
+    operation(document)
+commands.paste_before = paste_before
 
 
-def paste_after(session):
+def paste_after(document):
     """Paste clipboard after current selection."""
-    operation = Operation(session, paste(session, before=False))
-    operation(session)
-actions.paste_after = paste_after
+    operation = Operation(document, paste(document, before=False))
+    operation(document)
+commands.paste_after = paste_after
 
 
-def clear(session):
+def clear(document):
     """Throw away the value on top of the clipboard stack."""
-    session.clipboard.pop()
-actions.clear = clear
+    document.clipboard.pop()
+commands.clear = clear
+
+
+Cut = Compose(copy, delete, name='Cut', docs='Copy and delete selected text.')
+commands.Cut = Cut
+

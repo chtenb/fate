@@ -1,6 +1,5 @@
 """This module defines the class Operation."""
-from . import modes
-from .actiontools import Undoable
+from .commandtools import Undoable
 from .selection import Selection, Interval
 
 
@@ -14,10 +13,10 @@ class Operation(Undoable):
     has been applied.
     """
 
-    def __init__(self, session, new_content=None, selection=None):
-        selection = selection or session.selection
+    def __init__(self, document, new_content=None, selection=None):
+        selection = selection or document.selection
         self.old_selection = selection
-        self.old_content = selection.content(session)
+        self.old_content = selection.content(document)
         try:
             self.new_content = new_content or self.old_content[:]
         except AttributeError:
@@ -43,16 +42,16 @@ class Operation(Undoable):
             result.add(Interval(beg, end))
         return result
 
-    def do(self, session):
+    def do(self, document):
         """Execute operation."""
-        self._apply(session)
+        self._apply(document)
 
-    def undo(self, session):
+    def undo(self, document):
         """Undo operation."""
-        self._apply(session, inverse=True)
+        self._apply(document, inverse=True)
 
-    def _apply(self, session, inverse=False):
-        """Apply self to the session."""
+    def _apply(self, document, inverse=False):
+        """Apply self to the document."""
         if inverse:
             old_selection = self.compute_new_selection()
             new_selection = self.old_selection
@@ -62,17 +61,17 @@ class Operation(Undoable):
             old_selection = self.old_selection
             new_content = self.new_content
 
-        #print(session.text)
+        #print(document.text)
         #print('old: ' + str(old_selection))
         #print('new: ' + str(new_selection))
 
         # Make sure the application of this operation is valid at this moment
-        assert old_selection.isvalid(session)
+        assert old_selection.isvalid(document)
         assert len(new_selection) == len(old_selection)
         assert len(new_content) == len(self.old_content)
 
-        partition = old_selection.partition(session)
-        partition_content = [(in_selection, session.text[beg:end])
+        partition = old_selection.partition(document)
+        partition_content = [(in_selection, document.text[beg:end])
                              for in_selection, (beg, end) in partition]
 
         count = 0
@@ -84,7 +83,6 @@ class Operation(Undoable):
             else:
                 result.append(string)
 
-        session.text = ''.join(result)
-        session.selection_mode = modes.SELECT
-        session.selection = new_selection
+        document.text = ''.join(result)
+        document.selection = new_selection
 

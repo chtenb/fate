@@ -1,13 +1,16 @@
 SHORT TERM
-make travis fail if tests fail
-Repeat last selector or operator
-    idea 1: Add a decorator @repeatable. How to decorate functions defined by classes?
-    idea 2: Repeat last action most-top-level which resulted in a text change. We may need a single function which always executes actions, to be able to store the right ones.
-how to define a keymap for each interactive action?
+think about moving character queue to core to enable feeding
+Add document.activate to call ui.activate
+Implement all existing modes as persistent commands
+Implement commandmode as a persistent command, similar to undomode
+Think about possibility to add remap support (i.e. map keys forall modes)
+    This is a generalization of the cancelkey feature
 Select around/inside (not finished yet)
+Enhance selector set
 Incorporate testing with multiple sessions
-Check if we can specify multiple testruns more easily in the unittest framework
-unittests for pattern select machinery
+Unittests for pattern select machinery
+Think about how to decorate classes easily, without disabling subclassing
+drag text operation
 
 LONG TERM
 Make labeling generation asynchronous
