@@ -15,14 +15,14 @@ class OperatorTest(BaseTestCase):
         BaseTestCase.setUp(self)
         execute(nextline, self.document)
 
-    def test_change_after(self):
+    def xtest_change_after(self):
         self.document.ui.feedinput(ChangeAfter)
         for char in '\nasdf\b\b \n \n \n\n\b\b\n':
             self.document.ui.feedinput(char)
         self.document.ui.feedinput('Cancel')
         self.document.ui.feedinput(quit_document)
         #execute(ChangeAfter, self.document)
-        run()
+        #run()
         expected = 'import sys\nas \n \n  \n  \n\n'
         self.assertEqual(expected, self.document.text[:len(expected)])
 

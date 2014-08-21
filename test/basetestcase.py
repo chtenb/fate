@@ -1,4 +1,4 @@
-from unittest import TestCase, main
+from unittest import TestCase
 from .. import document
 from tempfile import gettempdir
 from shutil import copyfile
@@ -20,5 +20,3 @@ class BaseTestCase(TestCase):
     def tearDown(self):
         self.document.quit()
 
-if __name__ == '__main__':
-    main()

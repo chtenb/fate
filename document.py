@@ -32,6 +32,7 @@ class Document():
         self.OnRead = Event()
         self.OnWrite = Event()
         self.OnQuit = Event()
+        self.OnActivate = Event()
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
@@ -76,6 +77,12 @@ class Document():
 
         nextdocument.activate()
         documentlist.remove(self)
+
+    def activate(self):
+        """Activate this document."""
+        global activedocument
+        activedocument = self
+        self.OnActivate.fire(self)
 
     @property
     def selection(self):

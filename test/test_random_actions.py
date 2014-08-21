@@ -7,7 +7,7 @@ from tempfile import gettempdir
 from os import urandom
 import random
 from .randomized_userinterface import RandomizedUserSimulator
-from ..cmdargs import args
+from .cmdargs import args
 
 command_dict = publics(commands)
 command_names = list(command_dict.keys())
