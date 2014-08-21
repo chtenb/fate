@@ -175,7 +175,7 @@ def next_document(document):
     """Go to the next document."""
     index = documentlist.index(document)
     ndocument = documentlist[(index + 1) % len(documentlist)]
-    ndocument.ui.activate()
+    ndocument.activate()
 commands.next_document = next_document
 
 
@@ -183,7 +183,7 @@ def previous_document(document):
     """Go to the previous document."""
     index = documentlist.index(document)
     ndocument = documentlist[(index - 1) % len(documentlist)]
-    ndocument.ui.activate()
+    ndocument.activate()
 commands.previous_document = previous_document
 
 
