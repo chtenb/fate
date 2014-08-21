@@ -49,7 +49,7 @@ class UndoTree:
 
     def add(self, command):
         """Add a new undoable command."""
-        if self.sequence:
+        if self.sequence != None:
             self.sequence.add_command(command)
         else:
             node = Node(self.current_node)
@@ -239,4 +239,4 @@ class UndoMode(Mode):
         node = document.undotree.current_node
         return node.parent.children.index(node) if node.parent != None else 0
 
-commands.undomode = UndoMode()
+commands.undomode = UndoMode

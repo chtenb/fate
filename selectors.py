@@ -37,7 +37,7 @@ class ExtendMode(Mode):
             document.mode = None
         else:
             self.normalmode(document, userinput)
-commands.extendmode = ExtendMode()
+commands.extendmode = ExtendMode
 
 
 class ReduceMode(Mode):
@@ -56,7 +56,7 @@ class ReduceMode(Mode):
             document.mode = None
         else:
             self.normalmode(document, userinput)
-commands.reducemode = ReduceMode()
+commands.reducemode = ReduceMode
 
 
 def selector(command):

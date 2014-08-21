@@ -18,7 +18,7 @@ class Document():
     create_userinterface = None
     _text = ''
     saved = True
-    mode = None
+    mode = deque()
 
     expandtab = False
     tabwidth = 4
