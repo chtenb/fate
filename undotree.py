@@ -145,8 +145,8 @@ class UndoMode(Mode):
     You can only switch branches between siblings.
     """
 
-    def __init__(self):
-        Mode.__init__(self)
+    def __init__(self, document):
+        Mode.__init__(self, document)
         self.keymap = {
             'Left': self.left,
             'Right': self.right,
@@ -159,14 +159,10 @@ class UndoMode(Mode):
             quit_all, open_document, force_quit
         ]
 
-    def __call__(self, document):
         document.ui.touch()
 
         # Make sure the child_index is set to the index we now have
         self.child_index = self.current_index(document)
-
-        # Notify the the document that we are in undomode now
-        document.mode = self
 
         #debug('length: ' + str(len(undotree.current_node.children)))
         #debug('index: ' + str(child_index))

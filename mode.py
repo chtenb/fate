@@ -20,7 +20,9 @@ class Mode:
 
     def stop(self, document):
         """Must be called to stop the mode."""
+        print(document.mode)
         document.mode.pop()
+        print(document.mode)
         if document.mode:
             document.mode[-1].proceed(document)
 
@@ -29,6 +31,12 @@ class Mode:
 
     def processinput(self, document, userinput):
         raise NotImplementedError('An abstract method is not callable.')
+
+    def proceed(self, document):
+        """
+        This method gets called when a mode has submodes and a submode has finished.
+        """
+        raise NotImplementedError('This mode doesn\'t have submodes')
 
 
 def input_to_command(document, userinput, keymap=None):
@@ -59,4 +67,4 @@ def normalmode(document, userinput):
 def cancel(document):
     """Go back to normalmode."""
     if document.mode:
-        document.mode.processinput(document, 'Cancel')
+        document.mode[-1].processinput(document, 'Cancel')

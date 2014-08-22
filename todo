@@ -1,5 +1,4 @@
 SHORT TERM
-change al stateful commands (modes) into a class such that they can be used in multiple documents at the same time
 problem: the sequence mechanism in undotree doesn't work for modes
 Implement all existing modes as persistent commands
 Implement commandmode as a persistent command, similar to undomode

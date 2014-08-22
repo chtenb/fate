@@ -77,6 +77,8 @@ def run():
                 key = userinput
                 if key in doc.keymap:
                     command = doc.keymap[key]
+                else:
+                    command = None
             else:
                 command = userinput
 

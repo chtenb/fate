@@ -96,10 +96,10 @@ class Compound(Mode):
         self.stop(document)
 
     def processinput(self, document, userinput):
-        if self.mode != None:
-            self.mode.processinput(document, userinput)
-        else:
-            raise Exception('Don\'t know what to do with input: no submode present.')
+        print(document.mode)
+        print(self.subcommands)
+        print(self.todo)
+        raise Exception('Can\'t process input')
 
 def Compose(*subcommands, name='', docs=''):
     def inner(document):

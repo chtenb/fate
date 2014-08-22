@@ -57,10 +57,7 @@ class OperatorTest(BaseTestCase):
         expected = '\nas \n \n  \n  \n\n'
         self.assertEqual(expected, self.document.text[:len(expected)])
 
-        print(self.document.text)
-        print(self.document.undotree.current_node.commands[0])
         undo(self.document)
-        print(self.document.text)
         self.assertEqual('import sys\n\n', self.document.text[:12])
 
     def test_change_around(self):
