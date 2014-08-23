@@ -19,12 +19,21 @@ parser.add_argument('-n', '--no-randomized-tests',
                     help='don \'t run the randomized tests', action='store_true')
 parser.add_argument('-v', '--verbose', help='run in verbose mode',
                     action='store_true')
-cmdargs.args = parser.parse_args()
+parser.add_argument('-m', '--module', help='run single module',
+                    action='store')
+args = parser.parse_args()
+cmdargs.args = args
 
 
 from unittest import defaultTestLoader as loader, TextTestRunner
 
-suite = loader.discover('fate')
+if args.module:
+    module = 'fate.' + args.module
+    print('Loading ' + module)
+    suite = loader.loadTestsFromName(module)
+else:
+    suite = loader.discover('fate')
+
 runner = TextTestRunner()
 test_result = runner.run(suite)
 success = test_result.wasSuccessful()

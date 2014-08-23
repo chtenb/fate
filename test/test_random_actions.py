@@ -29,7 +29,7 @@ class RandomizedActionTest(BaseTestCase):
         with open(savefile, 'w') as f:
             f.write(str(seed))
 
-        self.run_testcase(seed, commands_per_run)
+        self.run_test(seed, commands_per_run)
 
     def getseed(self):
         if args.seed != None:
