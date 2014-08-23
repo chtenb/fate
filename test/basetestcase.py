@@ -27,7 +27,6 @@ class Foo(Bar):
         #source = dirname(abspath(__file__)) + '/sample.py'
         #copyfile(source, destination)
         destination = gettempdir() + '/test.py'
-        copyfile(source, destination)
         self.document = document.Document(destination)
         document.activedocument = self.document
 
