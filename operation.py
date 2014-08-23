@@ -75,5 +75,4 @@ class Operation(Undoable):
 
         document.text.apply(document, operation)
         document.selection = new_selection
-        document.OnTextChanged.fire(document)
 

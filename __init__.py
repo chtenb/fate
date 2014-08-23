@@ -67,9 +67,9 @@ def run():
 
         debug('Input: ' + str(userinput))
 
-        if doc.mode != None:
+        if doc.mode:
             # We are not in normalmode
-            doc.mode.processinput(doc, userinput)
+            doc.mode[-1].processinput(doc, userinput)
         else:
             # We are in normalmode
             if type(userinput) == str:
@@ -81,6 +81,5 @@ def run():
             else:
                 command = userinput
 
-            if command != None:
-                while callable(command):
-                    command = command(doc)
+            while callable(command):
+                command = command(doc)

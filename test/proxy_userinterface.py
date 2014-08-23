@@ -1,6 +1,8 @@
 from collections import deque
 from ..userinterface import UserInterface
 from ..document import quit_document
+from ..document import quit_document
+from ..userinterface import UserInterface
 
 
 class ProxyUserInterface(UserInterface):

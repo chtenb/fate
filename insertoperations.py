@@ -17,12 +17,12 @@ class InsertMode(Mode):
     """Abstract class for operations dealing with insertion of text."""
 
     def __init__(self, doc):
-        Mode.__init__(self)
+        Mode.__init__(self, doc)
         self.allowedcommands = [document.next_document, document.previous_document]
-        doc.mode = self
 
         # Init trivial starting operation
         self.preview_operation = self.compute_operation(doc)
+        self.start(doc)
 
     def processinput(self, doc, userinput):
         if type(userinput) != str:
@@ -53,7 +53,7 @@ class InsertMode(Mode):
     def stop(self, doc):
         if self.preview_operation != None:
             self.preview_operation(doc)
-        doc.mode = None
+        Mode.stop(self, doc)
 
     def __str__(self):
         return 'INSERT'
@@ -180,24 +180,24 @@ commands.ChangeAfter = repeatable(ChangeAfter)
 
 
 # TODO: write ChangeInPlace as composition of delete and ChangeBefore
-@repeatable
-class ChangeInPlace(ChangeAfter):
+#@repeatable
+#class ChangeInPlace(ChangeAfter):
 
-    """
-    Interactive Operation which adds `insertions` in place of each interval.
-    """
+    #"""
+    #Interactive Operation which adds `insertions` in place of each interval.
+    #"""
 
-    def compute_operation(self, doc):
-        # It can happen that this operation is repeated in a situation
-        # with a larger number of intervals.
-        # Therefore we take indices modulo the length of the lists
-        l = len(self.insertions)
-        new_content = [self.insertions[i % l] for i in range(len(doc.selection))]
-        return Operation(doc, new_content)
+    #def compute_operation(self, doc):
+        ## It can happen that this operation is repeated in a situation
+        ## with a larger number of intervals.
+        ## Therefore we take indices modulo the length of the lists
+        #l = len(self.insertions)
+        #new_content = [self.insertions[i % l] for i in range(len(doc.selection))]
+        #return Operation(doc, new_content)
 
+
+ChangeInPlace = Compose(delete, ChangeAfter, name='ChangeInPlace')
 commands.ChangeInPlace = ChangeInPlace
-
-commands.ChangeInPlace = Compose(delete, ChangeBefore)
 
 
 @repeatable

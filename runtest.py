@@ -28,13 +28,14 @@ cmdargs.args = args
 from unittest import defaultTestLoader as loader, TextTestRunner
 
 if args.module:
-    print('Loading fate.' + args.module)
-    suite = loader.loadTestsFromName('fate.' + args.module)
+    module = 'fate.' + args.module
+    print('Loading ' + module)
+    suite = loader.loadTestsFromName(module)
 else:
     suite = loader.discover('fate')
 
 runner = TextTestRunner()
-result = runner.run(suite)
-success = result.wasSuccessful()
+test_result = runner.run(suite)
+success = test_result.wasSuccessful()
 if not success:
     sys.exit(1)

@@ -1,12 +1,12 @@
 """A document represents the state of an editing document."""
+from collections import deque
+import logging
 from .selection import Selection, Interval
 from .event import Event
 from . import commands
 from .userinterface import UserInterface
 from .text import Text
-from collections import deque
 
-import logging
 
 documentlist = []
 activedocument = None
@@ -18,7 +18,7 @@ class Document():
     OnDocumentInit = Event()
     create_userinterface = None
     saved = True
-    mode = None
+    mode = deque()
 
     expandtab = False
     tabwidth = 4
@@ -32,7 +32,7 @@ class Document():
         self.OnRead = Event()
         self.OnWrite = Event()
         self.OnQuit = Event()
-
+        self.OnActivate = Event()
         self._text = Text('')
 
         self.filename = filename
@@ -76,8 +76,14 @@ class Document():
         else:
             nextdocument = documentlist[index - 1]
 
-        activedocument = nextdocument
+        nextdocument.activate()
         documentlist.remove(self)
+
+    def activate(self):
+        """Activate this document."""
+        global activedocument
+        activedocument = self
+        self.OnActivate.fire(self)
 
     @property
     def selection(self):
@@ -94,6 +100,12 @@ class Document():
     def text(self):
         return self._text
 
+    @text.setter
+    def text(self, value):
+        self._text = value
+        self.saved = False
+        self.OnTextChanged.fire(self)
+
     def read(self, filename=None):
         """Read text from file."""
         filename = filename or self.filename
@@ -101,7 +113,7 @@ class Document():
         if filename:
             try:
                 with open(filename, 'r') as fd:
-                    self._text = Text(fd.read())
+                    self.text = Text(fd.read())
                 self.saved = True
                 self.OnRead.fire(self)
             except (FileNotFoundError, PermissionError) as e:
@@ -164,7 +176,7 @@ def next_document(document):
     """Go to the next document."""
     index = documentlist.index(document)
     ndocument = documentlist[(index + 1) % len(documentlist)]
-    ndocument.ui.activate()
+    ndocument.activate()
 commands.next_document = next_document
 
 
@@ -172,7 +184,7 @@ def previous_document(document):
     """Go to the previous document."""
     index = documentlist.index(document)
     ndocument = documentlist[(index - 1) % len(documentlist)]
-    ndocument.ui.activate()
+    ndocument.activate()
 commands.previous_document = previous_document
 
 

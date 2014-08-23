@@ -1,4 +1,2 @@
-"""
-This module is used to pass commandline argument to the test modules without problems.
-"""
+"""This module is used to for storing cmd arguments during testing."""
 args = None

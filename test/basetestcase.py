@@ -1,10 +1,9 @@
-from unittest import TestCase, main
+from unittest import TestCase
 from .. import document
 from tempfile import gettempdir
-#from shutil import copyfile
-#from os.path import dirname, abspath
-from .proxyuserinterface import ProxyUserInterface
-
+from shutil import copyfile
+from os.path import dirname, abspath
+from .proxy_userinterface import ProxyUserInterface
 
 class BaseTestCase(TestCase):
 
@@ -28,8 +27,7 @@ class Foo(Bar):
         #source = dirname(abspath(__file__)) + '/sample.py'
         #copyfile(source, destination)
         destination = gettempdir() + '/test.py'
-        with open(destination, 'w') as fd:
-            fd.write(self.sampletext)
+        copyfile(source, destination)
         self.document = document.Document(destination)
         document.activedocument = self.document
 

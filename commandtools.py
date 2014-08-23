@@ -2,6 +2,9 @@
 This module contains several base classes and decorators for creating commands.
 """
 from logging import debug
+from collections import deque
+from inspect import isclass
+from .mode import Mode
 
 
 def execute(command, document):
@@ -52,7 +55,7 @@ class Undoable:
 # If this functionality is required nonetheless, the composition must be defined in an
 # command body
 
-class Compose:
+class Compound(Mode):
 
     """
     In order to be able to conveniently chain commands, we provide a
@@ -60,19 +63,46 @@ class Compose:
     The undoable subcommands should be undoable as a whole.
     """
 
-    def __init__(self, *subcommands, name='', docs=''):
-        self.subcommands = subcommands
+    def __init__(self, document, *subcommands, name='', docs=''):
+        Mode.__init__(self, document)
         self.__name__ = name
         self.__docs__ = docs
+        self.subcommands = subcommands
 
-    def __call__(self, document):
-        # Execute subcommands
+        self.todo = deque(self.subcommands[:])
         document.undotree.start_sequence()
-        for command in self.subcommands:
+        self.start(document)
+        self.proceed(document)
+
+    def __str__(self):
+        return self.__name__
+
+    def proceed(self, document):
+        """This function gets called when a submode finishes."""
+        while self.todo:
+            command = self.todo.popleft()
             while 1:
-                debug(command)
+                if isclass(command) and issubclass(command, Mode):
+                    command(document)
+                    return
+
                 result = command(document)
                 if not callable(result):
                     break
                 command = result
+
+        # Now we are completely finished
         document.undotree.end_sequence()
+        self.stop(document)
+
+    def processinput(self, document, userinput):
+        #print(document.mode)
+        #print(self.subcommands)
+        #print(self.todo)
+        raise Exception('Can\'t process input')
+
+def Compose(*subcommands, name='', docs=''):
+    def inner(document):
+        compound = Compound(document, *subcommands, name=name, docs=docs)
+        return compound
+    return inner
