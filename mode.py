@@ -20,10 +20,11 @@ class Mode:
 
     def stop(self, document):
         """Must be called to stop the mode."""
-        print(document.mode)
+        #print('current mode: ' + str(document.mode))
+        #print('Stopping mode')
         document.mode.pop()
-        print(document.mode)
         if document.mode:
+            #print('proceeding with ' + str(document.mode[-1]))
             document.mode[-1].proceed(document)
 
     def __str__(self):

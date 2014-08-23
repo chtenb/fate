@@ -3,7 +3,6 @@ from . import commands
 from .operation import Operation
 from .operators import Append, Insert, delete
 from .selection import Selection, Interval
-from .repeat import repeatable
 from .commandtools import Compose
 from .selectors import (emptybefore, previousfullline, selectindent,
                         nextfullline, nextchar, previouschar)
@@ -25,6 +24,7 @@ class InsertMode(Mode):
         self.start(doc)
 
     def processinput(self, doc, userinput):
+        #print(8888888888888888888)
         if type(userinput) != str:
             if userinput in self.allowedcommands:
                 userinput(doc)
@@ -58,6 +58,7 @@ class InsertMode(Mode):
         if self.preview_operation != None:
             self.preview_operation.undo(doc)
             self.preview_operation(doc)
+        #print(9999999999999999999999999)
         Mode.stop(self, doc)
 
     def __str__(self):
@@ -86,7 +87,6 @@ def get_indent(doc, pos):
     return string[match.start(): match.end()]
 
 
-@repeatable
 class ChangeBefore(InsertMode):
 
     """
@@ -181,31 +181,13 @@ class ChangeAfter(InsertMode):
                        for i in range(len(doc.selection))]
         return Operation(doc, new_content)
 
-commands.ChangeAfter = repeatable(ChangeAfter)
-
-
-# TODO: write ChangeInPlace as composition of delete and ChangeBefore
-#@repeatable
-#class ChangeInPlace(ChangeAfter):
-
-    #"""
-    #Interactive Operation which adds `insertions` in place of each interval.
-    #"""
-
-    #def compute_operation(self, doc):
-        ## It can happen that this operation is repeated in a situation
-        ## with a larger number of intervals.
-        ## Therefore we take indices modulo the length of the lists
-        #l = len(self.insertions)
-        #new_content = [self.insertions[i % l] for i in range(len(doc.selection))]
-        #return Operation(doc, new_content)
+commands.ChangeAfter = ChangeAfter
 
 
 ChangeInPlace = Compose(delete, ChangeAfter, name='ChangeInPlace')
 commands.ChangeInPlace = ChangeInPlace
 
 
-@repeatable
 class ChangeAround(InsertMode):
 
     """
@@ -280,14 +262,15 @@ OpenLineAfter = Compose(cancel, previousfullline, selectindent, copy,
                         nextfullline, Append('\n'), previouschar, emptybefore,
                         paste_before, clear, ChangeAfter, name='OpenLineAfter',
                         docs='Open a line after interval')
-commands.OpenLineAfter = repeatable(OpenLineAfter)
+commands.OpenLineAfter = OpenLineAfter
 
 OpenLineBefore = Compose(cancel, nextfullline, selectindent, copy,
                          nextfullline, Insert('\n'), nextchar, emptybefore,
                          paste_before, clear, ChangeAfter, name='OpenLineBefore',
                          docs='Open a line before interval')
-commands.OpenLineBefore = repeatable(OpenLineBefore)
+commands.OpenLineBefore = OpenLineBefore
 
-CutChange = Compose(Cut, ChangeInPlace,
-                    name='CutChange', docs='Copy and change selected text.')
-commands.CutChange = repeatable(CutChange)
+#CutChange = Compose(Cut, ChangeBefore,
+CutChange = Compose(copy, delete, ChangeBefore,
+                    name='Cut & Change', docs='Copy and change selected text.')
+commands.CutChange = CutChange

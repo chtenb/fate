@@ -3,7 +3,6 @@ from .selection import Selection, Interval
 from .event import Event
 from . import commands
 from .userinterface import UserInterface
-from collections import deque
 
 import logging
 
@@ -18,7 +17,6 @@ class Document():
     create_userinterface = None
     _text = ''
     saved = True
-    mode = deque()
 
     expandtab = False
     tabwidth = 4
@@ -36,6 +34,7 @@ class Document():
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
+        self.mode = []
 
         if not self.create_userinterface:
             raise Exception('No function specified in Document.create_userinterface.')

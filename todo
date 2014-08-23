@@ -1,9 +1,13 @@
 SHORT TERM
-problem: the sequence mechanism in undotree doesn't work for modes
+Compose must be rewritten such that compositions subclass Mode
+Can't decorate classes by functions: this turns them into functions
+    this means that they can't be used as parentclass
+    and that they can't be checked by issubclass
 Implement all existing modes as persistent commands
 Implement commandmode as a persistent command, similar to undomode
 Think about possibility to add remap support (i.e. map keys forall modes)
     This is a generalization of the cancelkey feature
+reimplement repeat, since classes can;t be decorated
 Select around/inside (not finished yet)
 Enhance selector set
 Incorporate testing with multiple sessions

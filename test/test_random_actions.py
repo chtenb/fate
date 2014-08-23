@@ -34,20 +34,14 @@ class RandomizedActionTest(BaseTestCase):
     def getseed(self):
         if args.seed != None:
             return int(args.seed)
-
-        if args.rerun:
-            self.run_last_testcase()
+        elif args.rerun:
             try:
                 with open(gettempdir() + '/last_test_seed_fate.tmp') as f:
-                    seed = int(f.read())
-                    return seed
+                    return int(f.read())
             except IOError:
                 raise Exception('Can\'t rerun testcase: no previous testcase exists.')
-            self.run_new_testcases()
-
-        # Generate a new seed
-        seed = int.from_bytes(urandom(10), byteorder='big')
-        random.seed(seed)
+        else:
+            return int.from_bytes(urandom(10), byteorder='big')
 
     def run_test(self, seed, commands_per_run):
         """Run the test based on given seed."""
@@ -56,7 +50,7 @@ class RandomizedActionTest(BaseTestCase):
             print('Starting selection: ' + str(self.document.selection))
 
         random.seed(seed)
-        run = 1
+        run = 0
         print('Run {} (seed={})'.format(run + 1, seed))
 
         for i in range(commands_per_run):

@@ -63,10 +63,8 @@ class Compound(Mode):
     The undoable subcommands should be undoable as a whole.
     """
 
-    def __init__(self, document, *subcommands, name='', docs=''):
+    def __init__(self, document, *subcommands):
         Mode.__init__(self, document)
-        self.__name__ = name
-        self.__docs__ = docs
         self.subcommands = subcommands
 
         self.todo = deque(self.subcommands[:])
@@ -75,14 +73,19 @@ class Compound(Mode):
         self.proceed(document)
 
     def __str__(self):
-        return self.__name__
+        return 'Compound command: ' + str(self.todo)
 
     def proceed(self, document):
         """This function gets called when a submode finishes."""
         while self.todo:
             command = self.todo.popleft()
             while 1:
+                # BUG !!!!!!!!!!
+                # Modes not recognized as classes
+                #print(command)
+                #print(isclass(command))
                 if isclass(command) and issubclass(command, Mode):
+                    #print(00000000000000)
                     command(document)
                     return
 
@@ -96,13 +99,20 @@ class Compound(Mode):
         self.stop(document)
 
     def processinput(self, document, userinput):
-        print(document.mode)
-        print(self.subcommands)
-        print(self.todo)
+        print('mode: ' + str(document.mode))
+        print('subcommand: ' + str(self.subcommands))
+        print('todo: ' + str(self.todo))
         raise Exception('Can\'t process input')
 
 def Compose(*subcommands, name='', docs=''):
+    #print('------------')
+    #print(name)
+    #for s in subcommands:
+        #print(str(s))
+    # TODO: inner must turn into class deriving Mode
+    # OR Compound must somehow be parametrizable
     def inner(document):
-        compound = Compound(document, *subcommands, name=name, docs=docs)
-        return compound
+        Compound(document, *subcommands)
+    inner.__name__ = name
+    inner.__docs__ = docs
     return inner
