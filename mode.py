@@ -20,11 +20,8 @@ class Mode:
 
     def stop(self, document):
         """Must be called to stop the mode."""
-        #print('current mode: ' + str(document.mode))
-        #print('Stopping mode')
         document.mode.pop()
         if document.mode:
-            #print('proceeding with ' + str(document.mode[-1]))
             document.mode[-1].proceed(document)
 
     def __str__(self):
@@ -63,9 +60,3 @@ def normalmode(document, userinput):
     """Process input as if we were in normal mode."""
     command = input_to_command(document, userinput)
     command(document)
-
-
-def cancel(document):
-    """Go back to normalmode."""
-    if document.mode:
-        document.mode[-1].processinput(document, 'Cancel')

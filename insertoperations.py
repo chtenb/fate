@@ -7,7 +7,7 @@ from .commandtools import Compose
 from .selectors import (emptybefore, previousfullline, selectindent,
                         nextfullline, nextchar, previouschar)
 from .clipboard import copy, clear, paste_before, Cut
-from .mode import cancel, Mode
+from .mode import Mode
 from . import document
 
 
@@ -24,7 +24,6 @@ class InsertMode(Mode):
         self.start(doc)
 
     def processinput(self, doc, userinput):
-        #print(8888888888888888888)
         if type(userinput) != str:
             if userinput in self.allowedcommands:
                 userinput(doc)
@@ -58,7 +57,6 @@ class InsertMode(Mode):
         if self.preview_operation != None:
             self.preview_operation.undo(doc)
             self.preview_operation(doc)
-        #print(9999999999999999999999999)
         Mode.stop(self, doc)
 
     def __str__(self):
@@ -184,7 +182,7 @@ class ChangeAfter(InsertMode):
 commands.ChangeAfter = ChangeAfter
 
 
-ChangeInPlace = Compose(delete, ChangeAfter, name='ChangeInPlace')
+ChangeInPlace = Compose(delete, ChangeBefore, name='ChangeInPlace')
 commands.ChangeInPlace = ChangeInPlace
 
 
@@ -258,13 +256,13 @@ class ChangeAround(InsertMode):
 commands.ChangeAround = ChangeAround
 
 
-OpenLineAfter = Compose(cancel, previousfullline, selectindent, copy,
+OpenLineAfter = Compose(previousfullline, selectindent, copy,
                         nextfullline, Append('\n'), previouschar, emptybefore,
                         paste_before, clear, ChangeAfter, name='OpenLineAfter',
                         docs='Open a line after interval')
 commands.OpenLineAfter = OpenLineAfter
 
-OpenLineBefore = Compose(cancel, nextfullline, selectindent, copy,
+OpenLineBefore = Compose(nextfullline, selectindent, copy,
                          nextfullline, Insert('\n'), nextchar, emptybefore,
                          paste_before, clear, ChangeAfter, name='OpenLineBefore',
                          docs='Open a line before interval')

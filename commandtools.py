@@ -51,9 +51,10 @@ class Undoable:
 # in order to create the intended selection.
 # However, this violates the principle that the document must not be
 # touched while only creating an command.
-# The solution is that compositions don't return an command and thus cannot be inspected
-# If this functionality is required nonetheless, the composition must be defined in an
-# command body
+# The solution is that compositions don't return an command and thus
+# cannot be inspected
+# If this functionality is required nonetheless,
+# the composition must be defined in an command body
 
 
 def Compose(*subcommands, name='', docs=''):
@@ -66,7 +67,7 @@ def Compose(*subcommands, name='', docs=''):
     # It must derive from Mode, in case any of the subcommands is a mode
     class Compound(Mode):
 
-        def __init__(self, document, *subcommands):
+        def __init__(self, document):
             Mode.__init__(self, document)
             self.subcommands = subcommands
 
@@ -85,10 +86,7 @@ def Compose(*subcommands, name='', docs=''):
                 while 1:
                     # BUG !!!!!!!!!!
                     # Modes not recognized as classes
-                    #print(command)
-                    #print(isclass(command))
                     if isclass(command) and issubclass(command, Mode):
-                        #print(00000000000000)
                         command(document)
                         return
 
@@ -102,11 +100,7 @@ def Compose(*subcommands, name='', docs=''):
             self.stop(document)
 
         def processinput(self, document, userinput):
-            print('mode: ' + str(document.mode))
-            print('subcommand: ' + str(self.subcommands))
-            print('todo: ' + str(self.todo))
             raise Exception('Can\'t process input')
-
 
     Compound.__name__ = name
     Compound.__docs__ = docs
