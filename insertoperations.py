@@ -270,7 +270,6 @@ OpenLineBefore = Compose(cancel, nextfullline, selectindent, copy,
                          docs='Open a line before interval')
 commands.OpenLineBefore = OpenLineBefore
 
-#CutChange = Compose(Cut, ChangeBefore,
-CutChange = Compose(copy, delete, ChangeBefore,
+CutChange = Compose(Cut, ChangeBefore,
                     name='Cut & Change', docs='Copy and change selected text.')
 commands.CutChange = CutChange

@@ -1,5 +1,4 @@
 SHORT TERM
-Compose must be rewritten such that compositions subclass Mode
 Can't decorate classes by functions: this turns them into functions
     this means that they can't be used as parentclass
     and that they can't be checked by issubclass
