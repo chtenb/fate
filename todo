@@ -1,4 +1,6 @@
 SHORT TERM
+Move the mode printing of tfate to ModeStack's __str__
+Make sure selectors read the select mode correctly
 Can't decorate classes by functions: this turns them into functions
     this means that they can't be used as parentclass
     and that they can't be checked by issubclass

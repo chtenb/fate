@@ -3,6 +3,7 @@ from .selection import Selection, Interval
 from .event import Event
 from . import commands
 from .userinterface import UserInterface
+from .mode import ModeStack
 
 import logging
 
@@ -34,7 +35,8 @@ class Document():
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
-        self.mode = []
+        self.mode = ModeStack()
+        self.selectmode = 'SELECT'
 
         if not self.create_userinterface:
             raise Exception('No function specified in Document.create_userinterface.')

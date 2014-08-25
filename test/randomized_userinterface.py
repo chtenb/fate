@@ -57,7 +57,7 @@ class RandomizedUserSimulator(UserInterface):
             return command_dict[command_name]
 
         # If we are in a certain mode we try to construct a meaningful input space
-        mode = self.document.mode[-1]
+        mode = self.document.mode.peek()
         input_space = []
         if hasattr(mode, 'allowedcommands'):
             input_space.extend(mode.allowedcommands)

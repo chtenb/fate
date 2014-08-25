@@ -70,7 +70,7 @@ def run():
 
         if doc.mode:
             # We are not in normalmode
-            doc.mode[-1].processinput(doc, userinput)
+            doc.mode.peek().processinput(doc, userinput)
         else:
             # We are in normalmode
             if type(userinput) == str:
