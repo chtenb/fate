@@ -19,17 +19,20 @@ class RandomizedActionTest(BaseTestCase):
             print('Skipping randomized tests')
             return
 
-        runs, commands_per_run = (5000, 50) if args.long else (500, 50)
-        seed = self.getseed()
+        commands_per_run = 50
+        runs = 500
+        if args.long:
+            runs = 5000
+        if args.rerun:
+            runs = 1
 
-        # Save seed into temp file
-        savefile = gettempdir() + '/last_test_seed_fate.tmp'
-        if args.verbose:
-            print('Saving run into ' + savefile)
-        with open(savefile, 'w') as f:
-            f.write(str(seed))
+        for run in range(runs):
+            seed = self.getseed()
+            print('Run {} (seed={})'.format(run + 1, seed))
+            self.saveseed(seed)
 
-        self.run_test(seed, commands_per_run)
+            random.seed(seed)
+            self.run_test(seed, commands_per_run)
 
     def getseed(self):
         if args.seed != None:
@@ -43,15 +46,19 @@ class RandomizedActionTest(BaseTestCase):
         else:
             return int.from_bytes(urandom(10), byteorder='big')
 
+    def saveseed(self, seed):
+        """Save seed into temp file."""
+        savefile = gettempdir() + '/last_test_seed_fate.tmp'
+        if args.verbose:
+            print('Saving run into ' + savefile)
+        with open(savefile, 'w') as f:
+            f.write(str(seed))
+
     def run_test(self, seed, commands_per_run):
         """Run the test based on given seed."""
         if args.verbose:
             print('Sample text:\n' + str(self.document.text))
             print('Starting selection: ' + str(self.document.selection))
-
-        random.seed(seed)
-        run = 0
-        print('Run {} (seed={})'.format(run + 1, seed))
 
         for i in range(commands_per_run):
             userinput = self.document.ui.getinput()
@@ -65,7 +72,7 @@ class RandomizedActionTest(BaseTestCase):
                     name = userinput.__name__
                 except AttributeError:
                     name = str(userinput)
-                print(str(i + 1) + ': Input = ' + name)
+                print(str(i + 1) + ': Input = ' + name + ', Mode = ' + str(self.document.mode))
 
             if self.document.mode:
                 # We are not in normalmode

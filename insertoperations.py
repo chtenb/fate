@@ -59,9 +59,6 @@ class InsertMode(Mode):
             self.preview_operation(doc)
         Mode.stop(self, doc)
 
-    def __str__(self):
-        return 'INSERT'
-
     def compute_operation(self, doc):
         """Compute operation based on insertions and deletions."""
         raise NotImplementedError('An abstract method is not callable.')
@@ -145,9 +142,6 @@ class ChangeAfter(InsertMode):
 
         InsertMode.__init__(self, doc)
 
-    def __str__(self):
-        return 'APPEND'
-
     def insert(self, doc, string):
         for i in range(len(doc.selection)):
             if string == '\b':
@@ -200,9 +194,6 @@ class ChangeAround(InsertMode):
         self.deletions = [0] * len(doc.selection)
 
         InsertMode.__init__(self, doc)
-
-    def __str__(self):
-        return 'SURROUND'
 
     def insert(self, doc, string):
         for i in range(len(doc.selection)):

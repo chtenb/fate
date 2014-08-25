@@ -25,7 +25,10 @@ class Mode:
             document.mode.peek().proceed(document)
 
     def __str__(self):
-        return self.__class__.__name__
+        try:
+            return self.__name__
+        except AttributeError:
+            return self.__class__.__name__
 
     def processinput(self, document, userinput):
         raise NotImplementedError('An abstract method is not callable.')

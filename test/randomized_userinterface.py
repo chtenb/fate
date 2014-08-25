@@ -13,7 +13,7 @@ key_space = list(
     !@#$%&*()
     \n\t\b
     """
-) + 10 * ['Esc'] + ['Up', 'Down', 'Left', 'Right']
+) + 10 * ['Cancel'] + ['Esc', 'Up', 'Down', 'Left', 'Right']
 
 command_dict = publics(commands)
 command_dict.pop('open_document')
@@ -58,7 +58,7 @@ class RandomizedUserSimulator(UserInterface):
 
         # If we are in a certain mode we try to construct a meaningful input space
         mode = self.document.mode.peek()
-        input_space = []
+        input_space = ['Cancel']
         if hasattr(mode, 'allowedcommands'):
             input_space.extend(mode.allowedcommands)
         if hasattr(mode, 'keymap'):

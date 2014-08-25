@@ -1,22 +1,19 @@
 SHORT TERM
-Move the mode printing of tfate to ModeStack's __str__
-Make sure selectors read the select mode correctly
-Can't decorate classes by functions: this turns them into functions
+Think about how to decorate classes easily, without disabling subclassing
+    Can't decorate classes by functions: this turns them into functions
     this means that they can't be used as parentclass
     and that they can't be checked by issubclass
-Implement all existing modes as persistent commands
+Reimplement repeat, since classes can;t be decorated
 Implement commandmode as a persistent command, similar to undomode
 Think about possibility to add remap support (i.e. map keys forall modes)
     This is a generalization of the cancelkey feature
-reimplement repeat, since classes can;t be decorated
 Select around/inside (not finished yet)
 Enhance selector set
 Incorporate testing with multiple sessions
 Unittests for pattern select machinery
-Think about how to decorate classes easily, without disabling subclassing
-drag text operation
 
 LONG TERM
+Drag text operation
 Make labeling generation asynchronous
 Persistent session (using a context manager?)
 Improve syntax highlighting, for instance by disregarding quotes inside comments and strings

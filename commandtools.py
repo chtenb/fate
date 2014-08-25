@@ -76,9 +76,6 @@ def Compose(*subcommands, name='', docs=''):
             self.start(document)
             self.proceed(document)
 
-        def __str__(self):
-            return 'Compound command: ' + str(self.todo)
-
         def proceed(self, document):
             """This function gets called when a submode finishes."""
             while self.todo:
