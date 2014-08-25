@@ -59,13 +59,17 @@ class RandomizedUserSimulator(UserInterface):
         # If we are in a certain mode we try to construct a meaningful input space
         mode = self.document.mode.peek()
         input_space = ['Cancel']
-        if hasattr(mode, 'allowedcommands'):
-            input_space.extend(mode.allowedcommands)
-        if hasattr(mode, 'keymap'):
+        input_space.extend(mode.allowedcommands)
+
+        if mode.keymap:
             input_space.extend(mode.keymap.values())
+        else:
+            input_space.extend(key_space)
+
         if not input_space:
             input_space = compound_input_space
 
+        #print('Inputspace = ' + str(input_space))
         return random.choice(input_space)
 
     def prompt(self, prompt_string='>'):

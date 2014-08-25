@@ -139,11 +139,10 @@ def load(document, filename=None):
         except (FileNotFoundError, PermissionError) as e:
             logging.error(str(e))
         else:
-            current_selection = document.selection
             selectall(document)
             operation = Operation(document, newcontent=[newtext])
             operation(document)
-            document.selection = current_selection.bound(0, len(document.text))
+            document.selection = Selection(Interval(0, 0))
 
             document.saved = True
             document.OnRead.fire(document)
