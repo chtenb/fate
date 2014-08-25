@@ -13,7 +13,7 @@ key_space = list(
     !@#$%&*()
     \n\t\b
     """
-) + 10 * ['Cancel'] + ['Esc', 'Up', 'Down', 'Left', 'Right']
+) + 30 * ['Cancel'] + ['Esc', 'Up', 'Down', 'Left', 'Right']
 
 command_dict = publics(commands)
 command_dict.pop('open_document')

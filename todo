@@ -1,5 +1,4 @@
 SHORT TERM
-Fix bug with seed 1018838812488755795580718
 Think about how to decorate classes easily, without disabling subclassing
     Can't decorate classes by functions: this turns them into functions
     this means that they can't be used as parentclass
