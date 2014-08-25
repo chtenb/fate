@@ -7,10 +7,11 @@ i.e. functions which take an UserInterface object.
 from . import commands
 from .document import Document
 
-Document.cancelkey = 'Esc' # Esc is now remapped to Cancel
+Document.cancelkey = 'Esc'  # Esc is now remapped to Cancel
 
 default = {
-    'Cancel': commands.empty, # In normalmode the cancel key empties selection
+    # In normalmode the cancel key switches to normal select mode or empties thselection
+    'Cancel': commands.escape,
     'Ctrl-s': commands.save,
     'Ctrl-q': commands.quit_document,
     'Ctrl-x': commands.force_quit,
@@ -77,4 +78,3 @@ def print_keymap(document):
 
     for key, command in document.keymap.items():
         print_key(key, command)
-

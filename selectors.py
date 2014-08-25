@@ -23,6 +23,14 @@ from .mode import Mode, normalmode
 from logging import debug
 
 
+def escape(document):
+    if document.selectmode != 'NORMAL SELECT':
+        normalselectmode(document)
+    else:
+        empty(document)
+commands.escape = escape
+
+
 def extendmode(document):
     document.selectmode = 'EXTEND'
 commands.extendmode = extendmode
@@ -31,6 +39,11 @@ commands.extendmode = extendmode
 def reducemode(document):
     document.selectmode = 'REDUCE'
 commands.reducemode = reducemode
+
+
+def normalselectmode(document):
+    document.selectmode = 'NORMAL SELECT'
+commands.normalselectmode = normalselectmode
 
 
 def selector(command):
