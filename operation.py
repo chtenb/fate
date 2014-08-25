@@ -8,37 +8,37 @@ class Operation(Undoable):
     """
     A container of modified content of a selection.
     Can be inverted such that the operation can be undone by applying the inverse.
-    The members are `old_selection`, `old_content`, `new_content`.
-    The property `new_selection` is only available after the operation
+    The members are `oldselection`, `old_content`, `newcontent`.
+    The property `newselection` is only available after the operation
     has been applied.
     """
 
-    def __init__(self, document, new_content=None, selection=None):
+    def __init__(self, document, newcontent=None, selection=None):
         selection = selection or document.selection
-        self.old_selection = selection
+        self.oldselection = selection
         self.old_content = selection.content(document)
         try:
-            self.new_content = new_content or self.old_content[:]
+            self.newcontent = newcontent or self.old_content[:]
         except AttributeError:
-            # new_content has been overriden
+            # newcontent has been overriden
             # TODO neater fix for this
             pass
 
     def __str__(self):
-        attributes = [('old_selection', self.old_selection),
-                      ('computed new_selection', self.compute_new_selection()),
+        attributes = [('oldselection', self.oldselection),
+                      ('computed newselection', self.compute_newselection()),
                       ('old_content', self.old_content),
-                      ('new_content', self.new_content)]
+                      ('newcontent', self.newcontent)]
         return '\n'.join([k + ': ' + str(v) for k, v in attributes])
 
-    def compute_new_selection(self):
+    def compute_newselection(self):
         """The selection containing the potential result of the operation."""
-        beg = self.old_selection[0][0]
-        end = beg + len(self.new_content[0])
+        beg = self.oldselection[0][0]
+        end = beg + len(self.newcontent[0])
         result = Selection(Interval(beg, end))
-        for i in range(1, len(self.old_selection)):
-            beg = end + self.old_selection[i][0] - self.old_selection[i - 1][1]
-            end = beg + len(self.new_content[i])
+        for i in range(1, len(self.oldselection)):
+            beg = end + self.oldselection[i][0] - self.oldselection[i - 1][1]
+            end = beg + len(self.newcontent[i])
             result.add(Interval(beg, end))
         return result
 
@@ -53,24 +53,24 @@ class Operation(Undoable):
     def _apply(self, document, inverse=False):
         """Apply self to the document."""
         if inverse:
-            old_selection = self.compute_new_selection()
-            new_selection = self.old_selection
-            new_content = self.old_content
+            oldselection = self.compute_newselection()
+            newselection = self.oldselection
+            newcontent = self.old_content
         else:
-            new_selection = self.compute_new_selection()
-            old_selection = self.old_selection
-            new_content = self.new_content
+            newselection = self.compute_newselection()
+            oldselection = self.oldselection
+            newcontent = self.newcontent
 
         #print(document.text)
-        #print('old: ' + str(old_selection))
-        #print('new: ' + str(new_selection))
+        #print('old: ' + str(oldselection))
+        #print('new: ' + str(newselection))
 
         # Make sure the application of this operation is valid at this moment
-        old_selection.validate(document)
-        assert len(new_selection) == len(old_selection)
-        assert len(new_content) == len(self.old_content)
+        oldselection.validate(document)
+        assert len(newselection) == len(oldselection)
+        assert len(newcontent) == len(self.old_content)
 
-        partition = old_selection.partition(document)
+        partition = oldselection.partition(document)
         partition_content = [(in_selection, document.text[beg:end])
                              for in_selection, (beg, end) in partition]
 
@@ -78,11 +78,11 @@ class Operation(Undoable):
         result = []
         for in_selection, string in partition_content:
             if in_selection:
-                result.append(new_content[count])
+                result.append(newcontent[count])
                 count += 1
             else:
                 result.append(string)
 
         document.text = ''.join(result)
-        document.selection = new_selection
+        document.selection = newselection
 

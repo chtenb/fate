@@ -76,8 +76,13 @@ class Selection:
 
     def validate(self, document):
         """Raise exception if selection is not valid."""
-        assert not self.isempty
-        assert self._intervals[-1][1] <= len(document.text)
+        if self.isempty:
+            raise Exception('Selection is empty.')
+        if not self._intervals[-1][1] <= len(document.text):
+            raise Exception(
+                'Selection {} is not valid for a text with length {}.'
+                .format(self, len(document.text))
+            )
 
     def content(self, document):
         """Return the content of self."""

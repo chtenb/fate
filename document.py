@@ -81,6 +81,17 @@ class Document():
         nextdocument.activate()
         documentlist.remove(self)
 
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, value):
+        self._text = value
+
+        self.saved = False
+        self.OnTextChanged.fire(self)
+
     def activate(self):
         """Activate this document."""
         global activedocument
@@ -98,20 +109,6 @@ class Document():
         value.validate(self)
         self._selection = value
 
-    @property
-    def text(self):
-        return self._text
-
-    @text.setter
-    def text(self, value):
-        self._text = value
-
-        # Make sure that the selection stays valid
-        self.selection.validate(self)
-
-        self.saved = False
-        self.OnTextChanged.fire(self)
-
 
 def save(document, filename=None):
     """Save document text to file."""
@@ -121,10 +118,11 @@ def save(document, filename=None):
         try:
             with open(filename, 'w') as fd:
                 fd.write(document.text)
-            document.saved = True
-            document.OnWrite.fire(document)
         except (FileNotFoundError, PermissionError) as e:
             logging.error(str(e))
+        else:
+            document.saved = True
+            document.OnWrite.fire(document)
     else:
         logging.error('No filename')
 commands.save = save
@@ -143,9 +141,10 @@ def load(document, filename=None):
         else:
             current_selection = document.selection
             selectall(document)
-            operation = Operation(document, [newtext])
+            operation = Operation(document, newcontent=[newtext])
             operation(document)
             document.selection = current_selection.bound(0, len(document.text))
+
             document.saved = True
             document.OnRead.fire(document)
     else:

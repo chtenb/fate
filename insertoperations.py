@@ -106,8 +106,8 @@ class ChangeBefore(InsertMode):
                     self.deletions[i] += 1
             elif string == '\n' and doc.autoindent:
                 # Add indent after \n
-                new_selection = self.preview_operation.compute_new_selection()
-                cursor_pos = new_selection[i][0] + len(self.insertions[i])
+                newselection = self.preview_operation.compute_newselection()
+                cursor_pos = newselection[i][0] + len(self.insertions[i])
                 indent = get_indent(doc, cursor_pos)
                 self.insertions[i] += string + indent
             elif string == '\t' and doc.expandtab:
@@ -121,10 +121,10 @@ class ChangeBefore(InsertMode):
         # with a larger number of intervals.
         # Therefore we take indices modulo the length of the lists
         l = len(self.insertions)
-        new_content = [self.insertions[i % l]
+        newcontent = [self.insertions[i % l]
                        + doc.selection.content(doc)[i % l][self.deletions[i % l]:]
                        for i in range(len(doc.selection))]
-        return Operation(doc, new_content)
+        return Operation(doc, newcontent)
 
 commands.ChangeBefore = ChangeBefore
 
@@ -153,8 +153,8 @@ class ChangeAfter(InsertMode):
                     self.deletions[i] += 1
             elif string == '\n' and doc.autoindent:
                 # add indent after \n
-                new_selection = self.preview_operation.compute_new_selection()
-                cursor_pos = new_selection[i][1]
+                newselection = self.preview_operation.compute_newselection()
+                cursor_pos = newselection[i][1]
                 indent = get_indent(doc, cursor_pos)
                 self.insertions[i] += string + indent
             elif string == '\t' and doc.expandtab:
@@ -168,10 +168,10 @@ class ChangeAfter(InsertMode):
         # with a larger number of intervals.
         # Therefore we take indices modulo the length of the lists
         l = len(self.insertions)
-        new_content = [doc.selection.content(doc)[i % l][:-self.deletions[i % l] or None]
+        newcontent = [doc.selection.content(doc)[i % l][:-self.deletions[i % l] or None]
                        + self.insertions[i % l]
                        for i in range(len(doc.selection))]
-        return Operation(doc, new_content)
+        return Operation(doc, newcontent)
 
 commands.ChangeAfter = ChangeAfter
 
@@ -209,9 +209,9 @@ class ChangeAround(InsertMode):
                     self.deletions[i] += 1
             elif string == '\n' and doc.autoindent:
                 # add indent after \n
-                new_selection = self.preview_operation.compute_new_selection()
-                cursor_pos_before = new_selection[i][0]
-                cursor_pos_after = new_selection[i][1]
+                newselection = self.preview_operation.compute_newselection()
+                cursor_pos_before = newselection[i][0]
+                cursor_pos_after = newselection[i][1]
                 indent_before = get_indent(doc, cursor_pos_before)
                 indent_after = get_indent(doc, cursor_pos_after)
                 self.insertions_before[i] += indent_before + string
@@ -230,7 +230,7 @@ class ChangeAround(InsertMode):
         # Therefore we take indices modulo the length of the lists
         l = len(self.insertions_after)
         character_pairs = [('{', '}'), ('[', ']'), ('(', ')'), ('<', '>')]
-        new_content = []
+        newcontent = []
         for i in range(len(doc.selection)):
             first_string = self.insertions_before[i % l][::-1]
             second_string = self.insertions_after[i % l]
@@ -239,10 +239,10 @@ class ChangeAround(InsertMode):
                 second_string = second_string.replace(first, second)
 
             beg, end = self.deletions[i % l], -self.deletions[i % l] or None
-            new_content.append(first_string
+            newcontent.append(first_string
                                + doc.selection.content(doc)[i % l][beg:end]
                                + second_string)
-        return Operation(doc, new_content)
+        return Operation(doc, newcontent)
 
 commands.ChangeAround = ChangeAround
 
