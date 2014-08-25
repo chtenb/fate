@@ -74,9 +74,10 @@ class Selection:
         """Check if we have intervals."""
         return not bool(self._intervals)
 
-    def isvalid(self, document):
-        """Return False if selection is not valid, True otherwise."""
-        return not self.isempty and self._intervals[-1][1] <= len(document.text)
+    def validate(self, document):
+        """Raise exception if selection is not valid."""
+        assert not self.isempty
+        assert self._intervals[-1][1] <= len(document.text)
 
     def content(self, document):
         """Return the content of self."""

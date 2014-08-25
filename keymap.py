@@ -13,6 +13,7 @@ default = {
     # In normalmode the cancel key switches to normal select mode or empties thselection
     'Cancel': commands.escape,
     'Ctrl-s': commands.save,
+    'Ctrl-l': commands.load,
     'Ctrl-q': commands.quit_document,
     'Ctrl-x': commands.force_quit,
     'Ctrl-o': commands.open_document,

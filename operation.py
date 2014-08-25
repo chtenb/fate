@@ -66,7 +66,7 @@ class Operation(Undoable):
         #print('new: ' + str(new_selection))
 
         # Make sure the application of this operation is valid at this moment
-        assert old_selection.isvalid(document)
+        old_selection.validate(document)
         assert len(new_selection) == len(old_selection)
         assert len(new_content) == len(self.old_content)
 

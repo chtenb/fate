@@ -1,9 +1,11 @@
 """A document represents the state of an editing document."""
 from .selection import Selection, Interval
+from .operation import Operation
 from .event import Event
 from . import commands
 from .userinterface import UserInterface
 from .mode import ModeStack
+from .selectors import selectall
 
 import logging
 
@@ -53,7 +55,7 @@ class Document():
         self.OnDocumentInit.fire(self)
 
         if filename:
-            self.read()
+            load(self)
 
     def quit(self):
         """Quit document."""
@@ -62,10 +64,10 @@ class Document():
         global activedocument
         index = documentlist.index(self)
 
-        #debug(str(documentlist))
+        # debug(str(documentlist))
         #debug("self: " + str(self.document))
         #debug("index: " + str(index))
-        #self.getkey()
+        # self.getkey()
 
         if len(documentlist) == 1:
             activedocument = None
@@ -93,7 +95,7 @@ class Document():
     def selection(self, value):
         # Make sure only valid selections are applied
         assert isinstance(value, Selection)
-        assert value.isvalid(self)
+        value.validate(self)
         self._selection = value
 
     @property
@@ -103,38 +105,52 @@ class Document():
     @text.setter
     def text(self, value):
         self._text = value
+
+        # Make sure that the selection stays valid
+        self.selection.validate(self)
+
         self.saved = False
         self.OnTextChanged.fire(self)
 
-    def read(self, filename=None):
-        """Read text from file."""
-        filename = filename or self.filename
 
-        if filename:
-            try:
-                with open(filename, 'r') as fd:
-                    self.text = fd.read()
-                self.saved = True
-                self.OnRead.fire(self)
-            except (FileNotFoundError, PermissionError) as e:
-                logging.error(str(e))
+def save(document, filename=None):
+    """Save document text to file."""
+    filename = filename or document.filename
+
+    if filename:
+        try:
+            with open(filename, 'w') as fd:
+                fd.write(document.text)
+            document.saved = True
+            document.OnWrite.fire(document)
+        except (FileNotFoundError, PermissionError) as e:
+            logging.error(str(e))
+    else:
+        logging.error('No filename')
+commands.save = save
+
+
+def load(document, filename=None):
+    """Load document text from file."""
+    filename = filename or document.filename
+
+    if filename:
+        try:
+            with open(filename, 'r') as fd:
+                newtext = fd.read()
+        except (FileNotFoundError, PermissionError) as e:
+            logging.error(str(e))
         else:
-            logging.error('No filename')
-
-    def write(self, filename=None):
-        """Write current text to file."""
-        filename = filename or self.filename
-
-        if filename:
-            try:
-                with open(filename, 'w') as fd:
-                    fd.write(self.text)
-                self.saved = True
-                self.OnWrite.fire(self)
-            except (FileNotFoundError, PermissionError) as e:
-                logging.error(str(e))
-        else:
-            logging.error('No filename')
+            current_selection = document.selection
+            selectall(document)
+            operation = Operation(document, [newtext])
+            operation(document)
+            document.selection = current_selection.bound(0, len(document.text))
+            document.saved = True
+            document.OnRead.fire(document)
+    else:
+        logging.error('No filename')
+commands.load = load
 
 
 def open_document(document):
@@ -186,18 +202,6 @@ def previous_document(document):
     ndocument = documentlist[(index - 1) % len(documentlist)]
     ndocument.activate()
 commands.previous_document = previous_document
-
-
-def save(document):
-    """Save document text to file."""
-    document.write()
-commands.save = save
-
-
-def load(document):
-    """Load document text from file."""
-    document.read()
-commands.load = load
 
 
 def goto_document(index):

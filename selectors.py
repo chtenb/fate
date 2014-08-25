@@ -380,26 +380,26 @@ commands.nextwhitespace = nextwhitespace
 commands.previouswhitespace = previouswhitespace
 
 
-def lock_selection(document):
+def lock(document):
     """Lock current selection."""
     if document.locked_selection == None:
         document.locked_selection = Selection()
     document.locked_selection += document.selection
     assert not document.locked_selection.isempty
-commands.lock = lock_selection
+commands.lock = lock
 
 
-def unlock_selection(document):
+def unlock(document):
     """Remove current selection from locked selection."""
     locked = document.locked_selection
     if locked != None:
         nselection = locked - document.selection
         if not nselection.isempty:
             document.locked_selection = nselection
-commands.unlock = unlock_selection
+commands.unlock = unlock
 
 
-def release_locked_selection(document):
+def release(document):
     """Release locked selection."""
     if document.locked_selection != None:
         # The text length may be changed after the locked selection was first created
@@ -408,4 +408,4 @@ def release_locked_selection(document):
         if not newselection.isempty:
             document.selection = newselection
         document.locked_selection = None
-commands.release = release_locked_selection
+commands.release = release
