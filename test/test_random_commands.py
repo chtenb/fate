@@ -27,6 +27,7 @@ class RandomizedActionTest(BaseTestCase):
             runs = 1
 
         for run in range(runs):
+            self.setUp()
             seed = self.getseed()
             print('Run {} (seed={})'.format(run + 1, seed))
             self.saveseed(seed)
