@@ -184,7 +184,7 @@ class ChangeAround(InsertMode):
 
     """
     Interactive Operation which deletes `deletions`
-    and adds `insertions` at the head of each interval.
+    and adds `insertions` around each interval.
     """
 
     def __init__(self, doc):

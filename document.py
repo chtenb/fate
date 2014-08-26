@@ -177,6 +177,7 @@ def quit_all(document):
     """Close all documents."""
     for document in documentlist:
         quit_document(document)
+commands.quit_all = quit_all
 
 
 def force_quit(document):

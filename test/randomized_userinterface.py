@@ -16,9 +16,10 @@ key_space = list(
 ) + 30 * ['Cancel'] + ['Esc', 'Up', 'Down', 'Left', 'Right']
 
 command_dict = publics(commands)
-command_dict.pop('open_document')
-command_dict.pop('quit_document')
-command_dict.pop('force_quit')
+forbidden_command_names = ['open_document', 'quit_document', 'force_quit', 'quit_all']
+forbidden_commands = [command_dict[name] for name in forbidden_command_names]
+for name in forbidden_command_names:
+    command_dict.pop(name)
 command_names = list(command_dict.keys())
 command_values = list(command_dict.values())
 # Sorting is needed to be able to reproduce a seeded random test case
@@ -59,7 +60,7 @@ class RandomizedUserSimulator(UserInterface):
         # If we are in a certain mode we try to construct a meaningful input space
         mode = self.document.mode.peek()
         input_space = ['Cancel']
-        input_space.extend(mode.allowedcommands)
+        input_space.extend([c for c in mode.allowedcommands if not c in forbidden_commands])
 
         if mode.keymap:
             input_space.extend(mode.keymap.values())
