@@ -13,12 +13,13 @@ key_space = list(
     !@#$%&*()
     \n\t\b
     """
-) + 10 * ['Esc'] + ['Up', 'Down', 'Left', 'Right']
+) + 30 * ['Cancel'] + ['Esc', 'Up', 'Down', 'Left', 'Right']
 
 command_dict = publics(commands)
-command_dict.pop('open_document')
-command_dict.pop('quit_document')
-command_dict.pop('force_quit')
+forbidden_command_names = ['open_document', 'quit_document', 'force_quit', 'quit_all']
+forbidden_commands = [command_dict[name] for name in forbidden_command_names]
+for name in forbidden_command_names:
+    command_dict.pop(name)
 command_names = list(command_dict.keys())
 command_values = list(command_dict.values())
 # Sorting is needed to be able to reproduce a seeded random test case
@@ -57,15 +58,19 @@ class RandomizedUserSimulator(UserInterface):
             return command_dict[command_name]
 
         # If we are in a certain mode we try to construct a meaningful input space
-        mode = self.document.mode[-1]
-        input_space = []
-        if hasattr(mode, 'allowedcommands'):
-            input_space.extend(mode.allowedcommands)
-        if hasattr(mode, 'keymap'):
+        mode = self.document.mode.peek()
+        input_space = ['Cancel']
+        input_space.extend([c for c in mode.allowedcommands if not c in forbidden_commands])
+
+        if mode.keymap:
             input_space.extend(mode.keymap.values())
+        else:
+            input_space.extend(key_space)
+
         if not input_space:
             input_space = compound_input_space
 
+        #print('Inputspace = ' + str(input_space))
         return random.choice(input_space)
 
     def prompt(self, prompt_string='>'):

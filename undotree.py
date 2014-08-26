@@ -159,16 +159,13 @@ class UndoMode(Mode):
             quit_all, open_document, force_quit
         ]
 
-        document.ui.touch()
-
         # Make sure the child_index is set to the index we now have
         self.child_index = self.current_index(document)
 
+        self.start(document)
+
         #debug('length: ' + str(len(undotree.current_node.children)))
         #debug('index: ' + str(child_index))
-
-    def __str__(self):
-        return 'UNDO'
 
     def processinput(self, document, userinput):
         # If a direct command is given: execute if we allow it
@@ -191,7 +188,7 @@ class UndoMode(Mode):
 
     def stop(self, document):
         debug('Exiting undo mode')
-        document.mode = None
+        Mode.stop(self, document)
 
     def left(self, document):
         # We can always just call undo; if there is no parent it will do nothing

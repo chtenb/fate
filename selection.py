@@ -74,9 +74,15 @@ class Selection:
         """Check if we have intervals."""
         return not bool(self._intervals)
 
-    def isvalid(self, document):
-        """Return False if selection is not valid, True otherwise."""
-        return not self.isempty and self._intervals[-1][1] <= len(document.text)
+    def validate(self, document):
+        """Raise exception if selection is not valid."""
+        if self.isempty:
+            raise Exception('Selection is empty.')
+        if not self._intervals[-1][1] <= len(document.text):
+            raise Exception(
+                'Selection {} is not valid for a text with length {}.'
+                .format(self, len(document.text))
+            )
 
     def content(self, document):
         """Return the content of self."""
@@ -200,7 +206,7 @@ class Selection:
 
     def complement(self, document):
         """Return the complementary selection of self."""
-        intervals = [interval for in_selection, interval in self.partition(document)
+        intervals = [interval for in_selection, interval in self.partition(len(document.text))
                      if not in_selection]
         return Selection(intervals)
 

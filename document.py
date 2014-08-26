@@ -2,10 +2,13 @@
 from collections import deque
 import logging
 from .selection import Selection, Interval
+from .operation import Operation
 from .event import Event
 from . import commands
 from .userinterface import UserInterface
 from .text import Text
+from .mode import ModeStack
+from .selectors import selectall
 
 
 documentlist = []
@@ -18,7 +21,6 @@ class Document():
     OnDocumentInit = Event()
     create_userinterface = None
     saved = True
-    mode = deque()
 
     expandtab = False
     tabwidth = 4
@@ -37,6 +39,8 @@ class Document():
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
+        self.mode = ModeStack()
+        self.selectmode = ''
 
         if not self.create_userinterface:
             raise Exception('No function specified in Document.create_userinterface.')
@@ -53,7 +57,7 @@ class Document():
         self.OnDocumentInit.fire(self)
 
         if filename:
-            self.read()
+            load(self)
 
     def quit(self):
         """Quit document."""
@@ -62,10 +66,10 @@ class Document():
         global activedocument
         index = documentlist.index(self)
 
-        #debug(str(documentlist))
+        # debug(str(documentlist))
         #debug("self: " + str(self.document))
         #debug("index: " + str(index))
-        #self.getkey()
+        # self.getkey()
 
         if len(documentlist) == 1:
             activedocument = None
@@ -78,6 +82,17 @@ class Document():
 
         nextdocument.activate()
         documentlist.remove(self)
+
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, value):
+        self._text = value
+
+        self.saved = False
+        self.OnTextChanged.fire(self)
 
     def activate(self):
         """Activate this document."""
@@ -93,48 +108,49 @@ class Document():
     def selection(self, value):
         # Make sure only valid selections are applied
         assert isinstance(value, Selection)
-        assert value.isvalid(self)
+        value.validate(self)
         self._selection = value
 
-    @property
-    def text(self):
-        return self._text
 
-    @text.setter
-    def text(self, value):
-        self._text = value
-        self.saved = False
-        self.OnTextChanged.fire(self)
+def save(document, filename=None):
+    """Save document text to file."""
+    filename = filename or document.filename
 
-    def read(self, filename=None):
-        """Read text from file."""
-        filename = filename or self.filename
-
-        if filename:
-            try:
-                with open(filename, 'r') as fd:
-                    self.text = Text(fd.read())
-                self.saved = True
-                self.OnRead.fire(self)
-            except (FileNotFoundError, PermissionError) as e:
-                logging.error(str(e))
+    if filename:
+        try:
+            with open(filename, 'w') as fd:
+                fd.write(document.text)
+        except (FileNotFoundError, PermissionError) as e:
+            logging.error(str(e))
         else:
-            logging.error('No filename')
+            document.saved = True
+            document.OnWrite.fire(document)
+    else:
+        logging.error('No filename')
+commands.save = save
 
-    def write(self, filename=None):
-        """Write current text to file."""
-        filename = filename or self.filename
 
-        if filename:
-            try:
-                with open(filename, 'w') as fd:
-                    fd.write(self.text)
-                self.saved = True
-                self.OnWrite.fire(self)
-            except (FileNotFoundError, PermissionError) as e:
-                logging.error(str(e))
+def load(document, filename=None):
+    """Load document text from file."""
+    filename = filename or document.filename
+
+    if filename:
+        try:
+            with open(filename, 'r') as fd:
+                newtext = fd.read()
+        except (FileNotFoundError, PermissionError) as e:
+            logging.error(str(e))
         else:
-            logging.error('No filename')
+            selectall(document)
+            operation = Operation(document, newcontent=[newtext])
+            operation(document)
+            document.selection = Selection(Interval(0, 0))
+
+            document.saved = True
+            document.OnRead.fire(document)
+    else:
+        logging.error('No filename')
+commands.load = load
 
 
 def open_document(document):
@@ -163,6 +179,7 @@ def quit_all(document):
     """Close all documents."""
     for document in documentlist:
         quit_document(document)
+commands.quit_all = quit_all
 
 
 def force_quit(document):
@@ -188,20 +205,8 @@ def previous_document(document):
 commands.previous_document = previous_document
 
 
-def save(document):
-    """Save document text to file."""
-    document.write()
-commands.save = save
-
-
-def load(document):
-    """Load document text from file."""
-    document.read()
-commands.load = load
-
-
 def goto_document(index):
     """Command constructor to go to the document at given index."""
     def wrapper(document):
-        documentlist[index].ui.activate()
+        documentlist[index].activate()
     return wrapper

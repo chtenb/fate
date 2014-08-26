@@ -18,54 +18,41 @@ from functools import partial, wraps
 
 from . import commands
 from .selection import Selection, Interval
-from .mode import Mode
+from .mode import Mode, normalmode
+
+from logging import debug
 
 
-class ExtendMode(Mode):
-
-    """
-    Extend current selection by new selection.
-    This mode merely functions as flag, since selectors can decide
-    for themselves how to react on extendmode.
-    """
-
-    def __str__(self):
-        return 'EXTEND'
-
-    def processinput(self, document, userinput):
-        if userinput == 'Cancel':
-            document.mode = None
-        else:
-            self.normalmode(document, userinput)
-commands.extendmode = ExtendMode
+def escape(document):
+    if document.selectmode != '':
+        normalselectmode(document)
+    else:
+        empty(document)
+commands.escape = escape
 
 
-class ReduceMode(Mode):
+def extendmode(document):
+    document.selectmode = 'Extend'
+commands.extendmode = extendmode
 
-    """
-    Reduce current selection by new selection.
-    This mode merely functions as flag, since selectors can decide
-    for themselves how to react on reducemode.
-    """
 
-    def __str__(self):
-        return 'REDUCE'
+def reducemode(document):
+    document.selectmode = 'Reduce'
+commands.reducemode = reducemode
 
-    def processinput(self, document, userinput):
-        if userinput == 'Cancel':
-            document.mode = None
-        else:
-            self.normalmode(document, userinput)
-commands.reducemode = ReduceMode
+
+def normalselectmode(document):
+    document.selectmode = ''
+commands.normalselectmode = normalselectmode
 
 
 def selector(command):
     """Decorator to make it more convenient to write selectors."""
     @wraps(command)
-    def wrapper(document, selection=None, mode=None, preview=False):
+    def wrapper(document, selection=None, selectmode=None, preview=False):
         selection = selection or document.selection
-        mode = mode or str(document.mode)
-        selection = command(document, selection, mode)
+        selectmode = selectmode or document.selectmode
+        selection = command(document, selection, selectmode)
         if preview:
             return selection
         selection(document)
@@ -73,21 +60,21 @@ def selector(command):
 
 
 @selector
-def selectall(document, selection, mode):
+def selectall(document, selection, selectmode):
     """Select the entire text."""
     return Selection(Interval(0, len(document.text)))
 commands.selectall = selectall
 
 
 @selector
-def select_single_interval(document, selection, mode):
+def select_single_interval(document, selection, selectmode):
     """Reduce the selection to the single uppermost interval."""
     return Selection(selection[0])
 commands.select_single_interval = select_single_interval
 
 
 @selector
-def empty(document, selection, mode):
+def empty(document, selection, selectmode):
     """Reduce the selection to a single uppermost empty interval."""
     beg = selection[0][0]
     return Selection(Interval(beg, beg))
@@ -95,21 +82,21 @@ commands.empty = empty
 
 
 @selector
-def join(document, selection, mode):
+def join(document, selection, selectmode):
     """Join all intervals together."""
     return Selection(Interval(selection[0][0], selection[-1][1]))
 commands.join = join
 
 
 @selector
-def complement(document, selection, mode):
+def complement(document, selection, selectmode):
     """Return the complement."""
     return Selection(selection.complement(document))
 commands.complement = complement
 
 
 @selector
-def emptybefore(document, selection, mode):
+def emptybefore(document, selection, selectmode):
     """Return the empty interval before each interval."""
     intervals = []
     for interval in selection:
@@ -120,7 +107,7 @@ commands.emptybefore = emptybefore
 
 
 @selector
-def emptyafter(document, selection, mode):
+def emptyafter(document, selection, selectmode):
     """Return the empty interval after each interval."""
     intervals = []
     for interval in selection:
@@ -260,11 +247,11 @@ def findpattern(text, pattern, reverse=False, group=0):
             for match in matches]
 
 
-def selectpattern(pattern, document, selection=None, mode=None,
+def selectpattern(pattern, document, selection=None, selectmode=None,
                   reverse=False, group=0):
     newselection = Selection()
     selection = selection or document.selection
-    mode = mode or document.mode
+    selectmode = selectmode or document.selectmode
 
     match_intervals = findpattern(document.text, pattern, reverse, group)
 
@@ -275,9 +262,9 @@ def selectpattern(pattern, document, selection=None, mode=None,
 
     if new_intervals:
         new_selection = Selection(new_intervals)
-        if mode == 'EXTEND':
+        if selectmode == 'Extend':
             new_selection.add(new_intervals)
-        elif mode == 'REDUCE':
+        elif selectmode == 'Reduce':
             new_selection.substract(new_intervals)
 
         if new_selection and selection != new_selection:
@@ -296,9 +283,9 @@ def selectpattern(pattern, document, selection=None, mode=None,
         new_selection = Selection(Interval(mbeg, mend))
         # If match is in the right direction
         if not reverse and mend > beg or reverse and mbeg < end:
-            if mode == 'EXTEND':
+            if selectmode == 'Extend':
                 new_selection = selection.add(new_selection)
-            elif mode == 'REDUCE':
+            elif selectmode == 'Reduce':
                 new_selection = selection.substract(new_selection)
 
             if new_selection and selection != new_selection:
@@ -308,11 +295,11 @@ def selectpattern(pattern, document, selection=None, mode=None,
     return newselection
 
 
-def select_local_pattern(pattern, document, selection=None, mode=None, reverse=False,
+def select_local_pattern(pattern, document, selection=None, selectmode=None, reverse=False,
                          group=0, only_within=False, allow_same_interval=False):
     newselection = Selection()
     selection = selection or document.selection
-    mode = mode or document.mode
+    selectmode = selectmode or document.selectmode
 
     match_intervals = findpattern(document.text, pattern, reverse, group)
 
@@ -336,9 +323,9 @@ def select_local_pattern(pattern, document, selection=None, mode=None, reverse=F
             # or is empty interval adjacent to current interval in right direction
             if (not reverse and mend > beg
                     or reverse and mbeg < end):
-                if mode == 'EXTEND':
+                if selectmode == 'Extend':
                     new_interval = Interval(min(beg, mbeg), max(end, mend))
-                elif mode == 'REDUCE':
+                elif selectmode == 'Reduce':
                     if reverse:
                         mend = max(end, mend)
                     else:
@@ -393,26 +380,26 @@ commands.nextwhitespace = nextwhitespace
 commands.previouswhitespace = previouswhitespace
 
 
-def lock_selection(document):
+def lock(document):
     """Lock current selection."""
     if document.locked_selection == None:
         document.locked_selection = Selection()
     document.locked_selection += document.selection
     assert not document.locked_selection.isempty
-commands.lock = lock_selection
+commands.lock = lock
 
 
-def unlock_selection(document):
+def unlock(document):
     """Remove current selection from locked selection."""
     locked = document.locked_selection
     if locked != None:
         nselection = locked - document.selection
         if not nselection.isempty:
             document.locked_selection = nselection
-commands.unlock = unlock_selection
+commands.unlock = unlock
 
 
-def release_locked_selection(document):
+def release(document):
     """Release locked selection."""
     if document.locked_selection != None:
         # The text length may be changed after the locked selection was first created
@@ -421,4 +408,4 @@ def release_locked_selection(document):
         if not newselection.isempty:
             document.selection = newselection
         document.locked_selection = None
-commands.release = release_locked_selection
+commands.release = release

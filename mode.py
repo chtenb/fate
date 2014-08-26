@@ -16,18 +16,19 @@ class Mode:
 
     def start(self, document):
         """Must be called to start the mode."""
-        document.mode.append(self)
+        document.mode.push(self)
 
     def stop(self, document):
         """Must be called to stop the mode."""
-        print(document.mode)
         document.mode.pop()
-        print(document.mode)
         if document.mode:
-            document.mode[-1].proceed(document)
+            document.mode.peek().proceed(document)
 
     def __str__(self):
-        raise NotImplementedError('An abstract method is not callable.')
+        try:
+            return self.__name__
+        except AttributeError:
+            return self.__class__.__name__
 
     def processinput(self, document, userinput):
         raise NotImplementedError('An abstract method is not callable.')
@@ -36,7 +37,40 @@ class Mode:
         """
         This method gets called when a mode has submodes and a submode has finished.
         """
-        raise NotImplementedError('This mode doesn\'t have submodes')
+        raise NotImplementedError('This mode doesn\'t have submodes.')
+
+
+class ModeStack:
+
+    """
+    This class is a container for the mode stack.
+    Its purpose is to provide a more convenient interface than a plain list.
+    """
+
+    def __init__(self):
+        self.stack = []
+
+    def __bool__(self):
+        return bool(self.stack)
+
+    def __str__(self):
+        if self.stack:
+            return ' -> '.join(str(mode) for mode in self.stack)
+        else:
+            return 'Normal'
+
+    def __getitem__(self, index):
+        return self.stack[index]
+
+    def push(self, mode):
+        assert isinstance(mode, Mode)
+        self.stack.append(mode)
+
+    def pop(self):
+        return self.stack.pop()
+
+    def peek(self):
+        return self.stack[-1]
 
 
 def input_to_command(document, userinput, keymap=None):
@@ -62,9 +96,3 @@ def normalmode(document, userinput):
     """Process input as if we were in normal mode."""
     command = input_to_command(document, userinput)
     command(document)
-
-
-def cancel(document):
-    """Go back to normalmode."""
-    if document.mode:
-        document.mode[-1].processinput(document, 'Cancel')

@@ -20,7 +20,7 @@ class Text(str):
     def __len__(self):
         operation = self.preview_operation
         if operation != None:
-            diff = operation.compute_new_selection()[-1][1] - operation.old_selection[-1][1]
+            diff = operation.compute_newselection()[-1][1] - operation.oldselection[-1][1]
             result = len(self.string) + diff
         else:
             result = len(self.string)
@@ -46,8 +46,8 @@ class Text(str):
     def get_position(self, pos):
         """Lookup character at the given position."""
         if self.preview_operation != None:
-            oldselection = self.preview_operation.old_selection
-            newselection = self.preview_operation.compute_new_selection()
+            oldselection = self.preview_operation.oldselection
+            newselection = self.preview_operation.compute_newselection()
 
             for i in range(len(oldselection)):
                 beg, end = oldselection[i]
@@ -58,7 +58,7 @@ class Text(str):
                 #print(lengthdiff)
                 if nbeg <= pos < nend:
                     # if pos is part of new content
-                    return self.preview_operation.new_content[i][pos - nbeg]
+                    return self.preview_operation.newcontent[i][pos - nbeg]
                 elif pos < nbeg:
                     # We know that pos is not part of new content if
                     # current interval is beyond pos
@@ -87,7 +87,7 @@ class Text(str):
         """Apply the given operation to the text."""
         self.preview_operation = None
 
-        partition = operation.old_selection.partition(len(self))
+        partition = operation.oldselection.partition(len(self))
         partition_content = [(in_selection, self.string[beg:end])
                              for in_selection, (beg, end) in partition]
 
@@ -95,7 +95,7 @@ class Text(str):
         result = []
         for in_selection, string in partition_content:
             if in_selection:
-                result.append(operation.new_content[count])
+                result.append(operation.newcontent[count])
                 count += 1
             else:
                 result.append(string)
