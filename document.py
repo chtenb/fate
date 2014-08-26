@@ -38,7 +38,7 @@ class Document():
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
         self.mode = ModeStack()
-        self.selectmode = 'SELECT'
+        self.selectmode = ''
 
         if not self.create_userinterface:
             raise Exception('No function specified in Document.create_userinterface.')

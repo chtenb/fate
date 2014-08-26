@@ -24,7 +24,7 @@ from logging import debug
 
 
 def escape(document):
-    if document.selectmode != 'NORMAL SELECT':
+    if document.selectmode != '':
         normalselectmode(document)
     else:
         empty(document)
@@ -32,17 +32,17 @@ commands.escape = escape
 
 
 def extendmode(document):
-    document.selectmode = 'EXTEND'
+    document.selectmode = 'Extend'
 commands.extendmode = extendmode
 
 
 def reducemode(document):
-    document.selectmode = 'REDUCE'
+    document.selectmode = 'Reduce'
 commands.reducemode = reducemode
 
 
 def normalselectmode(document):
-    document.selectmode = 'NORMAL SELECT'
+    document.selectmode = ''
 commands.normalselectmode = normalselectmode
 
 
@@ -262,9 +262,9 @@ def selectpattern(pattern, document, selection=None, selectmode=None,
 
     if new_intervals:
         new_selection = Selection(new_intervals)
-        if selectmode == 'EXTEND':
+        if selectmode == 'Extend':
             new_selection.add(new_intervals)
-        elif selectmode == 'REDUCE':
+        elif selectmode == 'Reduce':
             new_selection.substract(new_intervals)
 
         if new_selection and selection != new_selection:
@@ -283,9 +283,9 @@ def selectpattern(pattern, document, selection=None, selectmode=None,
         new_selection = Selection(Interval(mbeg, mend))
         # If match is in the right direction
         if not reverse and mend > beg or reverse and mbeg < end:
-            if selectmode == 'EXTEND':
+            if selectmode == 'Extend':
                 new_selection = selection.add(new_selection)
-            elif selectmode == 'REDUCE':
+            elif selectmode == 'Reduce':
                 new_selection = selection.substract(new_selection)
 
             if new_selection and selection != new_selection:
@@ -323,9 +323,9 @@ def select_local_pattern(pattern, document, selection=None, selectmode=None, rev
             # or is empty interval adjacent to current interval in right direction
             if (not reverse and mend > beg
                     or reverse and mbeg < end):
-                if selectmode == 'EXTEND':
+                if selectmode == 'Extend':
                     new_interval = Interval(min(beg, mbeg), max(end, mend))
-                elif selectmode == 'REDUCE':
+                elif selectmode == 'Reduce':
                     if reverse:
                         mend = max(end, mend)
                     else:
