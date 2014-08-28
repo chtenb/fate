@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # fate documentation build configuration file, created by
-# sphinx-quickstart on Tue Apr 22 19:04:12 2014.
+# sphinx-quickstart on Thu Aug 28 12:19:23 2014.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.

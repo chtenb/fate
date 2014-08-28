@@ -50,6 +50,9 @@ class Operation(Undoable):
         """Undo operation."""
         self._apply(document, inverse=True)
 
+    def preview(self, document):
+        document.text.preview(self)
+
     def _apply(self, document, inverse=False):
         """Apply self to the document."""
         if inverse:

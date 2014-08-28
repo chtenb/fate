@@ -1,14 +1,13 @@
 SHORT TERM
-<<<<<<< HEAD
-finish text datastructure (tests)
+
+Make sure that commands don't have to be executed in a while loop
+Finish text datastructure (tests)
     Problem: regex can't handle the mutable string datastructure
-    Regex is needed for computing the indentation though
-think about moving character queue to core to enable feeding
-Add document.activate to call ui.activate
-Implement all existing modes as persistent commands
-=======
->>>>>>> gfate-intergration
-Implement commandmode as a persistent command, similar to undomode
+    To get the syntax highlighting right we could leave the colors as is
+    To do this, we need a clever way of storing the labeling, or apply a
+    transformation on the indices right before lookup
+
+Implement commandmode, prompt as a persistent command, similar to undomode
 Reimplement repeat, since classes can;t be decorated
 Think about how to decorate classes easily, without disabling subclassing
     Can't decorate classes by functions: this turns them into functions
@@ -20,12 +19,7 @@ Select around/inside (not finished yet)
 Enhance selector set
 Incorporate testing with multiple sessions
 Unittests for pattern select machinery
-<<<<<<< HEAD
-Think about how to decorate classes easily, without disabling subclassing
-drag text operation
 User unittest.subTest contextmanager to improve tests
-=======
->>>>>>> gfate-intergration
 
 LONG TERM
 Drag text operation

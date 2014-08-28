@@ -10,6 +10,7 @@ from .clipboard import copy, clear, paste_before, Cut
 from .mode import Mode
 from . import document
 
+from logging import debug
 
 class InsertMode(Mode):
 
@@ -44,13 +45,13 @@ class InsertMode(Mode):
 
         self.insert(doc, userinput)
 
-        # Update operation
-        # Execute the operation (excludes adding it to the undotree)
+        # Update the preview operation
         self.preview_operation = self.compute_operation(doc)
-        doc.text.preview(self.preview_operation)
+        self.preview_operation.preview(doc)
 
     def stop(self, doc):
         if self.preview_operation != None:
+            # Apply the preview_operation for real now
             self.preview_operation(doc)
         Mode.stop(self, doc)
 
@@ -69,12 +70,19 @@ def get_indent(doc, pos):
     """Get the indentation of the line containing position pos."""
     line = nextfullline(doc, selection=Selection(intervals=Interval(pos, pos)))
     string = line.content(doc)[0]
-    match = re.search(r'^[ \t]*', string)
-    #debug('pos: ' + str(pos))
-    #debug('line: ' + string)
-    #debug('match: ' + str((match.start(), match.end())))
-    assert match.start() == 0
-    return string[match.start(): match.end()]
+    assert type(string) == str
+
+    indent = ''
+    for c in string:
+        if c in [' ', '\t']:
+            indent += c
+        else:
+            break
+
+    debug('pos: ' + str(pos))
+    debug('line: ' + string)
+    debug('indent: ' + repr(indent))
+    return indent
 
 
 class ChangeBefore(InsertMode):

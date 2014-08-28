@@ -4,7 +4,9 @@ class Text(str):
 
     """
     Text datastructure implemented by a single string.
-    Features a preview mechanism.
+    Features a preview mechanism allowing to set an operation in preview.
+    The string methods __len__, __getitem__, find, rfind, index and rindex
+    are reimplemented to take this preview into account.
     """
 
     def __init__(self, string):
@@ -33,6 +35,30 @@ class Text(str):
             return self.get_interval(beg, end)
         else:
             return self.get_position(index)
+
+    def find(self, sub, start=None, end=None):
+        start = start or 0
+        end = end or len(self)
+        search_space = self[start:end]
+        return start + search_space.find(sub)
+
+    def rfind(self, sub, start=None, end=None):
+        start = start or 0
+        end = end or len(self)
+        search_space = self[start:end]
+        return start + search_space.rfind(sub)
+
+    def index(self, sub, start=None, end=None):
+        start = start or 0
+        end = end or len(self)
+        search_space = self[start:end]
+        return start + search_space.index(sub)
+
+    def rindex(self, sub, start=None, end=None):
+        start = start or 0
+        end = end or len(self)
+        search_space = self[start:end]
+        return start + search_space.rindex(sub)
 
     def __setitem__(self, index, value):
         return NotImplemented
