@@ -139,7 +139,7 @@ class Document():
                     command = command(self)
 
     def process_pointerinput(self, userinput):
-        assert isinstance(userinput, PointerInput)
+        assert isinstance(userinput, pointer.PointerInput)
 
         if userinput.length:
             debug('You sweeped from position {} till {}'
