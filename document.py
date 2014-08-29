@@ -142,10 +142,10 @@ class Document():
         assert isinstance(userinput, pointer.PointerInput)
 
         if userinput.length:
-            debug('You sweeped from position {} till {}'
+            logging.debug('You sweeped from position {} till {}'
                   .format(userinput.pos, userinput.pos + userinput.length))
         else:
-            debug('You clicked at position ' + str(userinput.pos))
+            logging.debug('You clicked at position ' + str(userinput.pos))
 
 
 def save(document, filename=None):

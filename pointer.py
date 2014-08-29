@@ -2,7 +2,6 @@
 This module contains support for userinput by pointer like devices.
 """
 
-
 class PointerInput:
 
     """
