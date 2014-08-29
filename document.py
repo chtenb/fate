@@ -109,6 +109,36 @@ class Document():
         value.validate(self)
         self._selection = value
 
+    def processinput(self, userinput):
+        """This method is called when this document receives userinput."""
+        from . import pointer
+
+        # If the cancel key has been pressed, convert input to Cancel
+        if userinput == self.cancelkey:
+            userinput = 'Cancel'
+
+        logging.debug('Input: ' + str(userinput))
+
+        if self.mode:
+            # We are not in normalmode
+            self.mode.peek().processinput(self, userinput)
+        else:
+            # We are in normalmode
+            if isinstance(userinput, pointer.PointerInput):
+                self.process_pointerinput(userinput)
+            else:
+                if type(userinput) == str:
+                    key = userinput
+                    if key in self.keymap:
+                        command = self.keymap[key]
+                    else:
+                        command = None
+                else:
+                    command = userinput
+
+                while callable(command):
+                    command = command(self)
+
 
 def save(document, filename=None):
     """Save document text to file."""

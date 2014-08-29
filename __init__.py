@@ -60,29 +60,5 @@ def run():
         doc = document.activedocument
         doc.ui.touch()
         userinput = doc.ui.getinput()
+        doc.processinput(userinput)
 
-        # If the cancel key has been pressed, convert input to Cancel
-        if userinput == doc.cancelkey:
-            userinput = 'Cancel'
-
-        debug('Input: ' + str(userinput))
-
-
-        if doc.mode:
-            # We are not in normalmode
-            doc.mode.peek().processinput(doc, userinput)
-        else:
-            # We are in normalmode
-            if type(userinput) == str:
-                key = userinput
-                if key in doc.keymap:
-                    command = doc.keymap[key]
-                else:
-                    command = None
-            elif isinstance(userinput, pointer.PointerInput):
-                doc.process_pointerinput(userinput)
-            else:
-                command = userinput
-
-            while callable(command):
-                command = command(doc)
