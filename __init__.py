@@ -30,7 +30,7 @@ info('Starting fate.')
 
 # Load modules exposing commands, to make sure the commands module contains all commands
 from . import (clipboard, commandmode, commandtools, document, insertoperations,
-               operators, repeat, search, selectors, undotree)
+               operators, repeat, search, selectors, undotree, pointer)
 
 # Load standard plugins
 from . import filetype_system
@@ -79,6 +79,8 @@ def run():
                     command = doc.keymap[key]
                 else:
                     command = None
+            elif isinstance(userinput, pointer.PointerInput):
+                doc.process_pointerinput(userinput)
             else:
                 command = userinput
 
