@@ -6,6 +6,7 @@ from . import commands
 from .userinterface import UserInterface
 from .mode import ModeStack
 from .selectors import selectall
+from . import pointer
 
 import logging
 
@@ -111,8 +112,6 @@ class Document():
 
     def processinput(self, userinput):
         """This method is called when this document receives userinput."""
-        from . import pointer
-
         # If the cancel key has been pressed, convert input to Cancel
         if userinput == self.cancelkey:
             userinput = 'Cancel'
@@ -138,6 +137,15 @@ class Document():
 
                 while callable(command):
                     command = command(self)
+
+    def process_pointerinput(self, userinput):
+        assert isinstance(userinput, PointerInput)
+
+        if userinput.length:
+            debug('You sweeped from position {} till {}'
+                  .format(userinput.pos, userinput.pos + userinput.length))
+        else:
+            debug('You clicked at position ' + str(userinput.pos))
 
 
 def save(document, filename=None):
