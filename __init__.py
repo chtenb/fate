@@ -28,9 +28,13 @@ logging.basicConfig(level=logging.DEBUG,
 
 info('Starting fate.')
 
-# Load modules exposing commands, to make sure the commands module contains all commands
-from . import (clipboard, commandmode, commandtools, document, insertoperations,
-               operators, repeat, search, selectors, undotree)
+# Load all modules to make sure the commands module contains all exposed commands
+# and to make sure that all extensions to Document are loaded
+from . import (clipboard, commandmode, commandtools, document, event, insertoperations,
+               mode, operation, operators, prompt, repeat, search, selection, selectors,
+               undotree)
+# Import keymap after all other modules, because it relies on all commands having loaded
+from . import keymap
 
 # Load standard plugins
 from . import filetype_system
