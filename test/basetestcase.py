@@ -18,7 +18,6 @@ class Foo(Bar):
         return 1
 
 """
-
     def setUp(self, sampletext=None):
         if sampletext != None:
             self.sampletext = sampletext

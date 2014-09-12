@@ -206,7 +206,7 @@ class Selection:
 
     def complement(self, document):
         """Return the complementary selection of self."""
-        intervals = [interval for in_selection, interval in self.partition(document)
+        intervals = [interval for in_selection, interval in self.partition(len(document.text))
                      if not in_selection]
         return Selection(intervals)
 
@@ -220,14 +220,14 @@ class Selection:
                 result.add(Interval(beg, end))
         return result
 
-    def partition(self, document):
+    def partition(self, text_length):
         """
         Return a sorted list containing all intervals in self
         together with all complementary intervals.
         """
         positions = [pos for interval in self for pos in interval]
         positions.insert(0, 0)
-        positions.append(len(document.text))
+        positions.append(text_length)
         in_selection = False
 
         result = []

@@ -1,3 +1,6 @@
+import random
+import os
+from tempfile import gettempdir
 from .basetestcase import BaseTestCase
 from random import choice
 from ..commandtools import execute
@@ -11,11 +14,13 @@ from .cmdargs import args
 class RandomizedActionTest(BaseTestCase):
 
     def setUp(self):
+        self.args = args
+
         self.create_userinterface = RandomizedUserSimulator
         BaseTestCase.setUp(self)
 
     def test_random_commands(self):
-        if args.no_randomized_tests:
+        if self.args.no_randomized_tests:
             print('Skipping randomized tests')
             return
 

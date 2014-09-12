@@ -16,7 +16,7 @@ class Operation(Undoable):
     def __init__(self, document, newcontent=None, selection=None):
         selection = selection or document.selection
         self.oldselection = selection
-        self.old_content = selection.content(document)
+        self.oldcontent = selection.content(document)
         try:
             self.newcontent = newcontent or self.old_content[:]
         except AttributeError:
@@ -50,16 +50,21 @@ class Operation(Undoable):
         """Undo operation."""
         self._apply(document, inverse=True)
 
+    def preview(self, document):
+        document.text.preview(self)
+
     def _apply(self, document, inverse=False):
         """Apply self to the document."""
         if inverse:
             oldselection = self.compute_newselection()
             newselection = self.oldselection
-            newcontent = self.old_content
+            newcontent = self.oldcontent
+            operation = Operation(document, newcontent, oldselection)
         else:
             newselection = self.compute_newselection()
             oldselection = self.oldselection
             newcontent = self.newcontent
+            operation = self
 
         #print(document.text)
         #print('old: ' + str(oldselection))
@@ -68,21 +73,8 @@ class Operation(Undoable):
         # Make sure the application of this operation is valid at this moment
         oldselection.validate(document)
         assert len(newselection) == len(oldselection)
-        assert len(newcontent) == len(self.old_content)
+        assert len(newcontent) == len(self.oldcontent)
 
-        partition = oldselection.partition(document)
-        partition_content = [(in_selection, document.text[beg:end])
-                             for in_selection, (beg, end) in partition]
-
-        count = 0
-        result = []
-        for in_selection, string in partition_content:
-            if in_selection:
-                result.append(newcontent[count])
-                count += 1
-            else:
-                result.append(string)
-
-        document.text = ''.join(result)
+        document.text.apply(document, operation)
         document.selection = newselection
 

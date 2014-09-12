@@ -7,8 +7,8 @@ from ..insertoperations import ChangeAfter, ChangeBefore, ChangeInPlace, ChangeA
 from ..undotree import undo
 from .basetestcase import BaseTestCase
 from ..commandtools import execute
-from .. import document
 from .. import run
+from .. import document
 
 def deactivate(doc):
     document.activedocument = None
@@ -25,14 +25,20 @@ class OperatorTest(BaseTestCase):
         self.document.ui.feedinput('Cancel')
         self.document.ui.feedinput(deactivate)
         run()
-
         expected = '\nas \n \n  \n  \n\nimport sys'
+
+        print('-----------------------------------------')
+        print(expected)
+        print(self.document.text[:len(expected)])
+        print('-----------------------------------------')
+
         self.assertEqual(expected, self.document.text[:len(expected)])
 
         undo(self.document)
         self.assertEqual('import sys\n\n', self.document.text[:12])
 
-    def test_change_after(self):
+
+    def xtest_change_after(self):
         self.document.ui.feedinput(ChangeAfter)
         for char in '\nasdf\b\b \n \n \n\n\b\b\n':
             self.document.ui.feedinput(char)

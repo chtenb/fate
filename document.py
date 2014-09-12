@@ -1,14 +1,16 @@
 """A document represents the state of an editing document."""
+from collections import deque
+import logging
 from .selection import Selection, Interval
 from .operation import Operation
 from .event import Event
 from . import commands
 from .userinterface import UserInterface
+from .text import Text
 from .mode import ModeStack
 from .selectors import selectall
 from . import pointer
 
-import logging
 
 documentlist = []
 activedocument = None
@@ -19,7 +21,6 @@ class Document():
     """Contains all objects of one file editing document"""
     OnDocumentInit = Event()
     create_userinterface = None
-    _text = ''
     saved = True
 
     expandtab = False
@@ -35,6 +36,7 @@ class Document():
         self.OnWrite = Event()
         self.OnQuit = Event()
         self.OnActivate = Event()
+        self._text = Text('')
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
