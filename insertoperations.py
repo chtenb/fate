@@ -3,12 +3,11 @@ from . import commands
 from .operation import Operation
 from .operators import Append, Insert, delete
 from .selection import Selection, Interval
-from .repeat import repeatable
 from .commandtools import Compose
 from .selectors import (emptybefore, previousfullline, selectindent,
                         nextfullline, nextchar, previouschar)
 from .clipboard import copy, clear, paste_before, Cut
-from .mode import cancel, Mode
+from .mode import Mode
 from . import document
 
 
@@ -17,12 +16,12 @@ class InsertMode(Mode):
     """Abstract class for operations dealing with insertion of text."""
 
     def __init__(self, doc):
-        Mode.__init__(self)
+        Mode.__init__(self, doc)
         self.allowedcommands = [document.next_document, document.previous_document]
-        doc.mode = self
 
         # Init trivial starting operation
         self.preview_operation = self.compute_operation(doc)
+        self.start(doc)
 
     def processinput(self, doc, userinput):
         if type(userinput) != str:
@@ -58,10 +57,7 @@ class InsertMode(Mode):
         if self.preview_operation != None:
             self.preview_operation.undo(doc)
             self.preview_operation(doc)
-        doc.mode = None
-
-    def __str__(self):
-        return 'INSERT'
+        Mode.stop(self, doc)
 
     def compute_operation(self, doc):
         """Compute operation based on insertions and deletions."""
@@ -86,7 +82,6 @@ def get_indent(doc, pos):
     return string[match.start(): match.end()]
 
 
-@repeatable
 class ChangeBefore(InsertMode):
 
     """
@@ -111,8 +106,8 @@ class ChangeBefore(InsertMode):
                     self.deletions[i] += 1
             elif string == '\n' and doc.autoindent:
                 # Add indent after \n
-                new_selection = self.preview_operation.compute_new_selection()
-                cursor_pos = new_selection[i][0] + len(self.insertions[i])
+                newselection = self.preview_operation.compute_newselection()
+                cursor_pos = newselection[i][0] + len(self.insertions[i])
                 indent = get_indent(doc, cursor_pos)
                 self.insertions[i] += string + indent
             elif string == '\t' and doc.expandtab:
@@ -126,10 +121,10 @@ class ChangeBefore(InsertMode):
         # with a larger number of intervals.
         # Therefore we take indices modulo the length of the lists
         l = len(self.insertions)
-        new_content = [self.insertions[i % l]
+        newcontent = [self.insertions[i % l]
                        + doc.selection.content(doc)[i % l][self.deletions[i % l]:]
                        for i in range(len(doc.selection))]
-        return Operation(doc, new_content)
+        return Operation(doc, newcontent)
 
 commands.ChangeBefore = ChangeBefore
 
@@ -147,9 +142,6 @@ class ChangeAfter(InsertMode):
 
         InsertMode.__init__(self, doc)
 
-    def __str__(self):
-        return 'APPEND'
-
     def insert(self, doc, string):
         for i in range(len(doc.selection)):
             if string == '\b':
@@ -161,8 +153,8 @@ class ChangeAfter(InsertMode):
                     self.deletions[i] += 1
             elif string == '\n' and doc.autoindent:
                 # add indent after \n
-                new_selection = self.preview_operation.compute_new_selection()
-                cursor_pos = new_selection[i][1]
+                newselection = self.preview_operation.compute_newselection()
+                cursor_pos = newselection[i][1]
                 indent = get_indent(doc, cursor_pos)
                 self.insertions[i] += string + indent
             elif string == '\t' and doc.expandtab:
@@ -176,41 +168,23 @@ class ChangeAfter(InsertMode):
         # with a larger number of intervals.
         # Therefore we take indices modulo the length of the lists
         l = len(self.insertions)
-        new_content = [doc.selection.content(doc)[i % l][:-self.deletions[i % l] or None]
+        newcontent = [doc.selection.content(doc)[i % l][:-self.deletions[i % l] or None]
                        + self.insertions[i % l]
                        for i in range(len(doc.selection))]
-        return Operation(doc, new_content)
+        return Operation(doc, newcontent)
 
-commands.ChangeAfter = repeatable(ChangeAfter)
+commands.ChangeAfter = ChangeAfter
 
 
-# TODO: write ChangeInPlace as composition of delete and ChangeBefore
-@repeatable
-class ChangeInPlace(ChangeAfter):
-
-    """
-    Interactive Operation which adds `insertions` in place of each interval.
-    """
-
-    def compute_operation(self, doc):
-        # It can happen that this operation is repeated in a situation
-        # with a larger number of intervals.
-        # Therefore we take indices modulo the length of the lists
-        l = len(self.insertions)
-        new_content = [self.insertions[i % l] for i in range(len(doc.selection))]
-        return Operation(doc, new_content)
-
+ChangeInPlace = Compose(delete, ChangeBefore, name='ChangeInPlace')
 commands.ChangeInPlace = ChangeInPlace
 
-commands.ChangeInPlace = Compose(delete, ChangeBefore)
 
-
-@repeatable
 class ChangeAround(InsertMode):
 
     """
     Interactive Operation which deletes `deletions`
-    and adds `insertions` at the head of each interval.
+    and adds `insertions` around each interval.
     """
 
     def __init__(self, doc):
@@ -220,9 +194,6 @@ class ChangeAround(InsertMode):
         self.deletions = [0] * len(doc.selection)
 
         InsertMode.__init__(self, doc)
-
-    def __str__(self):
-        return 'SURROUND'
 
     def insert(self, doc, string):
         for i in range(len(doc.selection)):
@@ -238,9 +209,9 @@ class ChangeAround(InsertMode):
                     self.deletions[i] += 1
             elif string == '\n' and doc.autoindent:
                 # add indent after \n
-                new_selection = self.preview_operation.compute_new_selection()
-                cursor_pos_before = new_selection[i][0]
-                cursor_pos_after = new_selection[i][1]
+                newselection = self.preview_operation.compute_newselection()
+                cursor_pos_before = newselection[i][0]
+                cursor_pos_after = newselection[i][1]
                 indent_before = get_indent(doc, cursor_pos_before)
                 indent_after = get_indent(doc, cursor_pos_after)
                 self.insertions_before[i] += indent_before + string
@@ -259,7 +230,7 @@ class ChangeAround(InsertMode):
         # Therefore we take indices modulo the length of the lists
         l = len(self.insertions_after)
         character_pairs = [('{', '}'), ('[', ']'), ('(', ')'), ('<', '>')]
-        new_content = []
+        newcontent = []
         for i in range(len(doc.selection)):
             first_string = self.insertions_before[i % l][::-1]
             second_string = self.insertions_after[i % l]
@@ -268,26 +239,26 @@ class ChangeAround(InsertMode):
                 second_string = second_string.replace(first, second)
 
             beg, end = self.deletions[i % l], -self.deletions[i % l] or None
-            new_content.append(first_string
+            newcontent.append(first_string
                                + doc.selection.content(doc)[i % l][beg:end]
                                + second_string)
-        return Operation(doc, new_content)
+        return Operation(doc, newcontent)
 
 commands.ChangeAround = ChangeAround
 
 
-OpenLineAfter = Compose(cancel, previousfullline, selectindent, copy,
+OpenLineAfter = Compose(previousfullline, selectindent, copy,
                         nextfullline, Append('\n'), previouschar, emptybefore,
                         paste_before, clear, ChangeAfter, name='OpenLineAfter',
                         docs='Open a line after interval')
-commands.OpenLineAfter = repeatable(OpenLineAfter)
+commands.OpenLineAfter = OpenLineAfter
 
-OpenLineBefore = Compose(cancel, nextfullline, selectindent, copy,
+OpenLineBefore = Compose(nextfullline, selectindent, copy,
                          nextfullline, Insert('\n'), nextchar, emptybefore,
                          paste_before, clear, ChangeAfter, name='OpenLineBefore',
                          docs='Open a line before interval')
-commands.OpenLineBefore = repeatable(OpenLineBefore)
+commands.OpenLineBefore = OpenLineBefore
 
-CutChange = Compose(Cut, ChangeInPlace,
-                    name='CutChange', docs='Copy and change selected text.')
-commands.CutChange = repeatable(CutChange)
+CutChange = Compose(Cut, ChangeBefore,
+                    name='Cut & Change', docs='Copy and change selected text.')
+commands.CutChange = CutChange

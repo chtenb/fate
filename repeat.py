@@ -17,25 +17,25 @@ class RepeatData:
 
 
 def init(document):
-    document.OnUserInput.add(record_input)
-    document.repeat_data = RepeatData()
+    document.ui.OnUserInput.add(record_input)
+    document.ui.repeat_data = RepeatData()
 
 Document.OnDocumentInit.add(init)
 
 
-def record_input(document, key):
-    data = document.repeat_data
+def record_input(ui, key):
+    data = ui.repeat_data
     if data.recording_level > 0:
         data.current_user_input.append(key)
 
 
 def start_recording(document):
-    data = document.repeat_data
+    data = document.ui.repeat_data
     data.recording_level += 1
 
 
 def stop_recording(document):
-    data = document.repeat_data
+    data = document.ui.repeat_data
     data.recording_level -= 1
     if data.recording_level < 0:
         raise Exception('input_recording_level must not be < 0')
@@ -48,9 +48,9 @@ def stop_recording(document):
 
 
 def repeat(document):
-    data = document.repeat_data
+    data = document.ui.repeat_data
     if data.last_command:
-        document.feed_input(data.last_user_input)
+        document.ui.feedinput(data.last_user_input)
         data.last_command(document)
 commands.repeat = repeat
 
@@ -59,7 +59,7 @@ def repeatable(command):
     """Action decorator which stores command in last_command field in document."""
     @wraps(command)
     def wrapper(document):
-        document.repeat_data.current_command = command
+        document.ui.repeat_data.current_command = command
         start_recording(document)
         result = command(document)
         stop_recording(document)

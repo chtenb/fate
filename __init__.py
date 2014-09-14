@@ -30,7 +30,7 @@ info('Starting fate.')
 
 # Load modules exposing commands, to make sure the commands module contains all commands
 from . import (clipboard, commandmode, commandtools, document, insertoperations,
-               operators, repeat, search, selectors, undotree)
+               operators, repeat, search, selectors, undotree, pointer)
 
 # Load standard plugins
 from . import filetype_system
@@ -60,25 +60,5 @@ def run():
         doc = document.activedocument
         doc.ui.touch()
         userinput = doc.ui.getinput()
+        doc.processinput(userinput)
 
-        # If the cancel key has been pressed, convert input to Cancel
-        if userinput == doc.cancelkey:
-            userinput = 'Cancel'
-
-        debug('Input: ' + str(userinput))
-
-
-        if doc.mode != None:
-            # We are not in normalmode
-            doc.mode.processinput(doc, userinput)
-        else:
-            # We are in normalmode
-            if type(userinput) == str:
-                key = userinput
-                if key in doc.keymap:
-                    command = doc.keymap[key]
-            else:
-                command = userinput
-
-            while callable(command):
-                command = command(doc)
