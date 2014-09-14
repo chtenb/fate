@@ -24,9 +24,6 @@ class Mode:
         if document.mode:
             document.mode.peek().proceed(document)
 
-    def stop(self, document):
-        document.mode = None
-
     def __str__(self):
         try:
             return self.__name__

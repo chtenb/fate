@@ -20,14 +20,14 @@ def local_find_backwards(document):
 commands.local_find_backwards = local_find_backwards
 
 
-def search(document):
+def _search(document):
     document.search_pattern = document.promptinput
     if document.search_pattern:
         try:
             selectpattern(document.search_pattern, document)(document)
         except re.error as e:
             document.ui.notify(str(e))
-commands.search = Compose(Prompt, search)
+commands.search = Compose(Prompt, _search)
 
 
 def search_current_content(document):

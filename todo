@@ -1,7 +1,6 @@
 SHORT TERM
 Add document.activate to call ui.activate
 Replace modestack with just mode, nested modes have to be implemented by the mode itself
-Create decent default __str__ for Mode
 Implement commandmode as a persistent command, similar to undomode
 Reimplement repeat, since classes can;t be decorated
 Think about how to decorate classes easily, without disabling subclassing
