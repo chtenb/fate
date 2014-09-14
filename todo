@@ -1,5 +1,7 @@
 SHORT TERM
 Add document.activate to call ui.activate
+Replace modestack with just mode, nested modes have to be implemented by the mode itself
+Create decent default __str__ for Mode
 Implement all existing modes as persistent commands
 Implement commandmode as a persistent command, similar to undomode
 Think about possibility to add remap support (i.e. map keys forall modes)

@@ -15,6 +15,9 @@ class Mode:
     def __call__(self, document):
         document.mode = self
 
+    def stop(self, document):
+        document.mode = None
+
     def __str__(self):
         raise NotImplementedError('An abstract method is not callable.')
 

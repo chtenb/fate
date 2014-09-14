@@ -2,6 +2,8 @@ import re
 from . import commands
 from .selectors import selectpattern, select_local_pattern
 from .document import Document
+from .prompt import Prompt
+from .commandtools import Compose
 
 Document.search_pattern = ''
 
@@ -19,13 +21,13 @@ commands.local_find_backwards = local_find_backwards
 
 
 def search(document):
-    document.search_pattern = document.ui.prompt('/')
+    document.search_pattern = document.promptinput
     if document.search_pattern:
         try:
             selectpattern(document.search_pattern, document)(document)
         except re.error as e:
             document.ui.notify(str(e))
-commands.search = search
+commands.search = Compose(Prompt, search)
 
 
 def search_current_content(document):

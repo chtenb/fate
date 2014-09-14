@@ -45,11 +45,11 @@ class UserInterface:
         """
         raise NotImplementedError("An abstract method is not callable.")
 
-    def prompt(self, prompt_string='>'):
-        """
-        Prompt the user for an input string.
-        """
-        raise NotImplementedError("An abstract method is not callable.")
+    #def prompt(self, prompt_string='>'):
+        #"""
+        #Prompt the user for an input string.
+        #"""
+        #raise NotImplementedError("An abstract method is not callable.")
 
     def getkey(self):
         """
