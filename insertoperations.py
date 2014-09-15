@@ -15,8 +15,8 @@ class InsertMode(Mode):
 
     """Abstract class for operations dealing with insertion of text."""
 
-    def __init__(self, doc):
-        Mode.__init__(self, doc)
+    def __init__(self, doc, callback=None):
+        Mode.__init__(self, doc, callback)
         self.allowedcommands = [document.next_document, document.previous_document]
 
         # Init trivial starting operation
@@ -89,11 +89,11 @@ class ChangeBefore(InsertMode):
     and adds `insertions` at the head of each interval.
     """
 
-    def __init__(self, doc):
+    def __init__(self, doc, callback=None):
         self.insertions = [''] * len(doc.selection)
         self.deletions = [0] * len(doc.selection)
 
-        InsertMode.__init__(self, doc)
+        InsertMode.__init__(self, doc, callback)
 
     def insert(self, doc, string):
         for i in range(len(doc.selection)):
@@ -122,8 +122,8 @@ class ChangeBefore(InsertMode):
         # Therefore we take indices modulo the length of the lists
         l = len(self.insertions)
         newcontent = [self.insertions[i % l]
-                       + doc.selection.content(doc)[i % l][self.deletions[i % l]:]
-                       for i in range(len(doc.selection))]
+                      + doc.selection.content(doc)[i % l][self.deletions[i % l]:]
+                      for i in range(len(doc.selection))]
         return Operation(doc, newcontent)
 
 commands.ChangeBefore = ChangeBefore
@@ -136,11 +136,11 @@ class ChangeAfter(InsertMode):
     and adds `insertions` at the head of each interval.
     """
 
-    def __init__(self, doc):
+    def __init__(self, doc, callback=None):
         self.insertions = [''] * len(doc.selection)
         self.deletions = [0] * len(doc.selection)
 
-        InsertMode.__init__(self, doc)
+        InsertMode.__init__(self, doc, callback)
 
     def insert(self, doc, string):
         for i in range(len(doc.selection)):
@@ -169,8 +169,8 @@ class ChangeAfter(InsertMode):
         # Therefore we take indices modulo the length of the lists
         l = len(self.insertions)
         newcontent = [doc.selection.content(doc)[i % l][:-self.deletions[i % l] or None]
-                       + self.insertions[i % l]
-                       for i in range(len(doc.selection))]
+                      + self.insertions[i % l]
+                      for i in range(len(doc.selection))]
         return Operation(doc, newcontent)
 
 commands.ChangeAfter = ChangeAfter
@@ -187,13 +187,13 @@ class ChangeAround(InsertMode):
     and adds `insertions` around each interval.
     """
 
-    def __init__(self, doc):
+    def __init__(self, doc, callback=None):
         # Insertions before and after can differ because of autoindentation
         self.insertions_before = [''] * len(doc.selection)
         self.insertions_after = [''] * len(doc.selection)
         self.deletions = [0] * len(doc.selection)
 
-        InsertMode.__init__(self, doc)
+        InsertMode.__init__(self, doc, callback)
 
     def insert(self, doc, string):
         for i in range(len(doc.selection)):
@@ -240,8 +240,8 @@ class ChangeAround(InsertMode):
 
             beg, end = self.deletions[i % l], -self.deletions[i % l] or None
             newcontent.append(first_string
-                               + doc.selection.content(doc)[i % l][beg:end]
-                               + second_string)
+                              + doc.selection.content(doc)[i % l][beg:end]
+                              + second_string)
         return Operation(doc, newcontent)
 
 commands.ChangeAround = ChangeAround

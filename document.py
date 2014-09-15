@@ -4,7 +4,6 @@ from .operation import Operation
 from .event import Event
 from . import commands
 from .userinterface import UserInterface
-from .mode import ModeStack
 from .selectors import selectall
 from . import pointer
 
@@ -21,6 +20,7 @@ class Document():
     create_userinterface = None
     _text = ''
     saved = True
+    mode = None
 
     expandtab = False
     tabwidth = 4
@@ -38,7 +38,6 @@ class Document():
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))
-        self.mode = ModeStack()
         self.selectmode = ''
 
         if not self.create_userinterface:
@@ -120,7 +119,7 @@ class Document():
 
         if self.mode:
             # We are not in normalmode
-            self.mode.peek().processinput(self, userinput)
+            self.mode.processinput(self, userinput)
         else:
             # We are in normalmode
             if isinstance(userinput, pointer.PointerInput):

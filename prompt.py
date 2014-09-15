@@ -4,8 +4,8 @@ from .document import Document
 Document.promptinput = ''
 
 class Prompt(Mode):
-    def __init__(self, document, promptstring='>'):
-        Mode.__init__(self, document)
+    def __init__(self, document, callback=None, promptstring='>'):
+        Mode.__init__(self, document, callback)
         self.inputstring = ''
         self.start(document)
 

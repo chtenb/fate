@@ -58,7 +58,7 @@ class RandomizedUserSimulator(UserInterface):
             return command_dict[command_name]
 
         # If we are in a certain mode we try to construct a meaningful input space
-        mode = self.document.mode.peek()
+        mode = self.document.mode
         input_space = ['Cancel']
         input_space.extend([c for c in mode.allowedcommands if not c in forbidden_commands])
 

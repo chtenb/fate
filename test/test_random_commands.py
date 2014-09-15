@@ -77,7 +77,7 @@ class RandomizedActionTest(BaseTestCase):
 
             if self.document.mode:
                 # We are not in normalmode
-                self.document.mode.peek().processinput(self.document, userinput)
+                self.document.mode.processinput(self.document, userinput)
             else:
                 # We are in normalmode
                 if type(userinput) == str:

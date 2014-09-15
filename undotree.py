@@ -137,6 +137,7 @@ def redo(document):
     document.undotree.redo()
 commands.redo = redo
 
+# TODO: turn up, down, right, left into commands
 
 class UndoMode(Mode):
 
@@ -145,8 +146,8 @@ class UndoMode(Mode):
     You can only switch branches between siblings.
     """
 
-    def __init__(self, document):
-        Mode.__init__(self, document)
+    def __init__(self, document, callback=None):
+        Mode.__init__(self, document, callback)
         self.keymap = {
             'Left': self.left,
             'Right': self.right,

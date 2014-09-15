@@ -65,15 +65,13 @@ def Compose(*subcommands, name='', docs=''):
     """
     # We need to define a new class for each composition
     # It must derive from Mode, in case any of the subcommands is a mode
-    class Compound(Mode):
+    class Compound:
 
         def __init__(self, document):
-            Mode.__init__(self, document)
             self.subcommands = subcommands
 
             self.todo = deque(self.subcommands[:])
             document.undotree.start_sequence()
-            self.start(document)
             self.proceed(document)
 
         def proceed(self, document):
@@ -81,10 +79,8 @@ def Compose(*subcommands, name='', docs=''):
             while self.todo:
                 command = self.todo.popleft()
                 while 1:
-                    # BUG !!!!!!!!!!
-                    # Modes not recognized as classes
                     if isclass(command) and issubclass(command, Mode):
-                        command(document)
+                        command(document, self.proceed)
                         return
 
                     result = command(document)
@@ -94,7 +90,6 @@ def Compose(*subcommands, name='', docs=''):
 
             # Now we are completely finished
             document.undotree.end_sequence()
-            self.stop(document)
 
         def processinput(self, document, userinput):
             raise Exception('Can\'t process input')
