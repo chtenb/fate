@@ -1,5 +1,5 @@
 from collections import deque
-from ..document import quit_document
+from ..filecommands import quit_document
 from ..userinterface import UserInterface
 
 

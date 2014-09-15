@@ -1,18 +1,15 @@
 SHORT TERM
-Replace modestack with just mode, nested modes have to be implemented by the mode itself
-    How to make modes start and stop?
-    Maybe introduce normal mode for this
-Add document.activate to call ui.activate
+Reimplement repeat, since classes can't be decorated
+    Problem: how to handle next_document etc? We don't want those to be recorded.
 Implement commandmode as a persistent command, similar to undomode
-Reimplement repeat, since classes can;t be decorated
+Select around/inside (not finished yet)
+Enhance selector set
 Think about how to decorate classes easily, without disabling subclassing
     Can't decorate classes by functions: this turns them into functions
     this means that they can't be used as parentclass
     and that they can't be checked by issubclass
 Think about possibility to add remap support (i.e. map keys forall modes)
     This is a generalization of the cancelkey feature
-Select around/inside (not finished yet)
-Enhance selector set
 Incorporate testing with multiple sessions
 Unittests for pattern select machinery
 
@@ -24,10 +21,12 @@ Improve syntax highlighting, for instance by disregarding quotes inside comments
     select around should maybe also disregard brackets etc in comments and strings
 Contextual completion
     For completion it is also needed that the full text can be constructed including the pending operation. (No it isn't!! Only filtering is done based on the input, the context is not changed)
-Some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same. If one changes, the other changes with it.
 Switch to alternative regex engine?
 Focus on non-atomic operations
 Idea: jumplist of lines of changes
+Conceal
+Easier file opening
+Some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same. If one changes, the other changes with it.
 
 RESEARCH
 Optimal configurable datastructure for text editing
