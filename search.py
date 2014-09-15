@@ -2,7 +2,7 @@ import re
 from . import commands
 from .selectors import selectpattern, select_local_pattern
 from .document import Document
-from .prompt import Prompt
+from .prompt import prompt
 from .commandtools import Compose
 
 Document.search_pattern = ''
@@ -27,7 +27,7 @@ def _search(document):
             selectpattern(document.search_pattern, document)(document)
         except re.error as e:
             document.ui.notify(str(e))
-commands.search = Compose(Prompt, _search)
+commands.search = Compose(prompt('/'), _search)
 
 
 def search_current_content(document):

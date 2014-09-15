@@ -29,8 +29,8 @@ logging.basicConfig(level=logging.DEBUG,
 info('Starting fate.')
 
 # Load modules exposing commands, to make sure the commands module contains all commands
-from . import (clipboard, commandmode, commandtools, document, insertoperations,
-               operators, repeat, search, selectors, undotree, pointer)
+from . import (clipboard, commandmode, commandtools, document, filecommands,
+               insertoperations, operators, repeat, search, selectors, undotree, pointer)
 
 # Load standard plugins
 from . import filetype_system
@@ -61,4 +61,3 @@ def run():
         doc.ui.touch()
         userinput = doc.ui.getinput()
         doc.processinput(userinput)
-

@@ -1,10 +1,8 @@
 """A document represents the state of an editing document."""
 from .selection import Selection, Interval
-from .operation import Operation
 from .event import Event
 from . import commands
 from .userinterface import UserInterface
-from .selectors import selectall
 from . import pointer
 
 import logging
@@ -55,7 +53,7 @@ class Document():
         self.OnDocumentInit.fire(self)
 
         if filename:
-            load(self)
+            commands.load(self)
 
     def quit(self):
         """Quit document."""
@@ -142,86 +140,9 @@ class Document():
 
         if userinput.length:
             logging.debug('You sweeped from position {} till {}'
-                  .format(userinput.pos, userinput.pos + userinput.length))
+                          .format(userinput.pos, userinput.pos + userinput.length))
         else:
             logging.debug('You clicked at position ' + str(userinput.pos))
-
-
-def save(document, filename=None):
-    """Save document text to file."""
-    filename = filename or document.filename
-
-    if filename:
-        try:
-            with open(filename, 'w') as fd:
-                fd.write(document.text)
-        except (FileNotFoundError, PermissionError) as e:
-            logging.error(str(e))
-        else:
-            document.saved = True
-            document.OnWrite.fire(document)
-    else:
-        logging.error('No filename')
-commands.save = save
-
-
-def load(document, filename=None):
-    """Load document text from file."""
-    filename = filename or document.filename
-
-    if filename:
-        try:
-            with open(filename, 'r') as fd:
-                newtext = fd.read()
-        except (FileNotFoundError, PermissionError) as e:
-            logging.error(str(e))
-        else:
-            selectall(document)
-            operation = Operation(document, newcontent=[newtext])
-            operation(document)
-            document.selection = Selection(Interval(0, 0))
-
-            document.saved = True
-            document.OnRead.fire(document)
-    else:
-        logging.error('No filename')
-commands.load = load
-
-
-def open_document(document):
-    """Open a new document."""
-    filename = document.ui.prompt('Filename: ')
-    Document(filename)
-commands.open_document = open_document
-
-
-def quit_document(document):
-    """Close current document."""
-    if not document.saved:
-        while 1:
-            answer = document.ui.prompt('Unsaved changes! Really quit? (y/n)')
-            if answer == 'y':
-                document.quit()
-                break
-            if answer == 'n':
-                break
-    else:
-        document.quit()
-commands.quit_document = quit_document
-
-
-def quit_all(document):
-    """Close all documents."""
-    for document in documentlist:
-        quit_document(document)
-commands.quit_all = quit_all
-
-
-def force_quit(document):
-    """Quit all documents without warning if unsaved changes."""
-    for document in documentlist:
-        document.quit()
-commands.force_quit = force_quit
 
 
 def next_document(document):
