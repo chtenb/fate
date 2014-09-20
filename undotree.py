@@ -135,7 +135,7 @@ def redo(document):
     document.undotree.redo()
 commands.redo = redo
 
-# TODO: turn up, down, right, left into commands
+# TODO: turn up, down, right, left into commands?
 
 class UndoMode(Mode):
 
