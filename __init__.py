@@ -14,6 +14,7 @@ from . import (clipboard, commandmode, commandtools, document, filecommands,
                undotree, pointer)
 
 # Load standard plugins
+from . import formatting
 from . import filetype_system
 from . import labeling_system
 
