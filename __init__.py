@@ -10,7 +10,8 @@ info('Starting fate.')
 
 # Load modules exposing commands, to make sure the commands module contains all commands
 from . import (clipboard, commandmode, commandtools, document, filecommands,
-               insertoperations, operators, repeat, search, selectors, undotree, pointer)
+               insertoperations, operators, repeat, search, selectaround, selectors,
+               undotree, pointer)
 
 # Load standard plugins
 from . import filetype_system

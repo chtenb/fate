@@ -18,9 +18,6 @@ from functools import partial, wraps
 
 from . import commands
 from .selection import Selection, Interval
-from .mode import Mode, normalmode
-
-from logging import debug
 
 
 def escape(document):
@@ -115,127 +112,6 @@ def emptyafter(document, selection, selectmode):
         intervals.append(Interval(end, end))
     return Selection(intervals)
 commands.emptyafter = emptyafter
-
-
-def find_matching_pair(string, pos, fst, snd):
-    """Find matching pair of characters fst and snd around (inclusive) position pos."""
-    assert 0 <= pos < len(string)
-
-    level = 0
-    i = pos
-    beg = None
-    while i >= 0:
-        if string[i] == fst:
-            if level > 0:
-                level -= 1
-            else:
-                beg = i
-        if string[i] == snd:
-            level += 1
-        i -= 1
-
-    level = 0
-    i = pos
-    end = None
-    while i < len(string):
-        if string[i] == snd:
-            if level > 0:
-                level -= 1
-            else:
-                end = i + 1
-        if string[i] == fst:
-            level += 1
-        i += 1
-
-    if beg != None and end != None:
-        return Interval(beg, end)
-
-
-def interval_length(interval):
-    return interval.end - interval.beg
-
-
-def avg_interval_length(selection):
-    return sum(end - beg for beg, end in selection) / len(selection)
-
-
-def select_around_interval(string, beg, end, fst, snd):
-    """Find matching pair of characters fst and snd around (inclusive) beg and end."""
-    assert 0 <= beg <= end <= len(string)
-
-    # These edge cases should not yield a result
-    if beg == end == len(string) or beg == end == 0:
-        return
-
-    match1 = find_matching_pair(string, beg, fst, snd)
-    match2 = find_matching_pair(string, max(0, end - 1), fst, snd)
-    if match1 == None or match2 == None:
-        return None
-    nbeg, nend = max([match1, match2], key=interval_length)
-
-    # If interval remains the same try selecting one level higher
-    if (beg, end) == (nbeg, nend):
-        if beg > 0:
-            return select_around_interval(string, beg - 1, end, fst, snd)
-        elif end < len(string):
-            return select_around_interval(string, beg, end + 1, fst, snd)
-
-    # Decide whether to select exclusive or remain inclusive
-    if beg > nbeg + 1 or end < nend - 1:
-        # Select exclusive
-        nbeg += 1
-        nend -= 1
-    return Interval(nbeg, nend)
-
-
-def selectaround_char(document, char=None, selection=None):
-    """
-    Select around given character. If no character given, get it from user.
-    Return None if not all intervals are surrounded.
-    """
-    selection = selection or document.selection
-    char = char or document.ui.getkey()
-    if char == 'Cancel':
-        return
-    result = Selection()
-
-    # Check if we should check for a matching pair
-    character_pairs = [('{', '}'), ('[', ']'), ('(', ')'), ('<', '>')]
-    for fst, snd in character_pairs:
-        if char == fst or char == snd:
-            # For each interval find the smallest surrounding pair
-            for beg, end in selection:
-                match = select_around_interval(document.text, beg, end, fst, snd)
-                if match == None:
-                    return
-                result.add(match)
-            return result
-
-    # If not, we simple find the first surrounding occurances
-    for beg, end in selection:
-        nend = document.text.find(char, end)
-        nbeg = document.text.rfind(char, 0, beg)
-        if nend != -1 and nbeg != -1:
-            result.add(Interval(nbeg, nend + 1))
-        else:
-            return
-    return result
-commands.selectaround_char = selectaround_char
-
-
-def selectaround(document, selection=None):
-    """Select around common surrounding character pair."""
-    selection = selection or document.selection
-    default_chars = ['{', '[', '(', '<', '\'', '"']
-    candidates = []
-    for char in default_chars:
-        candidate = selectaround_char(document, char, selection)
-        if candidate != None:
-            candidates.append(candidate)
-    if candidates:
-        # Select smallest enclosing candidate
-        return min(candidates, key=avg_interval_length)
-commands.selectaround = selectaround
 
 
 def findpattern(text, pattern, reverse=False, group=0):

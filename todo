@@ -1,7 +1,4 @@
 SHORT TERM
-Add debug mode
-    Set a flag to notify ui
-    Set loglevel to debug
 Reimplement repeat, since classes can't be decorated
     Problem: how to handle next_document etc? We don't want those to be recorded.
 Implement commandmode as a persistent command, similar to undomode

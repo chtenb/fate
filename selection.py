@@ -14,6 +14,9 @@ class Interval:
     def __str__(self):
         return '({},{})'.format(self.beg, self.end)
 
+    def __repr__(self):
+        return 'Interval' + str(self)
+
     def __eq__(self, obj):
         return (isinstance(obj, Interval)
                 and (self.beg, self.end) == (obj.beg, obj.end))
