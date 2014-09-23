@@ -1,4 +1,5 @@
 SHORT TERM
+Fix labeling system
 Errorchecking
 Reimplement repeat, since classes can't be decorated
     Problem: how to handle next_document etc? We don't want those to be recorded.

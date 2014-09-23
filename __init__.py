@@ -15,8 +15,8 @@ from . import (clipboard, commandmode, commandtools, document, filecommands,
 
 # Load standard plugins
 from . import formatting
-from . import filetype_system
-from . import labeling_system
+from . import filetype
+from . import labeling
 
 info('All standard plugins are loaded.')
 

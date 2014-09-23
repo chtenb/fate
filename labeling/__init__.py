@@ -1,24 +1,29 @@
-from ..document import Document
-from ..event import Event
-from .. import filetype_system
-from .labeling import Labeling
 from importlib import import_module
 import logging
 
-Document.OnGenerateLabeling = Event()
-Document.labeling = Labeling()
+from ..document import Document
+from ..event import Event
+from .labeling import Labeling
+
+# Dependencies
+from .. import filetype
 
 
-def load_filetype_syntax(document):
+def load_labeling_script(document):
     """If we have a filetype, try to import the corresponding labeling module."""
+    document.OnGenerateLabeling = Event()
+
     if document.filetype:
         try:
-            import_module(__name__ + '.' + document.filetype)
+            module = import_module(__name__ + '.' + document.filetype)
         except ImportError:
             logging.info('No labeling script found for filetype ' + document.filetype)
         else:
+            logging.info('Found labeling script for filetype ' + document.filetype)
             document.OnTextChanged.add(generate_labeling)
-            document.OnRead.add(generate_labeling)
+            module.init(document)
+
+Document.OnFileTypeLoaded.add(load_labeling_script)
 
 
 def generate_labeling(document, *args):
@@ -26,6 +31,5 @@ def generate_labeling(document, *args):
     document.labeling = Labeling()
     document.OnGenerateLabeling.fire(document)
 
-Document.OnDocumentInit.add(load_filetype_syntax)
 
 logging.info('labeling system loaded')

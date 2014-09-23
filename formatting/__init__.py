@@ -5,8 +5,10 @@ import subprocess
 from ..selectors import selectall
 from ..operation import Operation
 from ..document import Document
-from .. import filetype_system
 from .. import commands
+
+# Dependencies
+from .. import filetype
 
 
 class Formatter:
@@ -18,32 +20,36 @@ class Formatter:
         self.arguments = arguments
 
 
-def formattext(document):
-    """If document has a formatter, execute it and replace text with the result."""
-    formatter = document.formatter
+def formattext(doc):
+    """If doc has a formatter, execute it and replace text with the result."""
+    formatter = doc.formatter
     if formatter:
         # Execute formatter
-        # TODO
         process = subprocess.Popen([formatter.executable, formatter.arguments],
                                    stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                    universal_newlines=True)
-        newtext, errors = process.communicate(document.text)
+        newtext, errors = process.communicate(doc.text)
 
         # Replace text with formatted text
-        selectall(document)
-        operation = Operation(document, newcontent=[newtext])
-        operation(document)
+        oldselection = doc.selection
+        selectall(doc)
+        operation = Operation(doc, newcontent=[newtext])
+        operation(doc)
+
+        # TODO: select something useful after format
+        doc.selection = oldselection
+
 commands.formattext = formattext
 
 
-def load_filetype_formatter(document):
-    if document.filetype:
+def load_filetype_formatter(doc):
+    if doc.filetype:
         try:
-            module = import_module(__name__ + '.' + document.filetype)
+            module = import_module(__name__ + '.' + doc.filetype)
         except ImportError:
-            logging.info('No formatter script found for filetype ' + document.filetype)
+            logging.info('No formatter script found for filetype ' + doc.filetype)
         else:
-            logging.info('Formatter script found for filetype ' + document.filetype)
-            document.formatter = module.formatter
+            logging.info('Formatter script found for filetype ' + doc.filetype)
+            doc.formatter = module.formatter
 
 Document.OnFileTypeLoaded.add(load_filetype_formatter)
