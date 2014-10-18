@@ -43,7 +43,6 @@ class Document():
         self.ui = self.create_userinterface(self)
         if not isinstance(self.ui, UserInterface):
             raise Exception('document.ui not an instance of UserInterface.')
-        self.OnQuit.add(self.ui.quit)
 
         # Load the default key map
         from .keymap import default
@@ -68,6 +67,7 @@ class Document():
         # self.getkey()
 
         if len(documentlist) == 1:
+            print('fate - document: close the last document by setting activedoc to None')
             activedocument = None
             return
 
