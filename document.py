@@ -33,6 +33,7 @@ class Document():
         self.OnWrite = Event()
         self.OnQuit = Event()
         self.OnActivate = Event()
+        self.OnPrompt = Event()
 
         self.filename = filename
         self.selection = Selection(Interval(0, 0))

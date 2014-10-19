@@ -25,6 +25,14 @@ class Prompt(Mode):
         else:
             raise NotImplementedError('To be done.')
 
+    def start(self, doc):
+        Mode.start(self, doc)
+        doc.OnPrompt.fire(doc)
+
+    def stop(self, doc):
+        Mode.stop(self, doc)
+        doc.OnPrompt.fire(doc)
+
 def prompt(promptstring='>'):
     """Constructor for the prompt mode."""
     class PromptWithString(Prompt):
