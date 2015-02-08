@@ -1,11 +1,9 @@
 import re
-from .common import regex_labels, re_number
+from .common import regex_labels, re_number, re_string
 
 import keyword
 re_keyword = re.compile(r'\b({})\b'.format('|'.join(keyword.kwlist)))
 re_comment = re.compile('#.*\n')
-# TODO: prevent counting quotes in comments
-re_string = re.compile('["\'][^"\']*["\']')
 
 def init(document):
     document.OnGenerateLabeling.add(main)
