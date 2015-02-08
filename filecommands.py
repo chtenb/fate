@@ -77,16 +77,18 @@ def quit_document(doc):
 commands.quit_document = quit_document
 
 
-def quit_all(doc):
+def quit_all(doc=None):
     """Close all documents."""
-    for doc in document.documentlist:
+    docs = list(document.documentlist)
+    for doc in docs:
         quit_document(doc)
 commands.quit_all = quit_all
 
 
-def force_quit(doc):
+def force_quit(doc=None):
     """Quit all documents without warning if unsaved changes."""
-    for doc in document.documentlist:
+    docs = list(document.documentlist)
+    for doc in docs:
         doc.quit()
 commands.force_quit = force_quit
 
