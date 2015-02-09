@@ -7,7 +7,7 @@ from .operation import Operation
 from . import document
 from .commandtools import Compose
 from .selection import Selection, Interval
-from .selectors import selectall
+import selectors # Depend on selectors to be loaded
 from .prompt import prompt
 
 def save(doc, filename=None):
@@ -39,7 +39,7 @@ def load(doc, filename=None):
         except (FileNotFoundError, PermissionError) as e:
             logging.error(str(e))
         else:
-            selectall(doc)
+            commands.selectall(doc)
             operation = Operation(doc, newcontent=[newtext])
             operation(doc)
             doc.selection = Selection(Interval(0, 0))

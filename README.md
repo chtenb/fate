@@ -51,6 +51,10 @@ Why don't we take this one step further?
 Let's make all motions visual, such that we can select a word by pressing `w`, and then change it by pressing `c`.
 In vim we would have to press `cw`, not getting feedback on what we selected.
 From an architectural point of view, the new approach is also appealing, as it removes the need for a distinction between visual mode and normal mode.
+The syntax diagram will be easier, there is no need for a change mode, which accepts motions,
+but instead we can just select something and apply an operator.
+Note that we remove the concept of a cursor.
+We always work with entire selections instead.
 
 Secondly, we like to generalize vim's modal approach.
 We want the user to be able to add new modes easily.
@@ -60,17 +64,34 @@ Thirdly, we will not invent our own regex language like vim did, but stick to py
 It is a good, well documented, well known engine, and we get it for free.
 
 Design
-------
+======
 Here we state some important design decisions that were made.
 
-- asdf
+Performance
+-----------
+To be able to efficiently do operations on the text while keeping the possibility to execute regex queries, we need a C data structure that acts as a string (implementing python's buffer protocol) but which is a different tree structure underneath.
+TODO: is the text lazily loaded from the harddisk?
+
+There are two categories of syntactic constructs that we want to match in a text:
+- those that require the entire text to be parsed (e.g. constructs with ambiguous delimiters such as strings)
+- those that don't (e.g. keywords, matching parenthesis)
+
+The first category need the entire text, and can thus only be performed if the textsize is small enough or if its not used frequently or automatically (syntax highlighting) and the user is willing to wait that long.
+The second category can be parsed by only looking in a window.
+
+Syntaxhighlighting should be disabled for the first category, while global search should not.
+
 
 Todo
 ----
 
-- Selection
-- Gui integration communication
-- Remap keys
+- Selectors should be applicable to intervals, to allow using them as building blocks for others
+- j/k = move selection to next line
+- Change extend/reduce selections to change back/forth
+    - don't pass selectmode to selectors, but treat everything the same
+- Selectaround
+- Gui integration communication (windowsize)
+- Different forms of wrapping left/right + word/character
 - Ready for use
 
 [docs]: http://chiel92.github.io/fate/

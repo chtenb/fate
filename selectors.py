@@ -12,6 +12,8 @@ Because it is often handy to use selectors as building blocks for other computat
 selectors return their result as a selection instead of executing them immediately.
 Secondly, one can pass a selection which should be used as starting point
 for the selector instead of the current selection of the document.
+Because of this, it is a good habit to only decorate the function that is placed in
+commands.
 """
 import re
 from functools import partial, wraps
@@ -24,7 +26,7 @@ def escape(document):
     if document.selectmode != '':
         normalselectmode(document)
     else:
-        empty(document)
+        commands.empty(document)
 commands.escape = escape
 
 
@@ -43,72 +45,96 @@ def normalselectmode(document):
 commands.normalselectmode = normalselectmode
 
 
-def selector(command):
+def selector(function):
     """Decorator to make it more convenient to write selectors."""
-    @wraps(command)
+    @wraps(function)
     def wrapper(document, selection=None, selectmode=None, preview=False):
         selection = selection or document.selection
         selectmode = selectmode or document.selectmode
-        selection = command(document, selection, selectmode)
+        selection = function(document, selection, selectmode)
         if preview:
             return selection
         selection(document)
     return wrapper
 
 
-@selector
 def selectall(document, selection, selectmode):
     """Select the entire text."""
     return Selection(Interval(0, len(document.text)))
-commands.selectall = selectall
+commands.selectall = selector(selectall)
 
 
-@selector
 def select_single_interval(document, selection, selectmode):
     """Reduce the selection to the single uppermost interval."""
     return Selection(selection[0])
-commands.select_single_interval = select_single_interval
+commands.select_single_interval = selector(select_single_interval)
 
 
-@selector
 def empty(document, selection, selectmode):
     """Reduce the selection to a single uppermost empty interval."""
     beg = selection[0][0]
     return Selection(Interval(beg, beg))
-commands.empty = empty
+commands.empty = selector(empty)
 
 
-@selector
 def join(document, selection, selectmode):
     """Join all intervals together."""
     return Selection(Interval(selection[0][0], selection[-1][1]))
-commands.join = join
+commands.join = selector(join)
 
 
-@selector
 def complement(document, selection, selectmode):
     """Return the complement."""
     return Selection(selection.complement(document))
-commands.complement = complement
+commands.complement = selector(complement)
 
 
-@selector
-def emptybefore(document, selection, selectmode):
+def intervalselector(function):
+    """Decorator to make it more convenient to write selectors acting on intervals."""
+    @wraps(function)
+    @selector
+    def wrapper(document, selection, selectmode):
+        new_intervals = []
+        for interval in selection:
+            new_interval = function(document, interval, selectmode)
+            if new_interval == None:
+                return
+            new_intervals.append(new_interval)
+        return Selection(new_intervals)
+    return wrapper
+
+
+def emptybefore(document, interval, selectmode):
     """Return the empty interval before each interval."""
-    intervals = []
-    for interval in selection:
-        beg, _ = interval
-        intervals.append(Interval(beg, beg))
-    return Selection(intervals)
-commands.emptybefore = emptybefore
+    beg, _ = interval
+    return Interval(beg, beg)
+commands.emptybefore = intervalselector(emptybefore)
+
+
+def emptyafter(document, interval, selectmode):
+    """Return the empty interval after each interval."""
+    _, end = interval
+    return Interval(end, end)
+commands.emptyafter = intervalselector(emptyafter)
 
 
 @selector
-def emptyafter(document, selection, selectmode):
-    """Return the empty interval after each interval."""
+def movedown(document, selection, selectmode):
+    """Move each interval one line down. Preserve line selections."""
     intervals = []
     for interval in selection:
-        _, end = interval
+        beg, end = interval
+        #currentline = document.text.rfind('\n'), document.text.find('\n', beg)
+        #currentline[0] = currentline[0] if currentline[0] != -1 else 0
+        #currentline[1] = currentline[1] if currentline[1] != -1 else len(document.text)
+        #nextline = document.text.rfind('\n'), document.text.find('\n', beg)
+        #nextline[0] = nextline[0] if nextline[0] != -1 else 0
+        #nextline[1] = nextline[1] if nextline[1] != -1 else len(document.text)
+        #currentline = 
+
+        # TODO: make undecorated versions of nextline and nextfullline accesible and use
+        # here
+
         intervals.append(Interval(end, end))
     return Selection(intervals)
 commands.emptyafter = emptyafter
@@ -184,8 +210,8 @@ def select_local_pattern(pattern, document, selection=None, selectmode=None, rev
         new_interval = None
 
         for mbeg, mend in match_intervals:
-                # If only_within is True,
-                # match must be within current interval
+            # If only_within is True,
+            # match must be within current interval
             if only_within and not (beg <= mbeg and mend <= end):
                 continue
 
@@ -220,9 +246,20 @@ def select_local_pattern(pattern, document, selection=None, selectmode=None, rev
         newselection.add(new_interval)
     return newselection
 
+
 selectindent = partial(select_local_pattern, r'(?m)^([ \t]*)', reverse=True, group=1,
                        allow_same_interval=True)
 commands.selectindent = selectindent
+
+
+selectline = partial(select_local_pattern, r'(?m)^[ \t]*([^\n]*)', group=1,
+                     allow_same_interval=True)
+commands.selectline = selectline
+
+
+selectfullline = partial(select_local_pattern, r'[^\n]*\n?',
+                         allow_same_interval=True)
+commands.selectfullline = selectfullline
 
 
 def patternpair(pattern, **kwargs):
