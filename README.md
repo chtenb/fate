@@ -59,6 +59,20 @@ This way things like snippet expansion can be implemented with a snippet mode.
 Thirdly, we will not invent our own regex language like vim did, but stick to python's regex language.
 It is a good, well documented, well known engine, and we get it for free.
 
+Design
+------
+Here we state some important design decisions that were made.
+
+- asdf
+
+Todo
+----
+
+- Selection
+- Gui integration communication
+- Remap keys
+- Ready for use
+
 [docs]: http://chiel92.github.io/fate/
 [fate-tui]: http://github.com/Chiel92/fate-tui
 
