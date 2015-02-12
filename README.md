@@ -85,8 +85,6 @@ Syntaxhighlighting should be disabled for the first category, while global searc
 Todo
 ----
 
-- Selectors should be applicable to intervals, to allow using them as building blocks for others
-- j/k = move selection to next line
 - Change extend/reduce selections to change back/forth
     - don't pass selectmode to selectors, but treat everything the same
 - Selectaround

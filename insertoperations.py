@@ -4,8 +4,8 @@ from .operation import Operation
 from .operators import Append, Insert, delete
 from .selection import Selection, Interval
 from .commandtools import Compose
-from .selectors import (emptybefore, previousfullline, selectindent,
-                        nextfullline, nextchar, previouschar)
+from .selectors import (emptybefore, selectpreviousfullline, selectindent,
+                        selectnextfullline, selectnextchar, selectpreviouschar)
 from .clipboard import copy, clear, paste_before, Cut
 from .mode import Mode
 from . import document
@@ -72,7 +72,7 @@ class InsertMode(Mode):
 
 def get_indent(doc, pos):
     """Get the indentation of the line containing position pos."""
-    line = nextfullline(doc, selection=Selection(intervals=Interval(pos, pos)))
+    line = selectnextfullline(doc, selection=Selection(intervals=Interval(pos, pos)))
     string = line.content(doc)[0]
     match = re.search(r'^[ \t]*', string)
     #debug('pos: ' + str(pos))
@@ -247,14 +247,14 @@ class ChangeAround(InsertMode):
 commands.ChangeAround = ChangeAround
 
 
-OpenLineAfter = Compose(previousfullline, selectindent, copy,
-                        nextfullline, Append('\n'), previouschar, emptybefore,
+OpenLineAfter = Compose(selectpreviousfullline, selectindent, copy,
+                        selectnextfullline, Append('\n'), selectpreviouschar, emptybefore,
                         paste_before, clear, ChangeAfter, name='OpenLineAfter',
                         docs='Open a line after interval')
 commands.OpenLineAfter = OpenLineAfter
 
-OpenLineBefore = Compose(nextfullline, selectindent, copy,
-                         nextfullline, Insert('\n'), nextchar, emptybefore,
+OpenLineBefore = Compose(selectnextfullline, selectindent, copy,
+                         selectnextfullline, Insert('\n'), selectnextchar, emptybefore,
                          paste_before, clear, ChangeAfter, name='OpenLineBefore',
                          docs='Open a line before interval')
 commands.OpenLineBefore = OpenLineBefore

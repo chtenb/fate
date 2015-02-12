@@ -13,13 +13,14 @@ selectors return their result as a selection instead of executing them immediate
 Secondly, one can pass a selection which should be used as starting point
 for the selector instead of the current selection of the document.
 Because of this, it is a good habit to only decorate the function that is placed in
-commands.
+the commands module, not the function itself.
 """
 import re
 from functools import partial, wraps
 
 from . import commands
 from .selection import Selection, Interval
+from logging import debug, info
 
 
 def escape(document):
@@ -46,7 +47,7 @@ commands.normalselectmode = normalselectmode
 
 
 def selector(function):
-    """Decorator to make it more convenient to write selectors."""
+    """Turn given selector in a command that takes a document."""
     @wraps(function)
     def wrapper(document, selection=None, selectmode=None, preview=False):
         selection = selection or document.selection
@@ -54,7 +55,8 @@ def selector(function):
         selection = function(document, selection, selectmode)
         if preview:
             return selection
-        selection(document)
+        if selection != None:
+            selection(document)
     return wrapper
 
 
@@ -90,7 +92,7 @@ commands.complement = selector(complement)
 
 
 def intervalselector(function):
-    """Decorator to make it more convenient to write selectors acting on intervals."""
+    """Turn given intervalselector in a command that takes a document."""
     @wraps(function)
     @selector
     def wrapper(document, selection, selectmode):
@@ -118,26 +120,58 @@ def emptyafter(document, interval, selectmode):
 commands.emptyafter = intervalselector(emptyafter)
 
 
-@selector
-def movedown(document, selection, selectmode):
-    """Move each interval one line down. Preserve line selections."""
-    intervals = []
-    for interval in selection:
-        beg, end = interval
-        #currentline = document.text.rfind('\n'), document.text.find('\n', beg)
-        #currentline[0] = currentline[0] if currentline[0] != -1 else 0
-        #currentline[1] = currentline[1] if currentline[1] != -1 else len(document.text)
-        #nextline = document.text.rfind('\n'), document.text.find('\n', beg)
-        #nextline[0] = nextline[0] if nextline[0] != -1 else 0
-        #nextline[1] = nextline[1] if nextline[1] != -1 else len(document.text)
-        #currentline = 
+def movedown(document, interval, selectmode):
+    """Move each interval one line down. Preserve fully selected lines."""
+    beg, end = interval
+    currentline = selectfullline(document, interval, selectmode)
+    nextline = selectnextfullline(document, currentline, selectmode)
 
-        # TODO: make undecorated versions of nextline and nextfullline accesible and use
-        # here
+    if nextline == None:
+        return
 
-        intervals.append(Interval(end, end))
-    return Selection(intervals)
-commands.emptyafter = emptyafter
+    # Crop interval to fit in current line
+    beg, end = interval = Interval(beg, min(currentline[1], end))
+
+    # Preserve fully selected lines
+    if currentline == interval:
+        return nextline
+
+    # Embed interval in next line
+    nbeg = min(nextline[0] + beg - currentline[0], nextline[1] - 1)
+    nend = min(nextline[0] + end - currentline[0], nextline[1] - 1)
+
+    #try:
+        #Interval(nbeg, nend)
+    #except AssertionError:
+        #info(str((nbeg, nend)))
+        #return
+
+    return Interval(nbeg, nend)
+commands.movedown = intervalselector(movedown)
+
+
+def moveup(document, interval, selectmode):
+    """Move each interval one line up. Preserve fully selected lines."""
+    beg, end = interval
+    currentline = selectfullline(document, interval, selectmode)
+    previousline = selectpreviousfullline(document, currentline, selectmode)
+
+    if previousline == None:
+        return
+
+    # Crop interval to fit in current line
+    beg, end = interval = Interval(beg, min(currentline[1], end))
+
+    # Preserve fully selected lines
+    if currentline == interval:
+        return previousline
+
+    # Embed interval in previous line
+    nbeg = min(previousline[0] + beg - currentline[0], previousline[1] - 1)
+    nend = min(previousline[0] + end - currentline[0], previousline[1] - 1)
+
+    return Interval(nbeg, nend)
+commands.moveup = intervalselector(moveup)
 
 
 def findpattern(text, pattern, reverse=False, group=0):
@@ -149,8 +183,7 @@ def findpattern(text, pattern, reverse=False, group=0):
             for match in matches]
 
 
-def selectpattern(pattern, document, selection=None, selectmode=None,
-                  reverse=False, group=0):
+def selectpattern(pattern, document, selection, selectmode, reverse=False, group=0):
     newselection = Selection()
     selection = selection or document.selection
     selectmode = selectmode or document.selectmode
@@ -197,69 +230,58 @@ def selectpattern(pattern, document, selection=None, selectmode=None,
     return newselection
 
 
-def select_local_pattern(pattern, document, selection=None, selectmode=None, reverse=False,
+def select_local_pattern(pattern, document, interval, selectmode, reverse=False,
                          group=0, only_within=False, allow_same_interval=False):
-    newselection = Selection()
-    selection = selection or document.selection
-    selectmode = selectmode or document.selectmode
 
     match_intervals = findpattern(document.text, pattern, reverse, group)
 
-    for interval in selection:
-        beg, end = interval
-        new_interval = None
+    beg, end = interval
+    new_interval = None
 
-        for mbeg, mend in match_intervals:
-            # If only_within is True,
-            # match must be within current interval
-            if only_within and not (beg <= mbeg and mend <= end):
-                continue
+    for mbeg, mend in match_intervals:
+        # If only_within is True,
+        # match must be within current interval
+        if only_within and not (beg <= mbeg and mend <= end):
+            continue
 
-            # If allow_same_interval is True, allow same interval as original
-            if allow_same_interval and (beg, end) == (mbeg, mend):
-                new_interval = Interval(mbeg, mend)
-                break
+        # If allow_same_interval is True, allow same interval as original
+        if allow_same_interval and (beg, end) == (mbeg, mend):
+            return Interval(mbeg, mend)
 
-            # If match is valid, i.e. overlaps
-            # or is beyond current interval in right direction
-            # or is empty interval adjacent to current interval in right direction
-            if (not reverse and mend > beg
-                    or reverse and mbeg < end):
-                if selectmode == 'Extend':
-                    new_interval = Interval(min(beg, mbeg), max(end, mend))
-                elif selectmode == 'Reduce':
-                    if reverse:
-                        mend = max(end, mend)
-                    else:
-                        mbeg = min(beg, mbeg)
-                    new_interval = interval - Interval(mbeg, mend)
+        # If match is valid, i.e. overlaps
+        # or is beyond current interval in right direction
+        # or is empty interval adjacent to current interval in right direction
+        if (not reverse and mend > beg
+                or reverse and mbeg < end):
+            if selectmode == 'Extend':
+                new_interval = Interval(min(beg, mbeg), max(end, mend))
+            elif selectmode == 'Reduce':
+                if reverse:
+                    mend = max(end, mend)
                 else:
-                    new_interval = Interval(mbeg, mend)
+                    mbeg = min(beg, mbeg)
+                new_interval = interval - Interval(mbeg, mend)
+            else:
+                new_interval = Interval(mbeg, mend)
 
-                if new_interval and new_interval != interval:
-                    break
-
-        # If no suitable result for this interval, return original selection
-        if not new_interval:
-            return selection
-
-        newselection.add(new_interval)
-    return newselection
+            # If suitable interval found, return it
+            if new_interval and new_interval != interval:
+                return new_interval
 
 
 selectindent = partial(select_local_pattern, r'(?m)^([ \t]*)', reverse=True, group=1,
                        allow_same_interval=True)
-commands.selectindent = selectindent
+commands.selectindent = intervalselector(selectindent)
 
 
 selectline = partial(select_local_pattern, r'(?m)^[ \t]*([^\n]*)', group=1,
                      allow_same_interval=True)
-commands.selectline = selectline
+commands.selectline = intervalselector(selectline)
 
 
 selectfullline = partial(select_local_pattern, r'[^\n]*\n?',
                          allow_same_interval=True)
-commands.selectfullline = selectfullline
+commands.selectfullline = intervalselector(selectfullline)
 
 
 def patternpair(pattern, **kwargs):
@@ -270,27 +292,27 @@ def patternpair(pattern, **kwargs):
     return (partial(select_local_pattern, pattern, **kwargs),
             partial(select_local_pattern, pattern, reverse=True, **kwargs))
 
-nextchar, previouschar = patternpair(r'(?s).')
-commands.nextchar = nextchar
-commands.previouschar = previouschar
-nextword, previousword = patternpair(r'\b\w+\b')
-commands.nextword = nextword
-commands.previousword = previousword
-nextclass, previousclass = patternpair(r'\w+|[ \t]+|[^\w \t\n]+')
-commands.nextclass = nextclass
-commands.previousclass = previousclass
-nextline, previousline = patternpair(r'(?m)^[ \t]*([^\n]*)', group=1)
-commands.nextline = nextline
-commands.previousline = previousline
-nextfullline, previousfullline = patternpair(r'[^\n]*\n?')
-commands.nextfullline = nextfullline
-commands.previousfullline = previousfullline
-nextparagraph, previousparagraph = patternpair(r'(?s)((?:[^\n][\n]?)+)')
-commands.nextparagraph = nextparagraph
-commands.previousparagraph = previousparagraph
-nextwhitespace, previouswhitespace = patternpair(r'\s')
-commands.nextwhitespace = nextwhitespace
-commands.previouswhitespace = previouswhitespace
+selectnextchar, selectpreviouschar = patternpair(r'(?s).')
+commands.selectnextchar = intervalselector(selectnextchar)
+commands.selectpreviouschar = intervalselector(selectpreviouschar)
+selectnextword, selectpreviousword = patternpair(r'\b\w+\b')
+commands.selectnextword = intervalselector(selectnextword)
+commands.selectpreviousword = intervalselector(selectpreviousword)
+selectnextclass, selectpreviousclass = patternpair(r'\w+|[ \t]+|[^\w \t\n]+')
+commands.selectnextclass = intervalselector(selectnextclass)
+commands.selectpreviousclass = intervalselector(selectpreviousclass)
+selectnextline, selectpreviousline = patternpair(r'(?m)^[ \t]*([^\n]*)', group=1)
+commands.selectnextline = intervalselector(selectnextline)
+commands.selectpreviousline = intervalselector(selectpreviousline)
+selectnextfullline, selectpreviousfullline = patternpair(r'[^\n]*\n?')
+commands.selectnextfullline = intervalselector(selectnextfullline)
+commands.selectpreviousfullline = intervalselector(selectpreviousfullline)
+selectnextparagraph, selectpreviousparagraph = patternpair(r'(?s)((?:[^\n][\n]?)+)')
+commands.selectnextparagraph = intervalselector(selectnextparagraph)
+commands.selectpreviousparagraph = intervalselector(selectpreviousparagraph)
+selectnextwhitespace, selectpreviouswhitespace = patternpair(r'\s')
+commands.selectnextwhitespace = intervalselector(selectnextwhitespace)
+commands.selectpreviouswhitespace = intervalselector(selectpreviouswhitespace)
 
 
 def lock(document):
