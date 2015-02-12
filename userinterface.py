@@ -4,8 +4,9 @@ A userinterface should subclass this.
 """
 from collections import deque
 from .event import Event
+from abc import ABC, abstractmethod, abstractproperty
 
-class UserInterface:
+class UserInterface(ABC):
 
     """Abstract base class for userinteraces. """
 
@@ -14,31 +15,40 @@ class UserInterface:
         self.inputqueue = deque()
         self.OnUserInput = Event()
 
+    @abstractproperty
+    def viewport_size(self):
+        """Get viewport size."""
+        pass
+
+    @abstractproperty
+    def viewport_offset(self):
+        """Get and set viewport offset."""
+        pass
+
+    @abstractmethod
     def touch(self):
         """
         Must be an atomic operation which forces a redraw of the screen.
         E.g. it should set a boolean somewhere such that the drawing thread notices
         that a redraw is required.
         """
-        raise NotImplementedError("An abstract method is not callable.")
+        pass
 
+    @abstractmethod
     def notify(self, message):
-        """
-        Notify the user with the given message.
-        """
-        raise NotImplementedError("An abstract method is not callable.")
+        """Notify the user with the given message. """
+        pass
 
+    @abstractmethod
     def _getuserinput(self):
         """
         Get the next input from the user.
         This can either be a key (in string representation) or a command.
         """
-        raise NotImplementedError("An abstract method is not callable.")
+        pass
 
     def getinput(self):
-        """
-        Pop and return the first object from the input queue.
-        """
+        """Pop and return the first object from the input queue. """
         if not self.inputqueue:
             self.inputqueue.appendleft(self._getuserinput())
         result = self.inputqueue.pop()
@@ -52,9 +62,7 @@ class UserInterface:
         #raise NotImplementedError("An abstract method is not callable.")
 
     def peekinput(self):
-        """
-        Return the first object from the input queue.
-        """
+        """Return the first object from the input queue. """
         if not self.inputqueue:
             self.inputqueue.appendleft(self._getuserinput())
         return self.inputqueue[-1]

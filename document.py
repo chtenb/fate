@@ -4,6 +4,7 @@ from .event import Event
 from . import commands
 from .userinterface import UserInterface
 from . import pointer
+from .navigation import center_around_selection
 
 import logging
 
@@ -36,8 +37,6 @@ class Document():
         self.OnPrompt = Event()
 
         self.filename = filename
-        self.selection = Selection(Interval(0, 0))
-        self.selectmode = ''
 
         if not self.create_userinterface:
             raise Exception('No function specified in Document.create_userinterface.')
@@ -49,6 +48,9 @@ class Document():
         from .keymap import default
         self.keymap = {}
         self.keymap.update(default)
+
+        self.selection = Selection(Interval(0, 0))
+        self.selectmode = ''
 
         self.OnDocumentInit.fire(self)
 
@@ -107,6 +109,9 @@ class Document():
         assert isinstance(value, Selection)
         value.validate(self)
         self._selection = value
+
+        # Update the userinterface viewport to center around first interval
+        center_around_selection(self)
 
     def processinput(self, userinput):
         """This method is called when this document receives userinput."""

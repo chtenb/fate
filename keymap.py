@@ -21,7 +21,7 @@ default = {
     'Ctrl-p': commands.previous_document,
     'F(3)': commands.formattext,
     'f': commands.local_find,
-    'F': commands.local_find_backwards,
+    'F': commands.local_find_backward,
     '/': commands.search,
     '*': commands.search_current_content,
     'n': commands.search_next,
@@ -45,7 +45,7 @@ default = {
     ']': commands.selectaround_char,
     'm': commands.join,
     'z': commands.emptybefore,
-    'A': commands.selectall,
+    'Ctrl-a': commands.selectall,
     'I': commands.selectindent,
     'v': commands.lock,
     'V': commands.unlock,
@@ -71,6 +71,8 @@ default = {
     '.': commands.repeat,
     '~': commands.uppercase,
     '`': commands.lowercase,
+    'Ctrl-f': commands.pagedown,
+    'Ctrl-b': commands.pageup,
 }
 
 

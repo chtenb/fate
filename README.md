@@ -85,6 +85,7 @@ Syntaxhighlighting should be disabled for the first category, while global searc
 Todo
 ----
 
+- Fix bug in pagedown
 - Change extend/reduce selections to change back/forth
     - don't pass selectmode to selectors, but treat everything the same
 - Selectaround
