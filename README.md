@@ -4,7 +4,7 @@ NOTE: Still very experimental and not ready for use.
 
 Fate
 ====
-Fate is a highly programmable text editor, mainly intended for programming purposes.
+F.A.T.E. is a highly programmable text editor, mainly intended for programming purposes.
 
 Documentation
 -------------
@@ -83,10 +83,10 @@ Syntaxhighlighting should be disabled for the first category, while global searc
 
 
 Todo
-----
+====
 SHORT TERM
 - Change extend/reduce selections to change back/forth.
-    don't pass selectmode to selectors, but treat everything the same
+  - Don't pass selectmode to selectors, but treat everything the same
 - Selectaround
 - Gui integration communication (windowsize)
 - Different forms of wrapping left/right + word/character
@@ -94,18 +94,18 @@ SHORT TERM
 - Errorchecking
 - Fix unnecessary pylint complains
 - Reimplement repeat, since classes can't be decorated
-    Problem: how to handle next_document etc? We don't want those to be recorded.
+  - Problem: how to handle next_document etc? We don't want those to be recorded.
 - Implement commandmode as a persistent command, similar to undomode
 - Select around/inside (not finished yet)
 - Improve syntax highlighting, for instance by disregarding quotes inside comments and strings
-    select around should maybe also disregard brackets etc in comments and strings
+  - select around should maybe also disregard brackets etc in comments and strings
 - Enhance selector set
 - Think about how to decorate classes easily, without disabling subclassing
-    Can't decorate classes by functions: this turns them into functions
-    this means that they can't be used as parentclass
-    and that they can't be checked by issubclass
+  - Can't decorate classes by functions: this turns them into functions
+  - This means that they can't be used as parentclass
+  - and that they can't be checked by issubclass
 - Think about possibility to add remap support (i.e. map keys forall modes)
-    This is a generalization of the cancelkey feature
+  - This is a generalization of the cancelkey feature
 - Incorporate testing with multiple sessions
 - Unittests for pattern select machinery
 
@@ -114,20 +114,13 @@ LONG TERM
 - Make labeling generation asynchronous
 - Persistent session (using a context manager?)
 - Contextual completion
-    For completion it is also needed that the full text can be constructed including the pending operation. (No it isn't!! Only filtering is done based on the input, the context is not changed)
+  - For completion it is also needed that the full text can be constructed including the pending operation. (No it isn't!! Only filtering is done based on the input, the context is not changed)
 - Switch to alternative regex engine?
 - Focus on non-atomic operations
 - Idea: jumplist of lines of changes
 - Conceal
 - Easier file opening
 - Some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same. If one changes, the other changes with it.
-
-RESEARCH
-- Optimal configurable datastructure for text editing
-    optimize it for linenumber queries as well, not only for char numbers
-- Optimal configurable datastructure for labeling/syntax highlighting
-- Store additional metadata such as the number of line breaks in a certain range
-- Executing regex over the whole text should be fast, so is this case we want lookup to be constant time (amortized)
 
 [docs]: http://chiel92.github.io/fate/
 [fate-tui]: http://github.com/Chiel92/fate-tui
