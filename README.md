@@ -90,6 +90,8 @@ SHORT TERM
 - Selectaround
 - Gui integration communication (windowsize)
 - Different forms of wrapping left/right + word/character
+- Conceal (Generalization of listchars)
+  - UI gets a modified version of the text
 - Ready for use
 - Errorchecking
 - Fix unnecessary pylint complains
@@ -118,7 +120,6 @@ LONG TERM
 - Switch to alternative regex engine?
 - Focus on non-atomic operations
 - Idea: jumplist of lines of changes
-- Conceal
 - Easier file opening
 - Some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same. If one changes, the other changes with it.
 

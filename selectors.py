@@ -31,14 +31,14 @@ def escape(document):
 commands.escape = escape
 
 
-def extendmode(document):
-    document.selectmode = 'Extend'
-commands.extendmode = extendmode
+def headselectmode(document):
+    document.selectmode = 'head'
+commands.headselectmode = headselectmode
 
 
-def reducemode(document):
-    document.selectmode = 'Reduce'
-commands.reducemode = reducemode
+def tailselectmode(document):
+    document.selectmode = 'tail'
+commands.tailselectmode = tailselectmode
 
 
 def normalselectmode(document):
@@ -52,11 +52,23 @@ def selector(function):
     def wrapper(document, selection=None, selectmode=None, preview=False):
         selection = selection or document.selection
         selectmode = selectmode or document.selectmode
-        selection = function(document, selection, selectmode)
+
+        # Process according to selectmode
+        #if selectmode == 'extend forward':
+            #start = Selection([Interval(end, end) for beg, end in selection])
+        #elif selectmode == 'extend backward':
+            #start = Selection([Interval(beg, beg) for beg, end in selection])
+        #else:
+            #start = selection
+
+        result = function(document, selection, selectmode)
+        # TODO: XOR/symmetric difference result with original selection?
+        # + join result etc..
+
         if preview:
-            return selection
-        if selection != None:
-            selection(document)
+            return result
+        if result != None:
+            result(document)
     return wrapper
 
 
@@ -239,8 +251,7 @@ def select_local_pattern(pattern, document, interval, selectmode, reverse=False,
     new_interval = None
 
     for mbeg, mend in match_intervals:
-        # If only_within is True,
-        # match must be within current interval
+        # If only_within is True, match must be within current interval
         if only_within and not (beg <= mbeg and mend <= end):
             continue
 
@@ -248,25 +259,26 @@ def select_local_pattern(pattern, document, interval, selectmode, reverse=False,
         if allow_same_interval and (beg, end) == (mbeg, mend):
             return Interval(mbeg, mend)
 
-        # If match is valid, i.e. overlaps
-        # or is beyond current interval in right direction
-        # or is empty interval adjacent to current interval in right direction
-        if (not reverse and mend > beg
-                or reverse and mbeg < end):
-            if selectmode == 'Extend':
-                new_interval = Interval(min(beg, mbeg), max(end, mend))
-            elif selectmode == 'Reduce':
-                if reverse:
-                    mend = max(end, mend)
-                else:
-                    mbeg = min(beg, mbeg)
-                new_interval = interval - Interval(mbeg, mend)
-            else:
+        if not reverse:
+            if selectmode == 'head' and end < mend:
+                new_interval = Interval(beg, mend)
+            elif selectmode == 'tail' and beg < mend <= end:
+                new_interval = Interval(mend, end)
+            elif selectmode == '' and beg < mend:
+                new_interval = Interval(mbeg, mend)
+        debug(new_interval)
+
+        if reverse:
+            if selectmode == 'head' and beg <= mbeg <= end:
+                new_interval = Interval(beg, mbeg)
+            elif selectmode == 'tail' and mbeg < beg:
+                new_interval = Interval(mbeg, end)
+            elif selectmode == '' and mbeg < end:
                 new_interval = Interval(mbeg, mend)
 
-            # If suitable interval found, return it
-            if new_interval and new_interval != interval:
-                return new_interval
+        # If suitable interval found, return it
+        if new_interval and new_interval != interval:
+            return new_interval
 
 
 selectindent = partial(select_local_pattern, r'(?m)^([ \t]*)', reverse=True, group=1,
