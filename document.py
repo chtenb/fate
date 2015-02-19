@@ -38,6 +38,9 @@ class Document():
 
         self.filename = filename
 
+        self._selection = Selection(Interval(0, 0))
+        self.selectmode = ''
+
         if not self.create_userinterface:
             raise Exception('No function specified in Document.create_userinterface.')
         self.ui = self.create_userinterface(self)
@@ -48,9 +51,6 @@ class Document():
         from .keymap import default
         self.keymap = {}
         self.keymap.update(default)
-
-        self.selection = Selection(Interval(0, 0))
-        self.selectmode = ''
 
         self.OnDocumentInit.fire(self)
 

@@ -85,8 +85,7 @@ Syntaxhighlighting should be disabled for the first category, while global searc
 Todo
 ====
 SHORT TERM
-- Change extend/reduce selections to change back/forth.
-  - Don't pass selectmode to selectors, but treat everything the same
+- Fix head/tail behaviour of movedown/moveup
 - Selectaround
 - Gui integration communication (windowsize)
 - Different forms of wrapping left/right + word/character

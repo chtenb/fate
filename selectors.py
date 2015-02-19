@@ -135,8 +135,8 @@ commands.emptyafter = intervalselector(emptyafter)
 def movedown(document, interval, selectmode):
     """Move each interval one line down. Preserve fully selected lines."""
     beg, end = interval
-    currentline = selectfullline(document, interval, selectmode)
-    nextline = selectnextfullline(document, currentline, selectmode)
+    currentline = selectfullline(document, interval, selectmode='')
+    nextline = selectnextfullline(document, currentline, selectmode='')
 
     if nextline == None:
         return
@@ -144,13 +144,20 @@ def movedown(document, interval, selectmode):
     # Crop interval to fit in current line
     beg, end = interval = Interval(beg, min(currentline[1], end))
 
-    # Preserve fully selected lines
     if currentline == interval:
-        return nextline
+        # Preserve fully selected lines
+        nbeg, nend = nextline
+    else:
+        # Embed interval in next line
+        nbeg = min(nextline[0] + beg - currentline[0], nextline[1] - 1)
+        nend = min(nextline[0] + end - currentline[0], nextline[1] - 1)
 
-    # Embed interval in next line
-    nbeg = min(nextline[0] + beg - currentline[0], nextline[1] - 1)
-    nend = min(nextline[0] + end - currentline[0], nextline[1] - 1)
+    if selectmode == 'head' and beg <= nend:
+        return Interval(beg, nend)
+    elif selectmode == 'tail' and nend <= end:
+        return Interval(nend, end)
+    elif selectmode == '':
+        return Interval(nbeg, nend)
 
     #try:
         #Interval(nbeg, nend)
@@ -158,7 +165,6 @@ def movedown(document, interval, selectmode):
         #info(str((nbeg, nend)))
         #return
 
-    return Interval(nbeg, nend)
 commands.movedown = intervalselector(movedown)
 
 
@@ -182,7 +188,13 @@ def moveup(document, interval, selectmode):
     nbeg = min(previousline[0] + beg - currentline[0], previousline[1] - 1)
     nend = min(previousline[0] + end - currentline[0], previousline[1] - 1)
 
-    return Interval(nbeg, nend)
+    if selectmode == 'head' and beg <= nbeg:
+        return Interval(beg, nbeg)
+    elif selectmode == 'tail' and nbeg <= end:
+        return Interval(nbeg, end)
+    elif selectmode == '':
+        return Interval(nbeg, nend)
+
 commands.moveup = intervalselector(moveup)
 
 
@@ -206,14 +218,8 @@ def selectpattern(pattern, document, selection, selectmode, reverse=False, group
     # and process according to mode
     new_intervals = [interval for interval in match_intervals
                      if selection.intersects(interval)]
-
     if new_intervals:
         new_selection = Selection(new_intervals)
-        if selectmode == 'Extend':
-            new_selection.add(new_intervals)
-        elif selectmode == 'Reduce':
-            new_selection.substract(new_intervals)
-
         if new_selection and selection != new_selection:
             newselection.add(new_selection)
             return newselection
@@ -230,11 +236,6 @@ def selectpattern(pattern, document, selection, selectmode, reverse=False, group
         new_selection = Selection(Interval(mbeg, mend))
         # If match is in the right direction
         if not reverse and mend > beg or reverse and mbeg < end:
-            if selectmode == 'Extend':
-                new_selection = selection.add(new_selection)
-            elif selectmode == 'Reduce':
-                new_selection = selection.substract(new_selection)
-
             if new_selection and selection != new_selection:
                 newselection.add(new_selection)
                 return newselection
