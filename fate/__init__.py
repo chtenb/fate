@@ -18,6 +18,7 @@ from . import formatting
 from . import filetype
 from . import labeling
 
+
 info('All standard plugins are loaded.')
 
 
