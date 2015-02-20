@@ -1,3 +1,6 @@
+### COPY THIS FILE TO pylintrc AND CHANGE THE PATH BELOW TO POINT TO YOUR FATE CLONE ###
+
+
 [MASTER]
 
 # Specify a configuration file.
