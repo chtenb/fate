@@ -4,9 +4,9 @@ from .operation import Operation
 from .operators import Append, Insert, delete
 from .selection import Selection, Interval
 from .commandtools import Compose
+from .selectors import selectnextfullline as selectnextfullline_core
 from .commands import (emptybefore, selectpreviousfullline, selectindent,
                        selectnextfullline, selectnextchar, selectpreviouschar)
-from .selectors import selectnextfullline as selectnextfullline_core
 from .clipboard import copy, clear, paste_before, Cut
 from .mode import Mode
 from . import document

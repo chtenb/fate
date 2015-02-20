@@ -8,7 +8,6 @@ from . import commands
 from .document import Document
 
 Document.cancelkey = 'Esc'  # Esc is now remapped to Cancel
-
 default = {
     # In normalmode the cancel key switches to normal select mode or empties thselection
     'Cancel': commands.escape,
