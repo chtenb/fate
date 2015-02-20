@@ -54,14 +54,14 @@ def selector(function):
         selectmode = selectmode or document.selectmode
 
         # Process according to selectmode
-        #if selectmode == 'extend forward':
-            #start = Selection([Interval(end, end) for beg, end in selection])
-        #elif selectmode == 'extend backward':
-            #start = Selection([Interval(beg, beg) for beg, end in selection])
-        #else:
-            #start = selection
+        # if selectmode == 'extend forward':
+        #start = Selection([Interval(end, end) for beg, end in selection])
+        # elif selectmode == 'extend backward':
+        #start = Selection([Interval(beg, beg) for beg, end in selection])
+        # else:
+        #start = selection
 
-        result = function(document, selection, selectmode='')
+        result = function(document, selection, selectmode)
         # TODO: XOR/symmetric difference result with original selection?
         # + join result etc..
 
@@ -110,7 +110,7 @@ def intervalselector(function):
     def wrapper(document, selection, selectmode=''):
         new_intervals = []
         for interval in selection:
-            new_interval = function(document, interval, selectmode='')
+            new_interval = function(document, interval, selectmode)
             if new_interval == None:
                 return
             new_intervals.append(new_interval)
@@ -132,22 +132,26 @@ def emptyafter(document, interval, selectmode=''):
 commands.emptyafter = intervalselector(emptyafter)
 
 
-def movedown(document, interval, selectmode=''):
+def movedown(document, interval, selectmode='', reverse=False):
     """Move each interval one line down. Preserve fully selected lines."""
     beg, end = interval
     if selectmode == 'tail':
         currentline = selectfullline(document, Interval(beg, beg))
     else:
         currentline = selectfullline(document, Interval(end, end))
-    nextline = selectnextfullline(document, currentline)
+
+    if not reverse:
+        nextline = selectnextfullline(document, currentline)
+    else:
+        nextline = selectpreviousfullline(document, currentline)
 
     if nextline == None:
         return
 
     # Crop interval to fit in current line
-    beg, end = interval = Interval(beg, min(currentline[1], end))
+    cropped_interval = Interval(beg, min(currentline[1], end))
 
-    if currentline == interval:
+    if currentline == cropped_interval:
         # Preserve fully selected lines
         nbeg, nend = nextline
     else:
@@ -155,10 +159,10 @@ def movedown(document, interval, selectmode=''):
         nbeg = min(nextline[0] + beg - currentline[0], nextline[1] - 1)
         nend = min(nextline[0] + end - currentline[0], nextline[1] - 1)
 
+    # Take selectmode into account
     if selectmode == 'head' and beg <= nend:
         return Interval(beg, nend)
     elif selectmode == 'tail' and nbeg <= end:
-        debug('asdf')
         return Interval(nbeg, end)
     elif selectmode == '':
         return Interval(nbeg, nend)
@@ -167,30 +171,7 @@ commands.movedown = intervalselector(movedown)
 
 def moveup(document, interval, selectmode=''):
     """Move each interval one line up. Preserve fully selected lines."""
-    beg, end = interval
-    currentline = selectfullline(document, interval, selectmode)
-    previousline = selectpreviousfullline(document, currentline, selectmode)
-
-    if previousline == None:
-        return
-
-    # Crop interval to fit in current line
-    beg, end = interval = Interval(beg, min(currentline[1], end))
-
-    # Preserve fully selected lines
-    if currentline == interval:
-        return previousline
-
-    # Embed interval in previous line
-    nbeg = min(previousline[0] + beg - currentline[0], previousline[1] - 1)
-    nend = min(previousline[0] + end - currentline[0], previousline[1] - 1)
-
-    if selectmode == 'head' and beg <= nbeg:
-        return Interval(beg, nbeg)
-    elif selectmode == 'tail' and nbeg <= end:
-        return Interval(nbeg, end)
-    elif selectmode == '':
-        return Interval(nbeg, nend)
+    return movedown(document, interval, selectmode, reverse=True)
 commands.moveup = intervalselector(moveup)
 
 
