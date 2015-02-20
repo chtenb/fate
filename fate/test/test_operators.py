@@ -1,12 +1,11 @@
-from ..selectors import nextword
 from ..operators import Insert
-from ..commands import undo
+from ..commands import selectnextword, undo
 from .basetestcase import BaseTestCase
 
 class OperatorTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
-        nextword(self.document)(self.document)
+        selectnextword(self.document)
 
     def test_insert(self):
         command = Insert('Foo ')

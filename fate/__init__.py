@@ -9,8 +9,8 @@ from logging import info, debug
 info('Starting fate.')
 
 # Load modules exposing commands, to make sure the commands module contains all commands
-from . import (clipboard, commandmode, commandtools, document, filecommands,
-               insertoperations, operators, repeat, search, selectaround, selectors,
+from . import (selectors, clipboard, commandmode, commandtools, document, filecommands,
+               insertoperations, operators, repeat, search, selectaround,
                undotree, pointer)
 
 # Load standard plugins

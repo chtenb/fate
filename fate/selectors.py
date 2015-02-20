@@ -53,17 +53,7 @@ def selector(function):
         selection = selection or document.selection
         selectmode = selectmode or document.selectmode
 
-        # Process according to selectmode
-        # if selectmode == 'extend forward':
-        #start = Selection([Interval(end, end) for beg, end in selection])
-        # elif selectmode == 'extend backward':
-        #start = Selection([Interval(beg, beg) for beg, end in selection])
-        # else:
-        #start = selection
-
         result = function(document, selection, selectmode)
-        # TODO: XOR/symmetric difference result with original selection?
-        # + join result etc..
 
         if preview:
             return result

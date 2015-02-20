@@ -1,12 +1,11 @@
-from ..selectors import nextword
-from ..commands import undo
+from ..commands import selectnextword, undo
 from ..clipboard import copy, paste_before
 from .basetestcase import BaseTestCase
 
 class ClipboardTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
-        nextword(self.document)(self.document)
+        selectnextword(self.document)
 
     def test_paste_before(self):
         copy(self.document)

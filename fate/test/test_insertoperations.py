@@ -2,11 +2,10 @@
 This module provides testcases for insertoperations.
 Auto indentation is covered.
 """
-from ..selectors import nextline, previousword
+from ..commands import selectnextline, selectpreviousword
 from ..insertoperations import ChangeAfter, ChangeBefore, ChangeInPlace, ChangeAround
 from ..undotree import undo
 from .basetestcase import BaseTestCase
-from ..commandtools import execute
 from .. import document
 from .. import run
 
@@ -16,7 +15,7 @@ def deactivate(doc):
 class OperatorTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
-        execute(nextline, self.document)
+        selectnextline(self.document)
 
     def test_change_before(self):
         self.document.ui.feedinput(ChangeBefore)
@@ -65,7 +64,7 @@ class OperatorTest(BaseTestCase):
         for char in '\n\n  (hi)':
             self.document.ui.feedinput(char)
         self.document.ui.feedinput('Cancel')
-        self.document.ui.feedinput(previousword)
+        self.document.ui.feedinput(selectpreviousword)
         self.document.ui.feedinput(ChangeAround)
         self.document.ui.feedinput('\n')
         self.document.ui.feedinput('Cancel')

@@ -2,7 +2,7 @@ from importlib import import_module
 import logging
 import subprocess
 
-from ..selectors import selectall
+from ..commands import selectall
 from ..operation import Operation
 from ..document import Document
 from .. import commands
@@ -43,6 +43,7 @@ commands.formattext = formattext
 
 
 def load_filetype_formatter(doc):
+    doc.formatter = None
     if doc.filetype:
         try:
             module = import_module(__name__ + '.' + doc.filetype)

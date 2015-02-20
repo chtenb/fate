@@ -1,5 +1,5 @@
 from ..selection import Interval, Selection
-from ..selectors import selectall, nextword
+from ..commands import selectall, selectnextword
 from .basetestcase import BaseTestCase
 
 class SelectorTest(BaseTestCase):
@@ -12,8 +12,7 @@ class SelectorTest(BaseTestCase):
         self.assertEqual(expected, self.document.selection)
 
     def test_next_word(self):
-        command = nextword(self.document)
-        command(self.document)
+        selectnextword(self.document)
         expected = Selection([Interval(0, 6)])
         self.assertEqual(expected, self.document.selection)
 

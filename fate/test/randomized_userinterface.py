@@ -35,11 +35,28 @@ class RandomizedUserSimulator(UserInterface):
     def __init__(self, document):
         UserInterface.__init__(self, document)
         self.nextkey = None
+        self.offset = (0, 0)
+
+    @property
+    def viewport_size(self):
+        """Get viewport size."""
+        return (500, 500)
+
+    @property
+    def viewport_offset(self):
+        """Get and set viewport offset."""
+        return self.offset
+
+    @viewport_offset.setter
+    def viewport_offset(self, value):
+        """Get and set viewport offset."""
+        self.offset = value
+
 
     def quit(self, document):
         assert document is self.document
 
-    def getinput(self):
+    def _getuserinput(self):
         if self.nextkey:
             nextkey = self.nextkey
             self.nextkey = None

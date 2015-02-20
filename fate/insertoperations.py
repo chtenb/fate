@@ -4,8 +4,9 @@ from .operation import Operation
 from .operators import Append, Insert, delete
 from .selection import Selection, Interval
 from .commandtools import Compose
-from .selectors import (emptybefore, selectpreviousfullline, selectindent,
-                        selectnextfullline, selectnextchar, selectpreviouschar)
+from .commands import (emptybefore, selectpreviousfullline, selectindent,
+                       selectnextfullline, selectnextchar, selectpreviouschar)
+from .selectors import selectnextfullline as selectnextfullline_core
 from .clipboard import copy, clear, paste_before, Cut
 from .mode import Mode
 from . import document
@@ -72,7 +73,7 @@ class InsertMode(Mode):
 
 def get_indent(doc, pos):
     """Get the indentation of the line containing position pos."""
-    line = selectnextfullline(doc, Interval(pos, pos))
+    line = selectnextfullline_core(doc, interval=Interval(pos, pos))
     string = line.content(doc)
     match = re.search(r'^[ \t]*', string)
     #debug('pos: ' + str(pos))
