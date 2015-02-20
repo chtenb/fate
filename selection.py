@@ -44,6 +44,9 @@ class Interval:
         else:
             return NotImplemented
 
+    def content(self, document):
+        return document.text[max(0, self.beg):min(len(document.text), self.end)]
+
 
 class Selection:
 

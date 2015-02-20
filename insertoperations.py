@@ -72,8 +72,8 @@ class InsertMode(Mode):
 
 def get_indent(doc, pos):
     """Get the indentation of the line containing position pos."""
-    line = selectnextfullline(doc, selection=Selection(intervals=Interval(pos, pos)))
-    string = line.content(doc)[0]
+    line = selectnextfullline(doc, Interval(pos, pos))
+    string = line.content(doc)
     match = re.search(r'^[ \t]*', string)
     #debug('pos: ' + str(pos))
     #debug('line: ' + string)

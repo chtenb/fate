@@ -61,7 +61,7 @@ def selector(function):
         #else:
             #start = selection
 
-        result = function(document, selection, selectmode)
+        result = function(document, selection, selectmode='')
         # TODO: XOR/symmetric difference result with original selection?
         # + join result etc..
 
@@ -72,32 +72,32 @@ def selector(function):
     return wrapper
 
 
-def selectall(document, selection, selectmode):
+def selectall(document, selection, selectmode=''):
     """Select the entire text."""
     return Selection(Interval(0, len(document.text)))
 commands.selectall = selector(selectall)
 
 
-def select_single_interval(document, selection, selectmode):
+def select_single_interval(document, selection, selectmode=''):
     """Reduce the selection to the single uppermost interval."""
     return Selection(selection[0])
 commands.select_single_interval = selector(select_single_interval)
 
 
-def empty(document, selection, selectmode):
+def empty(document, selection, selectmode=''):
     """Reduce the selection to a single uppermost empty interval."""
     beg = selection[0][0]
     return Selection(Interval(beg, beg))
 commands.empty = selector(empty)
 
 
-def join(document, selection, selectmode):
+def join(document, selection, selectmode=''):
     """Join all intervals together."""
     return Selection(Interval(selection[0][0], selection[-1][1]))
 commands.join = selector(join)
 
 
-def complement(document, selection, selectmode):
+def complement(document, selection, selectmode=''):
     """Return the complement."""
     return Selection(selection.complement(document))
 commands.complement = selector(complement)
@@ -107,10 +107,10 @@ def intervalselector(function):
     """Turn given intervalselector in a command that takes a document."""
     @wraps(function)
     @selector
-    def wrapper(document, selection, selectmode):
+    def wrapper(document, selection, selectmode=''):
         new_intervals = []
         for interval in selection:
-            new_interval = function(document, interval, selectmode)
+            new_interval = function(document, interval, selectmode='')
             if new_interval == None:
                 return
             new_intervals.append(new_interval)
@@ -118,25 +118,28 @@ def intervalselector(function):
     return wrapper
 
 
-def emptybefore(document, interval, selectmode):
+def emptybefore(document, interval, selectmode=''):
     """Return the empty interval before each interval."""
     beg, _ = interval
     return Interval(beg, beg)
 commands.emptybefore = intervalselector(emptybefore)
 
 
-def emptyafter(document, interval, selectmode):
+def emptyafter(document, interval, selectmode=''):
     """Return the empty interval after each interval."""
     _, end = interval
     return Interval(end, end)
 commands.emptyafter = intervalselector(emptyafter)
 
 
-def movedown(document, interval, selectmode):
+def movedown(document, interval, selectmode=''):
     """Move each interval one line down. Preserve fully selected lines."""
     beg, end = interval
-    currentline = selectfullline(document, interval, selectmode='')
-    nextline = selectnextfullline(document, currentline, selectmode='')
+    if selectmode == 'tail':
+        currentline = selectfullline(document, Interval(beg, beg))
+    else:
+        currentline = selectfullline(document, Interval(end, end))
+    nextline = selectnextfullline(document, currentline)
 
     if nextline == None:
         return
@@ -154,21 +157,15 @@ def movedown(document, interval, selectmode):
 
     if selectmode == 'head' and beg <= nend:
         return Interval(beg, nend)
-    elif selectmode == 'tail' and nend <= end:
-        return Interval(nend, end)
+    elif selectmode == 'tail' and nbeg <= end:
+        debug('asdf')
+        return Interval(nbeg, end)
     elif selectmode == '':
         return Interval(nbeg, nend)
-
-    #try:
-        #Interval(nbeg, nend)
-    #except AssertionError:
-        #info(str((nbeg, nend)))
-        #return
-
 commands.movedown = intervalselector(movedown)
 
 
-def moveup(document, interval, selectmode):
+def moveup(document, interval, selectmode=''):
     """Move each interval one line up. Preserve fully selected lines."""
     beg, end = interval
     currentline = selectfullline(document, interval, selectmode)
@@ -194,7 +191,6 @@ def moveup(document, interval, selectmode):
         return Interval(nbeg, end)
     elif selectmode == '':
         return Interval(nbeg, nend)
-
 commands.moveup = intervalselector(moveup)
 
 
@@ -207,7 +203,7 @@ def findpattern(text, pattern, reverse=False, group=0):
             for match in matches]
 
 
-def selectpattern(pattern, document, selection, selectmode, reverse=False, group=0):
+def selectpattern(pattern, document, selection, selectmode='', reverse=False, group=0):
     newselection = Selection()
     selection = selection or document.selection
     selectmode = selectmode or document.selectmode
@@ -243,7 +239,7 @@ def selectpattern(pattern, document, selection, selectmode, reverse=False, group
     return newselection
 
 
-def select_local_pattern(pattern, document, interval, selectmode, reverse=False,
+def select_local_pattern(pattern, document, interval, selectmode='', reverse=False,
                          group=0, only_within=False, allow_same_interval=False):
 
     match_intervals = findpattern(document.text, pattern, reverse, group)
@@ -267,7 +263,6 @@ def select_local_pattern(pattern, document, interval, selectmode, reverse=False,
                 new_interval = Interval(mend, end)
             elif selectmode == '' and beg < mend:
                 new_interval = Interval(mbeg, mend)
-        debug(new_interval)
 
         if reverse:
             if selectmode == 'head' and beg <= mbeg <= end:
