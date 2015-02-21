@@ -1,5 +1,4 @@
 from .basetestcase import BaseTestCase
-from random import choice
 from ..commandtools import execute
 from tempfile import gettempdir
 from os import urandom
@@ -73,21 +72,27 @@ class RandomizedActionTest(BaseTestCase):
                     name = userinput.__name__
                 except AttributeError:
                     name = str(userinput)
-                print(str(i + 1) + ': Input = ' + name + ', Mode = ' + str(self.document.mode))
+                print('{}: Input = {}, Mode = {}'.format(i + 1, name, self.document.mode))
 
-            if self.document.mode:
-                # We are not in normalmode
-                self.document.mode.processinput(self.document, userinput)
-            else:
-                # We are in normalmode
-                if type(userinput) == str:
-                    key = userinput
-                    if key in self.document.keymap:
-                        command = self.document.keymap[key]
-                    else:
-                        command = None
+            try:
+                if self.document.mode:
+                    # We are not in normalmode
+                    self.document.mode.processinput(self.document, userinput)
                 else:
-                    command = userinput
+                    # We are in normalmode
+                    if type(userinput) == str:
+                        key = userinput
+                        if key in self.document.keymap:
+                            command = self.document.keymap[key]
+                        else:
+                            command = None
+                    else:
+                        command = userinput
 
-                while callable(command):
-                    command = command(self.document)
+                    while callable(command):
+                        command = command(self.document)
+            except:
+                print('Current text: {}'.format(self.document.text))
+                print('Current selection: {}'.format(self.document.selection))
+                print('Current pattern: {}'.format(self.document.search_pattern))
+                raise

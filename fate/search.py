@@ -18,7 +18,8 @@ commands.local_find = local_find
 
 def local_find_backward(document):
     key = document.ui.getkey()
-    selector = intervalselector(partial(select_local_pattern, re.escape(key), reverse=True))
+    selector = intervalselector(partial(select_local_pattern, re.escape(key),
+                                        reverse=True))
     selector(document)
 commands.local_find_backward = local_find_backward
 
@@ -27,8 +28,9 @@ def _search(document):
     document.search_pattern = document.promptinput
     if document.search_pattern:
         try:
-            selectpattern(document.search_pattern, document, document.selection,
-                          document.selectmode)(document)
+            command = selectpattern(document.search_pattern, document, document.selection,
+                                    document.selectmode)
+            command(document)
         except re.error as e:
             document.ui.notify(str(e))
 commands.search = Compose(prompt('/'), _search)
@@ -43,13 +45,21 @@ commands.search_current_content = search_current_content
 
 def search_next(document):
     if document.search_pattern:
-        selectpattern(document.search_pattern, document, document.selection,
-                      document.selectmode)(document)
+        try:
+            command = selectpattern(document.search_pattern, document, document.selection,
+                                    document.selectmode)
+            command(document)
+        except re.error as e:
+            document.ui.notify(str(e))
 commands.search_next = search_next
 
 
 def search_previous(document):
     if document.search_pattern:
-        selectpattern(document.search_pattern, document, document.selection,
-                      document.selectmode, reverse=True)(document)
+        try:
+            command = selectpattern(document.search_pattern, document, document.selection,
+                                    document.selectmode, reverse=True)
+            command(document)
+        except re.error as e:
+            document.ui.notify(str(e))
 commands.search_previous = search_previous

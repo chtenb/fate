@@ -6,10 +6,12 @@ from ..operation import Operation
 from ..document import Document
 from .. import commands
 from ..commands import selectall
+from ..selection import Selection, Interval
 
 # Dependencies
 from .. import filetype
 
+from logging import info
 
 class Formatter:
 
@@ -35,9 +37,7 @@ def formattext(doc):
         selectall(doc)
         operation = Operation(doc, newcontent=[newtext])
         operation(doc)
-
-        # TODO: select something useful after format
-        doc.selection = oldselection
+        doc.selection = oldselection.bound(0, len(newtext))
 
 commands.formattext = formattext
 

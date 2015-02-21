@@ -16,7 +16,8 @@ key_space = list(
 ) + 30 * ['Cancel'] + ['Esc', 'Up', 'Down', 'Left', 'Right']
 
 command_dict = publics(commands)
-forbidden_command_names = ['open_document', 'quit_document', 'force_quit', 'quit_all']
+forbidden_command_names = ['open_document', 'quit_document', 'force_quit', 'quit_all',
+                           'formattext']
 forbidden_commands = [command_dict[name] for name in forbidden_command_names]
 for name in forbidden_command_names:
     command_dict.pop(name)
@@ -52,7 +53,6 @@ class RandomizedUserSimulator(UserInterface):
         """Get and set viewport offset."""
         self.offset = value
 
-
     def quit(self, document):
         assert document is self.document
 
@@ -77,7 +77,8 @@ class RandomizedUserSimulator(UserInterface):
         # If we are in a certain mode we try to construct a meaningful input space
         mode = self.document.mode
         input_space = ['Cancel']
-        input_space.extend([c for c in mode.allowedcommands if not c in forbidden_commands])
+        input_space.extend(
+            [c for c in mode.allowedcommands if not c in forbidden_commands])
 
         if mode.keymap:
             input_space.extend(mode.keymap.values())

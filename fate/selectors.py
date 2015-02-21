@@ -16,7 +16,22 @@ Because of this, it is a good habit to only decorate the function that is placed
 the commands module, not the function itself.
 """
 import re
-from functools import partial, wraps
+from functools import wraps
+
+
+def partial(func, *args, __name__='', __docs__='', **keywords):
+    """Pragmatic solution for being able to set a name for a partial function"""
+    @wraps(func)
+    def wrapper(*fargs, **fkeywords):
+        newkeywords = keywords.copy()
+        newkeywords.update(fkeywords)
+        return func(*(args + fargs), **newkeywords)
+    wrapper.func = func
+    wrapper.args = args
+    wrapper.keywords = keywords
+    wrapper.__name__ = __name__
+    wrapper.__docs__ = __docs__
+    return wrapper
 
 from . import commands
 from .selection import Selection, Interval
@@ -260,7 +275,7 @@ def select_local_pattern(pattern, document, interval, selectmode='', reverse=Fal
 
 
 selectindent = partial(select_local_pattern, r'(?m)^([ \t]*)', reverse=True, group=1,
-                       allow_same_interval=True)
+                       allow_same_interval=True, __name__='selectindent')
 commands.selectindent = intervalselector(selectindent)
 
 
