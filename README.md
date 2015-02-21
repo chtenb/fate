@@ -85,7 +85,6 @@ Syntaxhighlighting should be disabled for the first category, while global searc
 Todo
 ====
 SHORT TERM
-- Fix head/tail behaviour of movedown/moveup
 - Selectaround
 - Gui integration communication (windowsize)
 - Different forms of wrapping left/right + word/character

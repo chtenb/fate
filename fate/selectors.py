@@ -128,7 +128,11 @@ def movedown(document, interval, selectmode='', reverse=False):
     if selectmode == 'tail':
         currentline = selectfullline(document, Interval(beg, beg))
     else:
-        currentline = selectfullline(document, Interval(end, end))
+        # If eol is selected, (end, end) is on next line, so make sure to select 1 char
+        if end - beg > 0:
+            currentline = selectfullline(document, Interval(end - 1, end))
+        else:
+            currentline = selectfullline(document, Interval(end, end))
 
     if not reverse:
         nextline = selectnextfullline(document, currentline)
@@ -139,15 +143,22 @@ def movedown(document, interval, selectmode='', reverse=False):
         return
 
     # Crop interval to fit in current line
-    cropped_interval = Interval(beg, min(currentline[1], end))
+    cbeg, cend = Interval(max(currentline[0], beg), min(currentline[1], end))
 
-    if currentline == cropped_interval:
-        # Preserve fully selected lines
-        nbeg, nend = nextline
+    # Embed interval in next line
+    if nextline[1] == len(document.text):
+        # Exceptional case for the last line which has no eol character
+        nbeg = min(nextline[0] + cbeg - currentline[0], nextline[1])
+        nend = min(nextline[0] + cend - currentline[0], nextline[1])
     else:
-        # Embed interval in next line
-        nbeg = min(nextline[0] + beg - currentline[0], nextline[1] - 1)
-        nend = min(nextline[0] + end - currentline[0], nextline[1] - 1)
+        nbeg = min(nextline[0] + cbeg - currentline[0], nextline[1] - 1)
+        nend = min(nextline[0] + cend - currentline[0], nextline[1] - 1)
+    assert 0 <= nbeg <= nend
+
+    # Preserve selected eol
+    if end == currentline[1]:
+        nend = nextline[1]
+        nbeg = min(nbeg, nextline[1] - 1)
 
     # Take selectmode into account
     if selectmode == 'head' and beg <= nend:

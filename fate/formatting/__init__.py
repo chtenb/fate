@@ -2,10 +2,10 @@ from importlib import import_module
 import logging
 import subprocess
 
-from ..commands import selectall
 from ..operation import Operation
 from ..document import Document
 from .. import commands
+from ..commands import selectall
 
 # Dependencies
 from .. import filetype

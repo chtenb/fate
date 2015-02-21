@@ -2,7 +2,7 @@ import re
 from . import commands
 from .operation import Operation
 from .operators import Append, Insert, delete
-from .selection import Selection, Interval
+from .selection import Interval
 from .commandtools import Compose
 from .selectors import selectnextfullline as selectnextfullline_core
 from .commands import (emptybefore, selectpreviousfullline, selectindent,
