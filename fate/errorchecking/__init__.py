@@ -13,21 +13,29 @@ class ErrorChecker:
 
     """Container for formatter configuration."""
 
-    def run(self, document):
-        """
-        Has to return errors as a dictionary in the following format:
-        interval : ('error|warning', '<message>')
-        """
+    def check(self, document):
+        """Has to return and errorlist."""
         pass
 
+
+def init_errorlist(document):
+    """
+    An errorlist is a list of tuples of the form
+    (['error'|'warning'], <interval>, <message>)
+    """
+    document.errorlist = []
+Document.OnDocumentInit.add(init_errorlist)
 
 def checkerrors(doc):
     """If doc has a errorchecker, execute it and make results visible."""
     errorchecker = doc.errorchecker
     if errorchecker:
-        result = errorchecker.run(doc)
-        doc.labeling.update(result)
-
+        errorlist = errorchecker.check(doc)
+        doc.errorlist = errorlist
+        for etype, interval, _ in errorlist:
+            beg, end = interval
+            for pos in range(beg, end):
+                doc.labeling[pos] = etype
 commands.checkerrors = checkerrors
 
 

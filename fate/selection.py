@@ -47,6 +47,9 @@ class Interval:
     def content(self, document):
         return document.text[max(0, self.beg):min(len(document.text), self.end)]
 
+    def __hash__(self):
+        return hash((self.beg, self.end))
+
 
 class Selection:
 

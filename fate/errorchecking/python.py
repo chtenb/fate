@@ -19,7 +19,7 @@ class PythonChecker(ErrorChecker):
     def __init__(self):
         pass
 
-    def run(self, document):
+    def check(self, document):
         tempfile = gettempdir() + '/' + document.filename + '.fatemp'
         with open(tempfile, 'w') as fd:
             fd.write(document.text)
@@ -31,18 +31,18 @@ class PythonChecker(ErrorChecker):
 
         error_regex = re.compile(r'File "(.+)", line (\d+).*\^\s*(\w+: .+)', re.DOTALL)
 
-        info(errors)
+        #info(errors)
 
-        result = {}
+        result = []
         for match in error_regex.findall(errors):
             if match == None:
                 raise Exception('Error doesn\'t match error format')
             else:
                 line = int(match[1])
                 message = match[2]
-                pos = coord_to_position(line, 0, document.text) - 1
-                result[pos] = 'error'
-        info(result)
+                beg = coord_to_position(line - 1, 0, document.text)
+                end = coord_to_position(line, 0, document.text)
+                result.append(('error', Interval(beg, end), message))
         return result
 
 
