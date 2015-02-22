@@ -5,25 +5,29 @@ This makes sure that all code that depends on these won't have to import them ma
 
 # Initialize logger
 from . import log
-from logging import info, debug
+from logging import info
 
 
 info('Starting fate.')
 
 # Load modules exposing commands, to make sure the commands module contains all core
 # commands
+from . import commands
 from . import (clipboard, commandmode, commandtools, document, filecommands,
                insertoperations, operators, repeat, search, selectors, selectaround,
                undotree, pointer)
 
 # Load standard plugins
 from . import formatting
+from . import errorchecking
 from . import filetype
 from . import labeling
 
 from . import keymap
 
-
+# TODO: why doesn't pylint recognize functions in the commands module
+info('asdf')
+info(commands.escape)
 info('All standard plugins are loaded.')
 
 

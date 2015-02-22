@@ -8,7 +8,7 @@
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-init-hook='import os, sys;sys.path.insert(0, "~/Projects/tfate/libs/fate/");import fate;'
+init-hook='import sys;sys.path.insert(0, "/home/user/Projects/tfate/libs/fate/");import fate;'
 
 
 # Profiled execution.

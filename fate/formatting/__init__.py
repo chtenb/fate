@@ -1,6 +1,6 @@
 from importlib import import_module
-import logging
 import subprocess
+from logging import info
 
 from ..operation import Operation
 from ..document import Document
@@ -11,7 +11,6 @@ from ..selection import Selection, Interval
 # Dependencies
 from .. import filetype
 
-from logging import info
 
 class Formatter:
 
@@ -48,9 +47,9 @@ def load_filetype_formatter(doc):
         try:
             module = import_module(__name__ + '.' + doc.filetype)
         except ImportError:
-            logging.info('No formatter script found for filetype ' + doc.filetype)
+            info('No formatter script found for filetype ' + doc.filetype)
         else:
-            logging.info('Formatter script found for filetype ' + doc.filetype)
+            info('Formatter script found for filetype ' + doc.filetype)
             doc.formatter = module.formatter
 
 Document.OnFileTypeLoaded.add(load_filetype_formatter)

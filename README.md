@@ -85,6 +85,7 @@ Syntaxhighlighting should be disabled for the first category, while global searc
 Todo
 ====
 SHORT TERM
+- Make it possible to use movedown/up as narrowing selectors
 - Selectaround
 - Gui integration communication (windowsize)
 - Different forms of wrapping left/right + word/character

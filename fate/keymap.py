@@ -19,6 +19,7 @@ default = {
     'Ctrl-n': commands.next_document,
     'Ctrl-p': commands.previous_document,
     'F(3)': commands.formattext,
+    'F(5)': commands.checkerrors,
     'f': commands.local_find,
     'F': commands.local_find_backward,
     '/': commands.search,
