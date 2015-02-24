@@ -17,7 +17,7 @@ key_space = list(
 
 command_dict = publics(commands)
 forbidden_command_names = ['open_document', 'quit_document', 'force_quit', 'quit_all',
-                           'formattext']
+                           'formattext', 'checkerrors']
 forbidden_commands = [command_dict[name] for name in forbidden_command_names]
 for name in forbidden_command_names:
     command_dict.pop(name)

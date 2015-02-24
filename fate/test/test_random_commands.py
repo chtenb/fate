@@ -1,5 +1,4 @@
 from .basetestcase import BaseTestCase
-from ..commandtools import execute
 from tempfile import gettempdir
 from os import urandom
 import random

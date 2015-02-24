@@ -1,7 +1,6 @@
 from . import commands
 from re import match
 from logging import debug
-from .commandtools import execute
 
 
 def command_mode(document):
@@ -64,4 +63,4 @@ def evaluate(document, command):
     except Exception as e:
         return command + ' : ' + str(e)
     else:
-        return execute(result, document)
+        return result(document)
