@@ -85,6 +85,9 @@ Syntaxhighlighting should be disabled for the first category, while global searc
 Todo
 ====
 SHORT TERM
+- ErrorChecking/ErrorMode
+  - Can we remove the while(callable) part from normal mode?
+  - Set next/prev doc as default allowed commands in Mode
 - Make it possible to use movedown/up as narrowing selectors
 - Selectaround
 - Gui integration communication (windowsize)
@@ -92,12 +95,10 @@ SHORT TERM
 - Conceal (Generalization of listchars)
   - UI gets a modified version of the text
 - Ready for use
-- Errorchecking
 - Fix unnecessary pylint complains
 - Reimplement repeat, since classes can't be decorated
   - Problem: how to handle next_document etc? We don't want those to be recorded.
 - Implement commandmode as a persistent command, similar to undomode
-- Select around/inside (not finished yet)
 - Improve syntax highlighting, for instance by disregarding quotes inside comments and strings
   - select around should maybe also disregard brackets etc in comments and strings
 - Enhance selector set

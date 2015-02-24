@@ -6,6 +6,8 @@ from ..selection import Interval
 
 from logging import info
 
+ERROR_REGEX = re.compile(r'(?s)File "(.+)", line (\d+).*\^\s*(\w+: .+)')
+
 
 def coord_to_position(line, column, text):
     position = 0
@@ -16,6 +18,7 @@ def coord_to_position(line, column, text):
 
 
 class PythonChecker(ErrorChecker):
+
     def __init__(self):
         pass
 
@@ -29,12 +32,10 @@ class PythonChecker(ErrorChecker):
                                    stderr=subprocess.PIPE, universal_newlines=True)
         _, errors = process.communicate(document.text)
 
-        error_regex = re.compile(r'File "(.+)", line (\d+).*\^\s*(\w+: .+)', re.DOTALL)
-
-        #info(errors)
+        # info(errors)
 
         result = []
-        for match in error_regex.findall(errors):
+        for match in ERROR_REGEX.findall(errors):
             if match == None:
                 raise Exception('Error doesn\'t match error format')
             else:
@@ -47,4 +48,3 @@ class PythonChecker(ErrorChecker):
 
 
 errorchecker = PythonChecker()
-

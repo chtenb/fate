@@ -7,13 +7,6 @@ from inspect import isclass
 from .mode import Mode
 
 
-def execute(command, document):
-    """Call obj as an command recursively while callable."""
-    while callable(command):
-        command = command(document)
-    return command
-
-
 class Undoable:
 
     """
@@ -44,7 +37,7 @@ class Undoable:
         raise NotImplementedError("An abstract method is not callable.")
 
 
-# There is a complication with implementing composed commands.
+# PROBLEM:
 # Suppose we want to create a compound selection which involves a the mode
 # of the document to change to extend mode at some point.
 # Then extend mode must be executed at creation time,
@@ -56,6 +49,13 @@ class Undoable:
 # If this functionality is required nonetheless,
 # the composition must be defined in an command body
 
+# PROBLEM:
+# how do you know whether to wait or to proceed after executing a mode
+# solution: always wait, if you need a mode to change behaviour of further commands
+# you should do it differently. Modes are meant to change the way that userinput is
+# processed. If you need to switch between behaviours of certain commands (like head/tail
+# selection) you should toggle a bool somewhere.
+
 
 def Compose(*subcommands, name='', docs=''):
     """
@@ -64,7 +64,7 @@ def Compose(*subcommands, name='', docs=''):
     The undoable subcommands should be undoable as a whole.
     """
     # We need to define a new class for each composition
-    # It must derive from Mode, in case any of the subcommands is a mode
+    # It must derive from Mode, in case any of the subcommands is a mode (??)
     class Compound:
 
         def __init__(self, document):
@@ -79,6 +79,7 @@ def Compose(*subcommands, name='', docs=''):
             while self.todo:
                 command = self.todo.popleft()
                 while 1:
+                    # Pass ourselves as callback when executing a mode
                     if isclass(command) and issubclass(command, Mode):
                         command(document, self.proceed)
                         return

@@ -2,7 +2,7 @@
 Mode are persistent commands, i.e. commands that take additional user input
 to complete, and that may be interrupted by other commands (such as switching
 to another document) without being cancelled.
-Effectively, a mode takes over the way user input is handled.
+Effectively, a mode takes over the way user input is handled, but only to a certain level.
 
 Sometimes you want to be able to continue with something after the mode has finished.
 Therefore modes should be able to take a callback function.
@@ -36,7 +36,7 @@ This way we don't need nested modes, so we can keep using them like commands.
 How do we implement Compose then?
 Compose will not be a mode. It just fires modes passing itself as a callback.
 Disadvantage: the toplevel composition isn't visible.
-    The only reference existing is through the callback.
+The only reference existing is through the callback.
 """
 
 
