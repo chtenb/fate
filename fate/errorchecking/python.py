@@ -7,9 +7,7 @@ from ..navigation import coord_to_position
 
 from logging import info
 
-ERROR_REGEX = re.compile(r'(?s)File "(.+)", line (\d+).*\^\s*(\w+: .+)')
-
-
+ERROR_REGEX = re.compile(r'(?s)File "(.+)", line (\d+).*\^\s*(\w+: .+)\n')
 
 
 class PythonChecker(ErrorChecker):
@@ -18,7 +16,7 @@ class PythonChecker(ErrorChecker):
         pass
 
     def check(self, document):
-        tempfile = gettempdir() + '/' + document.filename + '.fatemp'
+        tempfile = gettempdir() + '/' + document.filename.replace('/', '_') + '.fatemp'
         with open(tempfile, 'w') as fd:
             fd.write(document.text)
 
