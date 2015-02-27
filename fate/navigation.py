@@ -56,3 +56,22 @@ def move_n_wrapped_lines_down(text, max_line_width, start, n):
             return position + 1
         position = nextline
 
+def coord_to_position(line, column, text):
+    position = 0
+    while line:
+        position = text.find('\n', position) + 1
+        line -= 1
+    return position + column
+
+def position_to_coord(pos, text):
+    i = 0
+    line = 0
+    while i < pos:
+        j = text.find('\n', i + 1)
+        if j >= pos:
+            break
+        else:
+            line += 1
+            i = j
+    column = pos - i
+    return line, column

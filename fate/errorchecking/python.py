@@ -3,18 +3,13 @@ from tempfile import gettempdir
 import subprocess
 import re
 from ..selection import Interval
+from ..navigation import coord_to_position
 
 from logging import info
 
 ERROR_REGEX = re.compile(r'(?s)File "(.+)", line (\d+).*\^\s*(\w+: .+)')
 
 
-def coord_to_position(line, column, text):
-    position = 0
-    while line:
-        position = text.find('\n', position + 1)
-        line -= 1
-    return position + column
 
 
 class PythonChecker(ErrorChecker):

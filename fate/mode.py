@@ -37,6 +37,10 @@ How do we implement Compose then?
 Compose will not be a mode. It just fires modes passing itself as a callback.
 Disadvantage: the toplevel composition isn't visible.
 The only reference existing is through the callback.
+
+REMARK:
+A mode is thus not necessarily stateful.
+How can we modify a mode keymap for a single document?
 """
 
 
