@@ -138,9 +138,8 @@ class Document():
                 else:
                     command = userinput
 
-                #while callable(command):
-                    #command = command(self)
-                command(self)
+                if callable(command):
+                    command(self)
 
     def process_pointerinput(self, userinput):
         assert isinstance(userinput, pointer.PointerInput)

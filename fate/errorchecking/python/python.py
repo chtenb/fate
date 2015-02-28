@@ -1,16 +1,18 @@
-from . import ErrorChecker
+from .. import ErrorChecker
 from tempfile import gettempdir
 import subprocess
 import re
-from ..selection import Interval
-from ..navigation import coord_to_position
+from ...selection import Interval
+from ...navigation import coord_to_position
 
-from logging import info
+from logging import debug
 
 ERROR_REGEX = re.compile(r'(?s)File "(.+)", line (\d+).*\^\s*(\w+: .+)\n')
 
 
 class PythonChecker(ErrorChecker):
+
+    name = 'python'
 
     def __init__(self):
         pass
@@ -25,7 +27,7 @@ class PythonChecker(ErrorChecker):
                                    stderr=subprocess.PIPE, universal_newlines=True)
         _, errors = process.communicate(document.text)
 
-        # info(errors)
+        #debug(errors)
 
         result = []
         for match in ERROR_REGEX.findall(errors):

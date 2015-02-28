@@ -26,27 +26,29 @@ from . import labeling
 from . import keymap
 
 # TODO: why doesn't pylint recognize functions in the commands module
-info('asdf')
-info(commands.escape)
 info('All standard plugins are loaded.')
 
 
 # Load user script if existent
 from os.path import expanduser
-from sys import path
+import sys
 from importlib import find_loader, import_module
 
 path_to_user = expanduser('~') + '/.fate/'
 try:
-    path.insert(0, path_to_user)
+    sys.path.insert(0, path_to_user)
 except IOError:
     info('No .fate directory is present.')
 else:
-    if find_loader('user'):
+    try:
         import_module('user')
-        info('User script loaded.')
-    else:
+    except ImportError:
+        # Catch import error non-recursively
+        if sys.exc_info()[2].tb_next:
+            raise
         info('No user script is present in .fate directory.')
+    else:
+        info('User script loaded.')
 
 
 # Expose main loop function to the userinterface
