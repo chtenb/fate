@@ -32,10 +32,15 @@ class PythonChecker(ErrorChecker):
             if match == None:
                 raise Exception('Error doesn\'t match error format')
             else:
-                line = int(match[1])
+                line = int(match[1]) - 1 # Our line numbering starts with 0
                 message = match[2]
-                beg = coord_to_position(line - 1, 0, document.text)
-                end = coord_to_position(line, 0, document.text)
+                print(line)
+                print(repr(document.text))
+                beg = coord_to_position(line, 0, document.text)
+                try:
+                    end = coord_to_position(line + 1, 0, document.text) - 1
+                except ValueError:
+                    end = len(document.text)
                 result.append(('error', Interval(beg, end), message))
         return result
 

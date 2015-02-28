@@ -21,7 +21,7 @@ class RandomizedActionTest(BaseTestCase):
         runs = 500
         if args.long:
             runs = 5000
-        if args.rerun:
+        if args.rerun or args.seed:
             runs = 1
 
         for run in range(runs):
@@ -91,7 +91,7 @@ class RandomizedActionTest(BaseTestCase):
                     while callable(command):
                         command = command(self.document)
             except:
-                print('Current text: {}'.format(self.document.text))
+                print('Current text:\n{}'.format(self.document.text))
                 print('Current selection: {}'.format(self.document.selection))
                 print('Current pattern: {}'.format(self.document.search_pattern))
                 raise
