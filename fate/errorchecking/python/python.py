@@ -9,6 +9,8 @@ from logging import debug
 
 ERROR_REGEX = re.compile(r'(?s)File "(.+)", line (\d+).*\^\s*(\w+: .+)\n')
 
+path_to_executable = 'python'
+
 
 class PythonChecker(ErrorChecker):
 
@@ -22,19 +24,19 @@ class PythonChecker(ErrorChecker):
         with open(tempfile, 'w') as fd:
             fd.write(document.text)
 
-        process = subprocess.Popen(['python3', '-B', '-mpy_compile', tempfile],
+        process = subprocess.Popen([path_to_executable, '-B', '-mpy_compile', tempfile],
                                    stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE, universal_newlines=True)
         _, errors = process.communicate(document.text)
 
-        #debug(errors)
+        # debug(errors)
 
         result = []
         for match in ERROR_REGEX.findall(errors):
             if match == None:
                 raise Exception('Error doesn\'t match error format')
             else:
-                line = int(match[1]) - 1 # Our line numbering starts with 0
+                line = int(match[1]) - 1  # Our line numbering starts with 0
                 message = match[2]
                 print(line)
                 print(repr(document.text))
