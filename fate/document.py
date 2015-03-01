@@ -70,7 +70,7 @@ class Document():
         # self.getkey()
 
         if len(documentlist) == 1:
-            print('fate - document: close the last document by setting activedoc to None')
+            logging.debug('fate - document: close the last document by setting activedoc to None')
             activedocument = None
             return
 

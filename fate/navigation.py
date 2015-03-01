@@ -4,6 +4,8 @@ This module contains functionality for navigation/browsing through text without 
 from . import commands
 from logging import info
 from functools import partial
+from logging import debug
+
 
 def movepage(document, backward=False):
     width, height = document.ui.viewport_size
@@ -56,15 +58,24 @@ def move_n_wrapped_lines_down(text, max_line_width, start, n):
             return position + 1
         position = nextline
 
-def coord_to_position(line, column, text):
+
+def coord_to_position(line, column, text, crop=False):
     position = 0
     while line:
         eol = text.find('\n', position)
         if eol == -1:
+            if crop:
+                return len(text) - 1
             raise ValueError('Line number reaches beyond text.')
+
         position = eol + 1
         line -= 1
-    return position + column
+
+    position += column
+    if position >= len(text) and not crop:
+        raise ValueError('Column number reaches beyond text.')
+    return min(position, len(text) - 1)
+
 
 def position_to_coord(pos, text):
     if pos >= len(text):

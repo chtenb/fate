@@ -12,6 +12,7 @@ from logging import debug, error
 # Dependencies
 from .. import filetype
 
+from traceback import extract_tb
 
 class ErrorChecker:
 
@@ -69,11 +70,12 @@ def load_filetype_errorchecker(doc):
         subpackage_name = __name__ + '.' + doc.filetype
         try:
             subpackage = import_module(subpackage_name)
-        except ImportError:
+        except ImportError as e:
             # Catch import error nonrecursively
-            if sys.exc_info()[2].tb_next:
+            if e.name == subpackage_name:
+                info('No errorchecker scripts found for filetype ' + doc.filetype)
+            else:
                 raise
-            info('No errorchecker scripts found for filetype ' + doc.filetype)
         else:
             doc.errorcheckers = subpackage.errorcheckers
             info('Errorchecker scripts found for filetype ' + doc.filetype)

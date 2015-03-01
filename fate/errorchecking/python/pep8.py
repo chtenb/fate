@@ -5,8 +5,6 @@ import re
 from ...selection import Interval
 from ...navigation import coord_to_position
 
-from logging import debug
-
 ERROR_REGEX = re.compile(r'(.+):(\d+):(\d+): (.+)\n')
 
 
@@ -27,8 +25,6 @@ class Pep8Checker(ErrorChecker):
                                    stderr=subprocess.PIPE, universal_newlines=True)
         errors, _ = process.communicate(document.text)
 
-        #debug(errors)
-
         result = []
         for match in ERROR_REGEX.findall(errors):
             if match == None:
@@ -37,7 +33,7 @@ class Pep8Checker(ErrorChecker):
                 line = int(match[1]) - 1 # Our line numbering starts with 0
                 column = int(match[2]) - 1 # Our column numbering starts with 0
                 message = match[3]
-                beg = coord_to_position(line, column, document.text)
+                beg = coord_to_position(line, column, document.text, crop=True)
                 result.append(('error', Interval(beg, beg + 1), message))
         return result
 

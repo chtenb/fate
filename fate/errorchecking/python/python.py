@@ -38,8 +38,6 @@ class PythonChecker(ErrorChecker):
             else:
                 line = int(match[1]) - 1  # Our line numbering starts with 0
                 message = match[2]
-                print(line)
-                print(repr(document.text))
                 beg = coord_to_position(line, 0, document.text)
                 try:
                     end = coord_to_position(line + 1, 0, document.text) - 1
