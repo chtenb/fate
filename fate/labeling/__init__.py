@@ -12,6 +12,7 @@ from .. import filetype
 def load_labeling_script(document):
     """If we have a filetype, try to import the corresponding labeling module."""
     document.OnGenerateLabeling = Event()
+    document.labeling = Labeling()
 
     if document.filetype:
         try:

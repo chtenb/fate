@@ -41,12 +41,13 @@ except IOError:
     info('No .fate directory is present.')
 else:
     try:
-        import_module('user')
-    except ImportError:
+        import user
+    except ImportError as e:
         # Catch import error non-recursively
-        if sys.exc_info()[2].tb_next:
+        if e.name == 'user':
+            info('No user script is present in .fate directory.')
+        else:
             raise
-        info('No user script is present in .fate directory.')
     else:
         info('User script loaded.')
 
