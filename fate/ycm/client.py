@@ -22,13 +22,11 @@ import json
 import os
 import socket
 import subprocess
-import sys
 import tempfile
 import urllib
 import time
 
 import requests
-# enum34 on PyPi
 from enum import Enum
 
 HMAC_HEADER = 'X-Ycm-Hmac'
@@ -45,7 +43,8 @@ EVENT_HANDLER = '/event_notification'
 EXTRA_CONF_HANDLER = '/load_extra_conf_file'
 DIR_OF_THIS_SCRIPT = os.path.dirname(os.path.abspath(__file__))
 PATH_TO_YCMD = os.path.join(DIR_OF_THIS_SCRIPT, 'ycmd', 'ycmd')
-PATH_TO_EXTRA_CONF = os.path.join(DIR_OF_THIS_SCRIPT, '.ycm_extra_conf.py')
+PATH_TO_EXTRA_CONF = os.path.join(DIR_OF_THIS_SCRIPT, 'ycmd', 'examples',
+                                  '.ycm_extra_conf.py')
 
 
 class Event(Enum):
@@ -127,11 +126,7 @@ class YcmdHandle(object):
         print('==== Sending defined subcommands request ====')
         self.PostToHandlerAndLog(DEFINED_SUBCOMMANDS_HANDLER, request_json)
 
-    def SendCodeCompletionRequest(self,
-                                  test_filename,
-                                  filetype,
-                                  line_num,
-                                  column_num):
+    def SendCodeCompletionRequest(self, test_filename, filetype, line_num, column_num):
         request_json = BuildRequestData(test_filename=test_filename,
                                         filetype=filetype,
                                         line_num=line_num,
@@ -139,11 +134,7 @@ class YcmdHandle(object):
         print('==== Sending code-completion request ====')
         self.PostToHandlerAndLog(CODE_COMPLETIONS_HANDLER, request_json)
 
-    def SendGoToRequest(self,
-                        test_filename,
-                        filetype,
-                        line_num,
-                        column_num):
+    def SendGoToRequest(self, test_filename, filetype, line_num, column_num):
         request_json = BuildRequestData(test_filename=test_filename,
                                         command_arguments=['GoTo'],
                                         filetype=filetype,
@@ -152,10 +143,7 @@ class YcmdHandle(object):
         print('==== Sending GoTo request ====')
         self.PostToHandlerAndLog(COMPLETER_COMMANDS_HANDLER, request_json)
 
-    def SendEventNotification(self,
-                              event_enum,
-                              test_filename,
-                              filetype,
+    def SendEventNotification(self, event_enum, test_filename, filetype,
                               line_num=1,  # just placeholder values
                               column_num=1,
                               extra_data=None):
@@ -205,10 +193,9 @@ class YcmdHandle(object):
         return urllib.parse.urljoin(self._server_location, handler)
 
     def _ValidateResponseObject(self, response):
-        if not ContentHexHmacValid(
-                response.content,
-                b64decode(response.headers[HMAC_HEADER]),
-                self._hmac_secret):
+        if not ContentHexHmacValid(response.content,
+                                   b64decode(response.headers[HMAC_HEADER]),
+                                   self._hmac_secret):
             raise RuntimeError('Received invalid HMAC for response!')
         return True
 
@@ -220,7 +207,7 @@ class YcmdHandle(object):
         args = ['http', '-v', method, self._BuildUri(handler)]
         if isinstance(data, collections.Mapping):
             args.append('content-type:application/json')
-            data = ToUtf8Json(data)
+            data = json.dumps(data)
 
         args.append(HMAC_HEADER + ':' + self._HmacForBody(data).decode('utf-8'))
         if method == 'GET':
@@ -231,8 +218,9 @@ class YcmdHandle(object):
         popen.wait()
 
 
-def ContentHexHmacValid(content, hmac, hmac_secret):
-    return SecureCompareStrings(CreateHexHmac(content, hmac_secret).encode('utf-8'), hmac)
+def ContentHexHmacValid(content, hmac_value, hmac_secret):
+    return hmac.compare_digest(CreateHexHmac(content, hmac_secret).encode('utf-8'),
+                               hmac_value)
 
 
 def CreateHexHmac(content, hmac_secret):
@@ -241,8 +229,8 @@ def CreateHexHmac(content, hmac_secret):
     if type(content) == str:
         content = content.encode('utf-8')
     result = hmac.new(bytes(hmac_secret),
-                    msg=content,
-                    digestmod=hashlib.sha256)
+                      msg=content,
+                      digestmod=hashlib.sha256)
     return result.hexdigest()
 
 
@@ -264,27 +252,6 @@ def SecureCompareStrings(a, b):
     for x, y in zip(a, b):
         result |= x ^ y
     return result == 0
-
-
-# Recurses through the object if it's a dict/iterable and converts all the
-# unicode objects to utf-8 strings.
-def RecursiveEncodeUnicodeToUtf8(value):
-    if isinstance(value, str):
-        return value.encode('utf8')
-    if isinstance(value, bytes):
-        return value
-    elif isinstance(value, collections.Mapping):
-        #return {RecursiveEncodeUnicodeToUtf8(key): RecursiveEncodeUnicodeToUtf8(val) for
-                #key, val in value.items()}
-        return dict(map(RecursiveEncodeUnicodeToUtf8, value.items()))
-    elif isinstance(value, collections.Iterable):
-        #return type(value)(RecursiveEncodeUnicodeToUtf8(x) for x in value)
-        return type(value)(map(RecursiveEncodeUnicodeToUtf8, value))
-    else:
-        return value
-
-def ToUtf8Json(data):
-    return json.dumps(data)
 
 
 def PathToTestFile(filename):
@@ -348,17 +315,6 @@ def BuildRequestData(test_filename=None,
     return data
 
 
-def PythonSemanticCompletionResults(server):
-    server.SendEventNotification(Event.FileReadyToParse,
-                                 test_filename='some_python.py',
-                                 filetype='python')
-
-    server.SendCodeCompletionRequest(test_filename='some_python.py',
-                                     filetype='python',
-                                     line_num=27,
-                                     column_num=6)
-
-
 def LanguageAgnosticIdentifierCompletion(server):
     # We're using JavaScript here, but the language doesn't matter; the identifier
     # completion engine just extracts identifiers.
@@ -372,8 +328,18 @@ def LanguageAgnosticIdentifierCompletion(server):
                                      column_num=6)
 
 
+def PythonSemanticCompletionResults(server):
+    server.SendEventNotification(Event.FileReadyToParse,
+                                 test_filename='some_python.py',
+                                 filetype='python')
+
+    server.SendCodeCompletionRequest(test_filename='some_python.py',
+                                     filetype='python',
+                                     line_num=27,
+                                     column_num=6)
+
+
 def CppSemanticCompletionResults(server):
-    # TODO: document this better
     server.LoadExtraConfFile(PATH_TO_EXTRA_CONF)
 
     # NOTE: The server will return diagnostic information about an error in the
@@ -397,7 +363,6 @@ def PythonGetSupportedCommands(server):
 def CppGotoDeclaration(server):
     # NOTE: No need to load extra conf file or send FileReadyToParse event, it was
     # already done in CppSemanticCompletionResults.
-
     server.SendGoToRequest(test_filename='some_cpp.cpp',
                            filetype='cpp',
                            line_num=23,
@@ -423,9 +388,7 @@ def CsharpSemanticCompletionResults(server):
 def Main():
     print('Trying to start server...')
     server = YcmdHandle.StartYcmdAndReturnHandle()
-    print(1)
     server.WaitUntilReady()
-    print(2)
 
     LanguageAgnosticIdentifierCompletion(server)
     PythonSemanticCompletionResults(server)
@@ -446,3 +409,4 @@ def Main():
 
 if __name__ == "__main__":
     Main()
+
