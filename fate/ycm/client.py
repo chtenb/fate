@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from logging import info
 
 from base64 import b64encode, b64decode
 import collections
@@ -123,7 +124,7 @@ class YcmdHandle(object):
 
     def SendDefinedSubcommandsRequest(self, completer_target):
         request_json = BuildRequestData(completer_target=completer_target)
-        print('==== Sending defined subcommands request ====')
+        info('==== Sending defined subcommands request ====')
         self.PostToHandlerAndLog(DEFINED_SUBCOMMANDS_HANDLER, request_json)
 
     def SendCodeCompletionRequest(self, test_filename, filetype, line_num, column_num):
@@ -131,7 +132,7 @@ class YcmdHandle(object):
                                         filetype=filetype,
                                         line_num=line_num,
                                         column_num=column_num)
-        print('==== Sending code-completion request ====')
+        info('==== Sending code-completion request ====')
         self.PostToHandlerAndLog(CODE_COMPLETIONS_HANDLER, request_json)
 
     def SendGoToRequest(self, test_filename, filetype, line_num, column_num):
@@ -140,7 +141,7 @@ class YcmdHandle(object):
                                         filetype=filetype,
                                         line_num=line_num,
                                         column_num=column_num)
-        print('==== Sending GoTo request ====')
+        info('==== Sending GoTo request ====')
         self.PostToHandlerAndLog(COMPLETER_COMMANDS_HANDLER, request_json)
 
     def SendEventNotification(self, event_enum, test_filename, filetype,
@@ -154,7 +155,7 @@ class YcmdHandle(object):
         if extra_data:
             request_json.update(extra_data)
         request_json['event_name'] = event_enum.name
-        print('==== Sending event notification ====')
+        info('==== Sending event notification ====')
         self.PostToHandlerAndLog(EVENT_HANDLER, request_json)
 
     def LoadExtraConfFile(self, extra_conf_filename):
@@ -234,34 +235,12 @@ def CreateHexHmac(content, hmac_secret):
     return result.hexdigest()
 
 
-# This is the compare_digest function from python 3.4, adapted for 2.7:
-# http://hg.python.org/cpython/file/460407f35aa9/Lib/hmac.py#l16
-def SecureCompareStrings(a, b):
-    """Returns the equivalent of 'a == b', but avoids content based short
-    circuiting to reduce the vulnerability to timing attacks."""
-    if not (isinstance(a, bytes) and isinstance(b, bytes)):
-        raise TypeError("inputs must be bytes instances")
-
-    # The length of the expected digest is public knowledge.
-    if len(a) != len(b):
-        return False
-
-    # We assume that integers in the bytes range are all cached,
-    # thus timing shouldn't vary much due to integer object creation
-    result = 0
-    for x, y in zip(a, b):
-        result |= x ^ y
-    return result == 0
-
-
 def PathToTestFile(filename):
     return os.path.join(DIR_OF_THIS_SCRIPT, 'ycmd', 'examples', 'samples', filename)
 
 
 def DefaultSettings():
-    default_options_path = os.path.join(DIR_OF_THIS_SCRIPT,
-                                        'ycmd',
-                                        'ycmd',
+    default_options_path = os.path.join(DIR_OF_THIS_SCRIPT, 'ycmd', 'ycmd',
                                         'default_settings.json')
 
     with open(default_options_path) as f:
@@ -377,7 +356,7 @@ def CsharpSemanticCompletionResults(server):
 
     # We have to wait until OmniSharpServer has started and loaded the solution
     # file
-    print('Waiting for OmniSharpServer to become ready...')
+    info('Waiting for OmniSharpServer to become ready...')
     server.WaitUntilReady(include_subservers=True)
     server.SendCodeCompletionRequest(test_filename='some_csharp.cs',
                                      filetype='cs',
@@ -391,17 +370,18 @@ def Main():
     server.WaitUntilReady()
 
     LanguageAgnosticIdentifierCompletion(server)
-    PythonSemanticCompletionResults(server)
-    CppSemanticCompletionResults(server)
-    CsharpSemanticCompletionResults(server)
+    server.GetFromHandler()
+    #PythonSemanticCompletionResults(server)
+    #CppSemanticCompletionResults(server)
+    #CsharpSemanticCompletionResults(server)
 
     # This will ask the server for a list of subcommands supported by a given
     # language completer.
-    PythonGetSupportedCommands(server)
+    #PythonGetSupportedCommands(server)
 
     # GoTo is an example of a completer subcommand.
     # Python and C# completers also support the GoTo subcommand.
-    CppGotoDeclaration(server)
+    #CppGotoDeclaration(server)
 
     print('Shutting down server...')
     server.Shutdown()
