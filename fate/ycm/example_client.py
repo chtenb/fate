@@ -423,17 +423,17 @@ def Main():
     server.WaitUntilReady()
 
     LanguageAgnosticIdentifierCompletion(server)
-    PythonSemanticCompletionResults(server)
-    CppSemanticCompletionResults(server)
-    CsharpSemanticCompletionResults(server)
+    #PythonSemanticCompletionResults(server)
+    #CppSemanticCompletionResults(server)
+    #CsharpSemanticCompletionResults(server)
 
     # This will ask the server for a list of subcommands supported by a given
     # language completer.
-    PythonGetSupportedCommands(server)
+    #PythonGetSupportedCommands(server)
 
     # GoTo is an example of a completer subcommand.
     # Python and C# completers also support the GoTo subcommand.
-    CppGotoDeclaration(server)
+    #CppGotoDeclaration(server)
 
     print 'Shutting down server...'
     server.Shutdown()

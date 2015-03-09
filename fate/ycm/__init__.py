@@ -11,13 +11,13 @@ def init_ycm_server(doc):
     server.WaitUntilReady()
     doc.completer = server
     info('Server started successfully...')
+    doc.OnQuit.add(exit_ycm_server)
 
 
 def exit_ycm_server(doc):
-    doc.server.Shutdown()
+    doc.completer.Shutdown()
 
 Document.OnDocumentInit.add(init_ycm_server)
-Document.OnQuit.add(exit_ycm_server)
 
 
 def save_tmp_file(doc):
@@ -35,10 +35,12 @@ def parse_file(doc):
 
 
 def complete(doc):
-    line, column = position_to_coord(doc.selection[0][0], doc.text)
-    doc.completer.SendCodeCompletionRequest(test_filename=doc.tempfile,
-                                            filetype=doc.filetype,
-                                            line_num=line,
-                                            column_num=column)
-
-Document.OnTextChanged.add(parse_file)
+    line, column = position_to_coord(doc.mode.cursor_position(doc), doc.text)
+    info((line, column))
+    result = doc.completer.SendCodeCompletionRequest(test_filename=doc.tempfile,
+                                                     filetype=doc.filetype,
+                                                     line_num=line + 1,
+                                                     column_num=column)
+    info(result)
+    completions = [item['insertion_text'] for item in result['completions']]
+    return completions

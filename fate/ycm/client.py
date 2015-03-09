@@ -13,10 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from logging import info
+from logging import debug
 
 from base64 import b64encode, b64decode
-import collections
 import hashlib
 import hmac
 import json
@@ -36,7 +35,7 @@ SERVER_IDLE_SUICIDE_SECONDS = 10800  # 3 hours
 MAX_SERVER_WAIT_TIME_SECONDS = 5
 
 # Set this to True to see ycmd's output interleaved with the client's
-INCLUDE_YCMD_OUTPUT = True
+INCLUDE_YCMD_OUTPUT = False
 DEFINED_SUBCOMMANDS_HANDLER = '/defined_subcommands'
 CODE_COMPLETIONS_HANDLER = '/completions'
 COMPLETER_COMMANDS_HANDLER = '/run_completer_command'
@@ -109,12 +108,6 @@ class YcmdHandle(object):
         if self.IsAlive():
             self._popen_handle.terminate()
 
-    def PostToHandlerAndLog(self, handler, data):
-        self._CallHttpie('post', handler, data)
-
-    def GetFromHandlerAndLog(self, handler):
-        self._CallHttpie('get', handler)
-
     def GetFromHandler(self, handler, params=None):
         response = requests.get(self._BuildUri(handler),
                                 headers=self._ExtraHeaders(),
@@ -122,27 +115,36 @@ class YcmdHandle(object):
         self._ValidateResponseObject(response)
         return response
 
-    def SendDefinedSubcommandsRequest(self, completer_target):
-        request_json = BuildRequestData(completer_target=completer_target)
-        info('==== Sending defined subcommands request ====')
-        self.PostToHandlerAndLog(DEFINED_SUBCOMMANDS_HANDLER, request_json)
+    def PostToHandler(self, handler, data, params=None):
+        response = requests.post(self._BuildUri(handler),
+                                 json=data,
+                                 headers=self._ExtraHeaders(json.dumps(data)),
+                                 params=params)
+        self._ValidateResponseObject(response)
+        return response
+
+    #def SendDefinedSubcommandsRequest(self, completer_target):
+        #request_json = BuildRequestData(completer_target=completer_target)
+        #debug('==== Sending defined subcommands request ====')
+        #self.PostToHandlerAndLog(DEFINED_SUBCOMMANDS_HANDLER, request_json)
 
     def SendCodeCompletionRequest(self, test_filename, filetype, line_num, column_num):
         request_json = BuildRequestData(test_filename=test_filename,
                                         filetype=filetype,
                                         line_num=line_num,
                                         column_num=column_num)
-        info('==== Sending code-completion request ====')
-        self.PostToHandlerAndLog(CODE_COMPLETIONS_HANDLER, request_json)
+        debug('==== Sending code-completion request ====')
+        response = self.PostToHandler(CODE_COMPLETIONS_HANDLER, request_json)
+        return json.loads(response.text)
 
-    def SendGoToRequest(self, test_filename, filetype, line_num, column_num):
-        request_json = BuildRequestData(test_filename=test_filename,
-                                        command_arguments=['GoTo'],
-                                        filetype=filetype,
-                                        line_num=line_num,
-                                        column_num=column_num)
-        info('==== Sending GoTo request ====')
-        self.PostToHandlerAndLog(COMPLETER_COMMANDS_HANDLER, request_json)
+    #def SendGoToRequest(self, test_filename, filetype, line_num, column_num):
+        #request_json = BuildRequestData(test_filename=test_filename,
+                                        #command_arguments=['GoTo'],
+                                        #filetype=filetype,
+                                        #line_num=line_num,
+                                        #column_num=column_num)
+        #debug('==== Sending GoTo request ====')
+        #self.PostToHandlerAndLog(COMPLETER_COMMANDS_HANDLER, request_json)
 
     def SendEventNotification(self, event_enum, test_filename, filetype,
                               line_num=1,  # just placeholder values
@@ -155,12 +157,13 @@ class YcmdHandle(object):
         if extra_data:
             request_json.update(extra_data)
         request_json['event_name'] = event_enum.name
-        info('==== Sending event notification ====')
-        self.PostToHandlerAndLog(EVENT_HANDLER, request_json)
+        debug('==== Sending event notification ====')
+        response = self.PostToHandler(EVENT_HANDLER, request_json)
+        return json.loads(response.text)
 
     def LoadExtraConfFile(self, extra_conf_filename):
         request_json = {'filepath': extra_conf_filename}
-        self.PostToHandlerAndLog(EXTRA_CONF_HANDLER, request_json)
+        self.PostToHandler(EXTRA_CONF_HANDLER, request_json)
 
     def WaitUntilReady(self, include_subservers=False):
         total_slept = 0
@@ -184,11 +187,9 @@ class YcmdHandle(object):
     def _ExtraHeaders(self, request_body=None):
         return {HMAC_HEADER: self._HmacForBody(request_body)}
 
-    def _HmacForBody(self, request_body=None):
-        if not request_body:
-            request_body = ''
+    def _HmacForBody(self, request_body=''):
         result = CreateHexHmac(request_body, self._hmac_secret).encode('utf-8')
-        return b64encode(result)
+        return b64encode(result).decode('utf-8')
 
     def _BuildUri(self, handler):
         return urllib.parse.urljoin(self._server_location, handler)
@@ -199,24 +200,6 @@ class YcmdHandle(object):
                                    self._hmac_secret):
             raise RuntimeError('Received invalid HMAC for response!')
         return True
-
-    # Use httpie instead of Requests directly so that we get the nice json
-    # pretty-printing, output colorization and full request/response logging for
-    # free
-    def _CallHttpie(self, method, handler, data=None):
-        method = method.upper()
-        args = ['http', '-v', method, self._BuildUri(handler)]
-        if isinstance(data, collections.Mapping):
-            args.append('content-type:application/json')
-            data = json.dumps(data)
-
-        args.append(HMAC_HEADER + ':' + self._HmacForBody(data).decode('utf-8'))
-        if method == 'GET':
-            popen = subprocess.Popen(args)
-        else:
-            popen = subprocess.Popen(args, stdin=subprocess.PIPE)
-            popen.communicate(data.encode('utf-8'))
-        popen.wait()
 
 
 def ContentHexHmacValid(content, hmac_value, hmac_secret):
@@ -294,17 +277,40 @@ def BuildRequestData(test_filename=None,
     return data
 
 
+def Main():
+    print('Trying to start server...')
+    server = YcmdHandle.StartYcmdAndReturnHandle()
+    server.WaitUntilReady()
+
+    LanguageAgnosticIdentifierCompletion(server)
+    # server.GetFromHandler()
+    # PythonSemanticCompletionResults(server)
+    # CppSemanticCompletionResults(server)
+    # CsharpSemanticCompletionResults(server)
+
+    # This will ask the server for a list of subcommands supported by a given
+    # language completer.
+    # PythonGetSupportedCommands(server)
+
+    # GoTo is an example of a completer subcommand.
+    # Python and C# completers also support the GoTo subcommand.
+    # CppGotoDeclaration(server)
+
+    print('Shutting down server...')
+    server.Shutdown()
+
+
 def LanguageAgnosticIdentifierCompletion(server):
     # We're using JavaScript here, but the language doesn't matter; the identifier
     # completion engine just extracts identifiers.
-    server.SendEventNotification(Event.FileReadyToParse,
-                                 test_filename='some_javascript.js',
-                                 filetype='javascript')
+    # server.SendEventNotification(Event.FileReadyToParse,
+                                 # test_filename='some_javascript.js',
+                                 # filetype='javascript')
 
-    server.SendCodeCompletionRequest(test_filename='some_javascript.js',
-                                     filetype='javascript',
-                                     line_num=21,
-                                     column_num=6)
+    print(server.SendCodeCompletionRequest(test_filename='some_javascript.js',
+                                           filetype='javascript',
+                                           line_num=21,
+                                           column_num=6))
 
 
 def PythonSemanticCompletionResults(server):
@@ -356,7 +362,7 @@ def CsharpSemanticCompletionResults(server):
 
     # We have to wait until OmniSharpServer has started and loaded the solution
     # file
-    info('Waiting for OmniSharpServer to become ready...')
+    debug('Waiting for OmniSharpServer to become ready...')
     server.WaitUntilReady(include_subservers=True)
     server.SendCodeCompletionRequest(test_filename='some_csharp.cs',
                                      filetype='cs',
@@ -364,29 +370,5 @@ def CsharpSemanticCompletionResults(server):
                                      column_num=15)
 
 
-def Main():
-    print('Trying to start server...')
-    server = YcmdHandle.StartYcmdAndReturnHandle()
-    server.WaitUntilReady()
-
-    LanguageAgnosticIdentifierCompletion(server)
-    server.GetFromHandler()
-    #PythonSemanticCompletionResults(server)
-    #CppSemanticCompletionResults(server)
-    #CsharpSemanticCompletionResults(server)
-
-    # This will ask the server for a list of subcommands supported by a given
-    # language completer.
-    #PythonGetSupportedCommands(server)
-
-    # GoTo is an example of a completer subcommand.
-    # Python and C# completers also support the GoTo subcommand.
-    #CppGotoDeclaration(server)
-
-    print('Shutting down server...')
-    server.Shutdown()
-
-
 if __name__ == "__main__":
     Main()
-

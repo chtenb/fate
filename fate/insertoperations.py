@@ -10,6 +10,8 @@ from .commands import (emptybefore, selectpreviousfullline, selectindent,
 from .clipboard import copy, clear, paste_before, Cut
 from .mode import Mode
 from . import document
+from . import ycm
+from abc import abstractmethod
 
 
 class InsertMode(Mode):
@@ -23,6 +25,15 @@ class InsertMode(Mode):
         # Init trivial starting operation
         self.preview_operation = self.compute_operation(doc)
         self.start(doc)
+
+        # Init completions
+        self.completions = []
+        self.selected_completion = 0
+
+
+    @abstractmethod
+    def cursor_position(self, doc):
+        pass
 
     def processinput(self, doc, userinput):
         if type(userinput) != str:
@@ -53,6 +64,10 @@ class InsertMode(Mode):
         # Execute the operation (excludes adding it to the undotree)
         self.preview_operation = self.compute_operation(doc)
         self.preview_operation.do(doc)
+
+        # Update completions
+        ycm.parse_file(doc)
+        self.completions = ycm.complete(doc)
 
     def stop(self, doc):
         if self.preview_operation != None:
@@ -92,6 +107,9 @@ class ChangeBefore(InsertMode):
         self.deletions = [0] * len(doc.selection)
 
         InsertMode.__init__(self, doc, callback)
+
+    def cursor_position(self, doc):
+        return doc.selection[0][0] + len(self.insertions[0])
 
     def insert(self, doc, string):
         for i in range(len(doc.selection)):
@@ -139,6 +157,9 @@ class ChangeAfter(InsertMode):
         self.deletions = [0] * len(doc.selection)
 
         InsertMode.__init__(self, doc, callback)
+
+    def cursor_position(self, doc):
+        return doc.selection[0][1]
 
     def insert(self, doc, string):
         for i in range(len(doc.selection)):
@@ -192,6 +213,9 @@ class ChangeAround(InsertMode):
         self.deletions = [0] * len(doc.selection)
 
         InsertMode.__init__(self, doc, callback)
+
+    def cursor_position(self, doc):
+        return doc.selection[0][0]
 
     def insert(self, doc, string):
         for i in range(len(doc.selection)):
