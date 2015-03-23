@@ -14,8 +14,8 @@ info('Starting fate.')
 # commands
 from . import commands
 from . import (clipboard, commandmode, commandtools, document, filecommands,
-               insertoperations, operators, repeat, search, selectors, selectaround,
-               undotree, pointer)
+               insertoperations, operators, repeat, search, selectors,
+               selectaround, undotree, pointer)
 
 # Load standard plugins
 from . import formatting
@@ -25,6 +25,7 @@ from . import filetype
 from . import labeling
 
 from . import keymap
+from . import normalmode
 
 # TODO: why doesn't pylint recognize functions in the commands module
 info('All standard plugins are loaded.')

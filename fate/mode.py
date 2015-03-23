@@ -42,25 +42,25 @@ REMARK:
 A mode is thus not necessarily stateful.
 How can we modify a mode keymap for a single document?
 """
+from abc import ABC
 
-
-class Mode:
+class Mode(ABC):
 
     """Abstract class to make creating new modes more convenient."""
 
-    def __init__(self, document, callback):
+    def __init__(self, document, callback=None):
         self.keymap = {}
         self.allowedcommands = []
         self.callback = callback
 
     def start(self, document):
         """Must be called to start the mode."""
-        assert document.mode == None
+        #assert document.mode == None
         document.mode = self
 
     def stop(self, document):
         """Must be called to stop the mode."""
-        document.mode = None
+        document.mode = document.normalmode
         if self.callback:
             self.callback(document)
 

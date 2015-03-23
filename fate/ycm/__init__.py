@@ -1,5 +1,5 @@
 from ..document import Document
-from ..navigation import position_to_coord
+from ..navigation import position_to_coord, coord_to_position
 from logging import info
 from .client import YcmdHandle, Event
 from tempfile import gettempdir
@@ -39,8 +39,10 @@ def complete(doc):
     info((line, column))
     result = doc.completer.SendCodeCompletionRequest(test_filename=doc.tempfile,
                                                      filetype=doc.filetype,
-                                                     line_num=line + 1,
+                                                     line_num=line,
                                                      column_num=column)
     info(result)
     completions = [item['insertion_text'] for item in result['completions']]
-    return completions
+    start_column = result['completion_start_column']
+    start_position = coord_to_position(line, start_column, doc.text)
+    return start_position, completions

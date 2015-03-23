@@ -61,7 +61,7 @@ def move_n_wrapped_lines_down(text, max_line_width, start, n):
 
 def coord_to_position(line, column, text, crop=False):
     position = 0
-    while line:
+    while line > 1:
         eol = text.find('\n', position)
         if eol == -1:
             if crop:
@@ -82,7 +82,7 @@ def position_to_coord(pos, text):
         raise ValueError('Position reaches beyond text.')
 
     i = 0
-    line = 0
+    line = 1
     while i < pos:
         j = text.find('\n', i + 1)
         if j >= pos:

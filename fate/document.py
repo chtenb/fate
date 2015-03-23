@@ -119,36 +119,9 @@ class Document():
         if userinput == self.cancelkey:
             userinput = 'Cancel'
 
-        logging.debug('Input: ' + str(userinput))
+        logging.debug('Input: ' + repr(userinput))
 
-        if self.mode:
-            # We are not in normalmode
-            self.mode.processinput(self, userinput)
-        else:
-            # We are in normalmode
-            if isinstance(userinput, pointer.PointerInput):
-                self.process_pointerinput(userinput)
-            else:
-                if type(userinput) == str:
-                    key = userinput
-                    if key in self.keymap:
-                        command = self.keymap[key]
-                    else:
-                        command = None
-                else:
-                    command = userinput
-
-                if callable(command):
-                    command(self)
-
-    def process_pointerinput(self, userinput):
-        assert isinstance(userinput, pointer.PointerInput)
-
-        if userinput.length:
-            logging.debug('You sweeped from position {} till {}'
-                          .format(userinput.pos, userinput.pos + userinput.length))
-        else:
-            logging.debug('You clicked at position ' + str(userinput.pos))
+        self.mode.processinput(self, userinput)
 
 
 def next_document(document):

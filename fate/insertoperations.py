@@ -11,7 +11,8 @@ from .clipboard import copy, clear, paste_before, Cut
 from .mode import Mode
 from . import document
 from . import ycm
-from abc import abstractmethod
+from abc import abstractmethod, ABC
+from logging import error, debug
 
 
 class InsertMode(Mode):
@@ -30,33 +31,36 @@ class InsertMode(Mode):
         self.completions = []
         self.selected_completion = 0
 
-
-    @abstractmethod
-    def cursor_position(self, doc):
-        pass
+        self.keymap = {
+            'Cancel': self.stop,
+        }
 
     def processinput(self, doc, userinput):
         if type(userinput) != str:
             if userinput in self.allowedcommands:
                 userinput(doc)
-            return
+            else:
+                error('Can\'t process input {}'.format(repr(userinput)))
 
-        # If userinput is Cancel, exit the insert mode
-        if userinput == 'Cancel':
-            self.stop(doc)
-            return
+        # If userinput is in keymap, execute corresponding command
+        elif userinput in self.keymap:
+            self.keymap[userinput](doc)
 
-        # If userinput is not a character literal, don't insert it literally
-        if len(userinput) > 1:
-            if userinput in doc.keymap:
-                command = doc.keymap[userinput]
-                if command in self.allowedcommands:
-                    command(doc)
-            return
+        # If userinput is a single character, insert it
+        elif len(userinput) == 1:
+            self.insert_wrapper(doc, userinput)
 
+    def insert_wrapper(self, doc, userinput):
         self.insert(doc, userinput)
+        self.update_operation(doc)
 
-        # Update operation
+    def stop(self, doc):
+        if self.preview_operation != None:
+            self.preview_operation.undo(doc)
+            self.preview_operation(doc)
+        Mode.stop(self, doc)
+
+    def update_operation(self, doc):
         # TODO: this is gonna be easier if text allows preview operations
         if self.preview_operation != None:
             self.preview_operation.undo(doc)
@@ -65,25 +69,83 @@ class InsertMode(Mode):
         self.preview_operation = self.compute_operation(doc)
         self.preview_operation.do(doc)
 
-        # Update completions
-        ycm.parse_file(doc)
-        self.completions = ycm.complete(doc)
-
-    def stop(self, doc):
-        if self.preview_operation != None:
-            self.preview_operation.undo(doc)
-            self.preview_operation(doc)
-        Mode.stop(self, doc)
-
+    @abstractmethod
     def compute_operation(self, doc):
         """Compute operation based on insertions and deletions."""
         raise NotImplementedError('An abstract method is not callable.')
 
+    @abstractmethod
     def insert(self, doc, string):
         """
         Insert a string (typically a char) in the operation.
         """
         raise NotImplementedError('An abstract method is not callable.')
+
+
+class Completable(InsertMode):
+
+    """
+    InsertMode which also provides autocompletions.
+    Restricted to a single interval.
+    """
+
+    def __init__(self, doc, callback=None):
+        self.insertions = [''] * len(doc.selection)
+        self.deletions = [0] * len(doc.selection)
+
+        InsertMode.__init__(self, doc, callback)
+
+        # TODO: enable inserting \t if no characters before cursor
+        self.keymap.update({
+            '\t': self.next_completion_or_tab,
+            'Btab': self.previous_completion
+        })
+
+    @abstractmethod
+    def cursor_position(self, doc):
+        pass
+
+    def complete_enabled(self, doc):
+        return len(doc.selection) == 1
+
+    def next_completion(self, doc):
+        if self.complete_enabled(doc):
+            self.selected_completion = ((self.selected_completion + 1)
+                                        % len(self.completions))
+            self.insert_completion(doc)
+
+    def previous_completion(self, doc):
+        if self.complete_enabled(doc):
+            self.selected_completion = ((self.selected_completion - 1)
+                                        % len(self.completions))
+            self.insert_completion(doc)
+
+    def next_completion_or_tab(self, doc):
+        if self.complete_enabled(doc) and len(self.completions) > 1:
+            self.next_completion(doc)
+        else:
+            self.insert(doc, '\t')
+
+    @abstractmethod
+    def insert_completion(self, doc):
+        pass
+
+    def update_completions(self, doc):
+        assert self.complete_enabled(doc)
+        beg = doc.selection[0][0]
+
+        ycm.parse_file(doc)
+        self.completion_start_pos, self.completions = ycm.complete(doc)
+        self.completions.insert(0, self.insertions[0])
+        self.selected_completion = 0
+
+        assert self.completion_start_pos >= beg
+
+    def insert_wrapper(self, doc, userinput):
+        self.insert(doc, userinput)
+        self.update_operation(doc)
+        if self.complete_enabled(doc):
+            self.update_completions(doc)
 
 
 def get_indent(doc, pos):
@@ -95,68 +157,12 @@ def get_indent(doc, pos):
     return string[match.start(): match.end()]
 
 
-class ChangeBefore(InsertMode):
+class ChangeAfter(Completable):
 
     """
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
-
-    def __init__(self, doc, callback=None):
-        self.insertions = [''] * len(doc.selection)
-        self.deletions = [0] * len(doc.selection)
-
-        InsertMode.__init__(self, doc, callback)
-
-    def cursor_position(self, doc):
-        return doc.selection[0][0] + len(self.insertions[0])
-
-    def insert(self, doc, string):
-        for i in range(len(doc.selection)):
-            if string == '\b':
-                # TODO remove multiple whitespaces if possible
-                # Remove one char
-                if self.insertions[i]:
-                    self.insertions[i] = self.insertions[i][:-1]
-                else:
-                    self.deletions[i] += 1
-            elif string == '\n' and doc.autoindent:
-                # Add indent after \n
-                newselection = self.preview_operation.compute_newselection()
-                cursor_pos = newselection[i][0] + len(self.insertions[i])
-                indent = get_indent(doc, cursor_pos)
-                self.insertions[i] += string + indent
-            elif string == '\t' and doc.expandtab:
-                self.insertions[i] += ' ' * doc.tabwidth
-            else:
-                # Add string
-                self.insertions[i] += str(string)
-
-    def compute_operation(self, doc):
-        # It can happen that this operation is repeated in a situation
-        # with a larger number of intervals.
-        # Therefore we take indices modulo the length of the lists
-        l = len(self.insertions)
-        newcontent = [self.insertions[i % l]
-                      + doc.selection.content(doc)[i % l][self.deletions[i % l]:]
-                      for i in range(len(doc.selection))]
-        return Operation(doc, newcontent)
-
-commands.ChangeBefore = ChangeBefore
-
-
-class ChangeAfter(InsertMode):
-
-    """
-    Interactive Operation which deletes `deletions`
-    and adds `insertions` at the head of each interval.
-    """
-
-    def __init__(self, doc, callback=None):
-        self.insertions = [''] * len(doc.selection)
-        self.deletions = [0] * len(doc.selection)
-
-        InsertMode.__init__(self, doc, callback)
 
     def cursor_position(self, doc):
         return doc.selection[0][1]
@@ -192,10 +198,73 @@ class ChangeAfter(InsertMode):
                       for i in range(len(doc.selection))]
         return Operation(doc, newcontent)
 
+    def insert_completion(self, doc):
+        assert self.complete_enabled(doc)
+        beg = doc.selection[0][0]
+        assert self.completion_start_pos >= beg
+
+        self.insertions[0] = self.insertions[0][:-(self.completion_start_pos - 1 - beg)]
+        self.deletions[0] = len(self.insertions[0]) - (self.completion_start_pos - 1 - beg)
+
+        self.insertions[0] += self.completions[self.selected_completion]
+        self.update_operation(doc)
+
 commands.ChangeAfter = ChangeAfter
 
 
-ChangeInPlace = Compose(delete, ChangeBefore, name='ChangeInPlace')
+class ChangeBefore(Completable):
+
+    """
+    Interactive Operation which deletes `deletions`
+    and adds `insertions` at the head of each interval.
+    """
+
+    def cursor_position(self, doc):
+        return doc.selection[0][0] + len(self.insertions[0])
+
+    def insert(self, doc, string):
+        for i in range(len(doc.selection)):
+            if string == '\b':
+                # TODO remove multiple whitespaces if possible
+                # Remove one char
+                if self.insertions[i]:
+                    self.insertions[i] = self.insertions[i][:-1]
+                else:
+                    self.deletions[i] += 1
+            elif string == '\n' and doc.autoindent:
+                # Add indent after \n
+                newselection = self.preview_operation.compute_newselection()
+                cursor_pos = newselection[i][0] + len(self.insertions[i])
+                indent = get_indent(doc, cursor_pos)
+                self.insertions[i] += string + indent
+            elif string == '\t' and doc.expandtab:
+                self.insertions[i] += ' ' * doc.tabwidth
+            else:
+                # Add string
+                self.insertions[i] += str(string)
+
+    def compute_operation(self, doc):
+        # It can happen that this operation is repeated in a situation
+        # with a larger number of intervals.
+        # Therefore we take indices modulo the length of the lists
+        l = len(self.insertions)
+        newcontent = [self.insertions[i % l]
+                      + doc.selection.content(doc)[i % l][self.deletions[i % l]:]
+                      for i in range(len(doc.selection))]
+        return Operation(doc, newcontent)
+
+
+    def insert_completion(self, doc):
+        assert self.complete_enabled(doc)
+        beg = doc.selection[0][0]
+        assert self.completion_start_pos >= beg
+
+        ...
+
+commands.ChangeBefore = ChangeBefore
+
+
+ChangeInPlace = Compose(delete, ChangeAfter, name='ChangeInPlace')
 commands.ChangeInPlace = ChangeInPlace
 
 

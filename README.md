@@ -85,16 +85,19 @@ Syntaxhighlighting should be disabled for the first category, while global searc
 Todo
 ====
 SHORT TERM
-- ErrorChecking/ErrorMode
-  - Can we remove the while(callable) part from normal mode?
-  - Set next/prev doc as default allowed commands in Mode
-- Make it possible to use movedown/up as narrowing selectors
-- Selectaround
-- Gui integration communication (windowsize)
-- Different forms of wrapping left/right + word/character
+- Make mode keymaps configurable per document.
+  - Mode keymaps have to be created OnDocumentInit
+  - Solution: each document has its own mode objects.
+- Contextual completion
+  - For completion it is also needed that the full text can be constructed including the pending operation.
+- Snippet expansion
 - Conceal (Generalization of listchars)
   - UI gets a modified version of the text
-- Ready for use
+- Text datastructure that is optimized for text editing
+- Make labeling generation asynchronous
+- Make it possible to use movedown/up as narrowing selectors
+- Selectaround
+- Different forms of wrapping left/right + word/character
 - Fix unnecessary pylint complains
 - Reimplement repeat, since classes can't be decorated
   - Problem: how to handle next_document etc? We don't want those to be recorded.
@@ -102,21 +105,18 @@ SHORT TERM
 - Improve syntax highlighting, for instance by disregarding quotes inside comments and strings
   - select around should maybe also disregard brackets etc in comments and strings
 - Enhance selector set
+- Incorporate testing with multiple documents
+- Unittests for pattern select machinery
+
+LONG TERM
 - Think about how to decorate classes easily, without disabling subclassing
   - Can't decorate classes by functions: this turns them into functions
   - This means that they can't be used as parentclass
   - and that they can't be checked by issubclass
 - Think about possibility to add remap support (i.e. map keys forall modes)
   - This is a generalization of the cancelkey feature
-- Incorporate testing with multiple sessions
-- Unittests for pattern select machinery
-
-LONG TERM
 - Drag text operation
-- Make labeling generation asynchronous
-- Persistent session (using a context manager?)
-- Contextual completion
-  - For completion it is also needed that the full text can be constructed including the pending operation. (No it isn't!! Only filtering is done based on the input, the context is not changed)
+- Persistent document (using a context manager?)
 - Switch to alternative regex engine?
 - Focus on non-atomic operations
 - Idea: jumplist of lines of changes
