@@ -11,7 +11,7 @@ from .clipboard import copy, clear, paste_before, Cut
 from .mode import Mode
 from . import document
 from . import ycm
-from abc import abstractmethod, ABC
+from abc import abstractmethod
 from logging import error, debug
 
 

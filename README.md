@@ -85,11 +85,11 @@ Syntaxhighlighting should be disabled for the first category, while global searc
 Todo
 ====
 SHORT TERM
+- Contextual completion
+  - For completion it is also needed that the full text can be constructed including the pending operation.
 - Make mode keymaps configurable per document.
   - Mode keymaps have to be created OnDocumentInit
   - Solution: each document has its own mode objects.
-- Contextual completion
-  - For completion it is also needed that the full text can be constructed including the pending operation.
 - Snippet expansion
 - Conceal (Generalization of listchars)
   - UI gets a modified version of the text

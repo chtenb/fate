@@ -1,6 +1,6 @@
 from ..document import Document
 from ..navigation import position_to_coord, coord_to_position
-from logging import info
+from logging import info, error
 from .client import YcmdHandle, Event
 from tempfile import gettempdir
 
@@ -8,10 +8,15 @@ from tempfile import gettempdir
 def init_ycm_server(doc):
     info('Trying to start server...')
     server = YcmdHandle.StartYcmdAndReturnHandle()
-    server.WaitUntilReady()
-    doc.completer = server
-    info('Server started successfully...')
-    doc.OnQuit.add(exit_ycm_server)
+
+    try:
+        server.WaitUntilReady()
+    except RuntimeError as e:
+        error('Could not start ycm server: {}'.format(e))
+    else:
+        doc.completer = server
+        info('Server started successfully...')
+        doc.OnQuit.add(exit_ycm_server)
 
 
 def exit_ycm_server(doc):
