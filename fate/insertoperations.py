@@ -212,15 +212,17 @@ class ChangeAfter(Completable):
 commands.ChangeAfter = ChangeAfter
 
 
-class ChangeBefore(Completable):
+class ChangeBefore(InsertMode):
 
     """
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
+    def __init__(self, doc, callback=None):
+        self.insertions = [''] * len(doc.selection)
+        self.deletions = [0] * len(doc.selection)
 
-    def cursor_position(self, doc):
-        return doc.selection[0][0] + len(self.insertions[0])
+        InsertMode.__init__(self, doc, callback)
 
     def insert(self, doc, string):
         for i in range(len(doc.selection)):
@@ -254,12 +256,14 @@ class ChangeBefore(Completable):
         return Operation(doc, newcontent)
 
 
-    def insert_completion(self, doc):
-        assert self.complete_enabled(doc)
-        beg = doc.selection[0][0]
-        assert self.completion_start_pos >= beg
+    #def cursor_position(self, doc):
+        #return doc.selection[0][0] + len(self.insertions[0])
 
-        ...
+    #def insert_completion(self, doc):
+        #assert self.complete_enabled(doc)
+        #beg = doc.selection[0][0]
+        #assert self.completion_start_pos >= beg
+        #...
 
 commands.ChangeBefore = ChangeBefore
 
