@@ -8,21 +8,17 @@ from tempfile import gettempdir
 def start_ycm_server(doc):
     info('Trying to start ycm server...')
 
-    try:
-        server = YcmdHandle.StartYcmdAndReturnHandle()
-    except RuntimeError as e:
-        error('Could not start ycm server: {}'.format(e))
-        doc.completer = None
-    else:
-        doc.completer = server
-        info('Ycm server started successfully...')
-        doc.OnQuit.add(exit_ycm_server)
+    server = YcmdHandle.StartYcmdAndReturnHandle()
+    doc.completer = server
+    info('Ycm server started successfully...')
+    doc.OnQuit.add(exit_ycm_server)
 
 
 def exit_ycm_server(doc):
     doc.completer.Shutdown()
 
 Document.OnDocumentInit.add(start_ycm_server)
+Document.completer = None
 
 
 def save_tmp_file(doc):
