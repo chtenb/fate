@@ -106,7 +106,7 @@ class Completable(InsertMode):
         pass
 
     def complete_enabled(self, doc):
-        return len(doc.selection) == 1
+        return len(doc.selection) == 1 and doc.completer != None
 
     def next_completion(self, doc):
         if self.complete_enabled(doc):
@@ -135,11 +135,16 @@ class Completable(InsertMode):
         beg = doc.selection[0][0]
 
         ycm.parse_file(doc)
-        self.completion_start_pos, self.completions = ycm.complete(doc)
-        self.completions.insert(0, self.insertions[0])
-        self.selected_completion = 0
+        complete_result = ycm.complete(doc)
+        if complete_result:
+            self.completion_start_pos, self.completions = complete_result
+            self.completions.insert(0, self.insertions[0])
 
-        assert self.completion_start_pos >= beg
+            assert self.completion_start_pos >= beg
+        else:
+            self.completions = []
+
+        self.selected_completion = 0
 
     def insert_wrapper(self, doc, userinput):
         self.insert(doc, userinput)
