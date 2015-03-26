@@ -1,6 +1,6 @@
 from ..document import Document
 from ..navigation import position_to_coord, coord_to_position
-from logging import info, error
+from logging import info, error, debug
 from .client import YcmdHandle, Event
 from tempfile import gettempdir
 
@@ -44,8 +44,9 @@ def complete(doc):
                                                          filetype=doc.filetype,
                                                          line_num=line,
                                                          column_num=column)
-        info(result)
         completions = [item['insertion_text'] for item in result['completions']]
         start_column = result['completion_start_column']
         start_position = coord_to_position(line, start_column, doc.text)
+        debug('startcolumn: {}'.format(start_column))
+        debug('startpos: {}'.format(start_position))
         return start_position, completions

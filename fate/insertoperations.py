@@ -1,3 +1,6 @@
+"""
+Module containing insertmode implementations.
+"""
 import re
 from . import commands
 from .operation import Operation
@@ -48,9 +51,9 @@ class InsertMode(Mode):
 
         # If userinput is a single character, insert it
         elif len(userinput) == 1:
-            self.insert_wrapper(doc, userinput)
+            self.insert_and_update(doc, userinput)
 
-    def insert_wrapper(self, doc, userinput):
+    def insert_and_update(self, doc, userinput):
         self.insert(doc, userinput)
         self.update_operation(doc)
 
@@ -90,12 +93,10 @@ class Completable(InsertMode):
     """
 
     def __init__(self, doc, callback=None):
-        self.insertions = [''] * len(doc.selection)
-        self.deletions = [0] * len(doc.selection)
+        self.newcontent = doc.selection.content(doc)
 
         InsertMode.__init__(self, doc, callback)
 
-        # TODO: enable inserting \t if no characters before cursor
         self.keymap.update({
             '\t': self.next_completion_or_tab,
             'Btab': self.previous_completion
@@ -124,7 +125,7 @@ class Completable(InsertMode):
         if self.complete_enabled(doc) and len(self.completions) > 1:
             self.next_completion(doc)
         else:
-            self.insert(doc, '\t')
+            self.insert_and_update(doc, '\t')
 
     @abstractmethod
     def insert_completion(self, doc):
@@ -138,15 +139,16 @@ class Completable(InsertMode):
         complete_result = ycm.complete(doc)
         if complete_result:
             self.completion_start_pos, self.completions = complete_result
-            self.completions.insert(0, self.insertions[0])
+            self.completions.insert(0, self.newcontent[0])
 
             assert self.completion_start_pos >= beg
         else:
             self.completions = []
+            self.completion_start_pos = -1
 
         self.selected_completion = 0
 
-    def insert_wrapper(self, doc, userinput):
+    def insert_and_update(self, doc, userinput):
         self.insert(doc, userinput)
         self.update_operation(doc)
         if self.complete_enabled(doc):
@@ -165,8 +167,6 @@ def get_indent(doc, pos):
 class ChangeAfter(Completable):
 
     """
-    Interactive Operation which deletes `deletions`
-    and adds `insertions` at the head of each interval.
     """
 
     def cursor_position(self, doc):
@@ -177,41 +177,43 @@ class ChangeAfter(Completable):
             if string == '\b':
                 # TODO remove multiple whitespaces if possible
                 # remove one char
-                if self.insertions[i]:
-                    self.insertions[i] = self.insertions[i][:-1]
-                else:
-                    self.deletions[i] += 1
+                if self.newcontent[i]:
+                    self.newcontent[i] = self.newcontent[i][:-1]
             elif string == '\n' and doc.autoindent:
                 # add indent after \n
                 newselection = self.preview_operation.compute_newselection()
                 cursor_pos = newselection[i][1]
                 indent = get_indent(doc, cursor_pos)
-                self.insertions[i] += string + indent
+                self.newcontent[i] += string + indent
             elif string == '\t' and doc.expandtab:
-                self.insertions[i] += ' ' * doc.tabwidth
+                # increase indent
+                self.newcontent[i] += ' ' * doc.tabwidth
             else:
                 # add string
-                self.insertions[i] += str(string)
+                self.newcontent[i] += str(string)
 
     def compute_operation(self, doc):
         # It can happen that this operation is repeated in a situation
         # with a larger number of intervals.
         # Therefore we take indices modulo the length of the lists
-        l = len(self.insertions)
-        newcontent = [doc.selection.content(doc)[i % l][:-self.deletions[i % l] or None]
-                      + self.insertions[i % l]
-                      for i in range(len(doc.selection))]
-        return Operation(doc, newcontent)
+        #l = len(self.insertions)
+        #newcontent = [doc.selection.content(doc)[i % l][:-self.deletions[i % l] or None]
+                      #+ self.insertions[i % l]
+                      #for i in range(len(doc.selection))]
+        return Operation(doc, self.newcontent[:])
 
     def insert_completion(self, doc):
         assert self.complete_enabled(doc)
         beg = doc.selection[0][0]
         assert self.completion_start_pos >= beg
+        debug('beg: {}'.format(beg))
+        debug('completion start: {}'.format(self.completion_start_pos))
+        debug('pruned result: {}'.format(self.newcontent[0][:self.completion_start_pos - beg]))
 
-        self.insertions[0] = self.insertions[0][:-(self.completion_start_pos - 1 - beg)]
-        self.deletions[0] = len(self.insertions[0]) - (self.completion_start_pos - 1 - beg)
+        self.newcontent[0] = self.newcontent[0][:self.completion_start_pos - beg]
+        #self.deletions[0] = len(self.newcontent[0]) - (self.completion_start_pos - beg)
 
-        self.insertions[0] += self.completions[self.selected_completion]
+        self.newcontent[0] += self.completions[self.selected_completion]
         self.update_operation(doc)
 
 commands.ChangeAfter = ChangeAfter
@@ -223,6 +225,7 @@ class ChangeBefore(InsertMode):
     Interactive Operation which deletes `deletions`
     and adds `insertions` at the head of each interval.
     """
+
     def __init__(self, doc, callback=None):
         self.insertions = [''] * len(doc.selection)
         self.deletions = [0] * len(doc.selection)
@@ -260,11 +263,10 @@ class ChangeBefore(InsertMode):
                       for i in range(len(doc.selection))]
         return Operation(doc, newcontent)
 
+    # def cursor_position(self, doc):
+        # return doc.selection[0][0] + len(self.insertions[0])
 
-    #def cursor_position(self, doc):
-        #return doc.selection[0][0] + len(self.insertions[0])
-
-    #def insert_completion(self, doc):
+    # def insert_completion(self, doc):
         #assert self.complete_enabled(doc)
         #beg = doc.selection[0][0]
         #assert self.completion_start_pos >= beg
