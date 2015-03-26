@@ -15,6 +15,7 @@ def start_ycm_server(doc):
 
 
 def exit_ycm_server(doc):
+    info('Trying to shut down ycm server...')
     doc.completer.Shutdown()
 
 Document.OnDocumentInit.add(start_ycm_server)

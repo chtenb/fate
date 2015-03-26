@@ -32,6 +32,7 @@ class RandomizedActionTest(BaseTestCase):
 
             random.seed(seed)
             self.run_test(seed, commands_per_run)
+            self.tearDown()
 
     def getseed(self):
         if args.seed != None:
@@ -74,22 +75,7 @@ class RandomizedActionTest(BaseTestCase):
                 print('{}: Input = {}, Mode = {}'.format(i + 1, name, self.document.mode))
 
             try:
-                if self.document.mode:
-                    # We are not in normalmode
-                    self.document.mode.processinput(self.document, userinput)
-                else:
-                    # We are in normalmode
-                    if type(userinput) == str:
-                        key = userinput
-                        if key in self.document.keymap:
-                            command = self.document.keymap[key]
-                        else:
-                            command = None
-                    else:
-                        command = userinput
-
-                    while callable(command):
-                        command = command(self.document)
+                self.document.mode.processinput(self.document, userinput)
             except:
                 print('Current text:\n{}'.format(self.document.text))
                 print('Current selection: {}'.format(self.document.selection))

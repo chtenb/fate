@@ -87,6 +87,7 @@ Todo
 SHORT TERM
 - Contextual completion
   - For completion it is also needed that the full text can be constructed including the pending operation.
+  - Make ycm also shutdown on crash
 - Make mode keymaps configurable per document.
   - Mode keymaps have to be created OnDocumentInit
   - Solution: each document has its own mode objects.

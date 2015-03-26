@@ -141,8 +141,7 @@ class Completable(InsertMode):
             self.completion_start_pos, self.completions = complete_result
             self.completions.insert(0, self.newcontent[0])
 
-            assert self.completion_start_pos >= beg
-        else:
+        if not complete_result or self.completion_start_pos < beg:
             self.completions = []
             self.completion_start_pos = -1
 
