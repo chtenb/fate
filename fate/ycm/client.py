@@ -103,7 +103,7 @@ class YcmdHandle(object):
         try:
             response = self.GetFromHandler('ready', params)
             response.raise_for_status()
-        except (requests.ConnectionError, requests.HTTPError) as e:
+        except requests.ConnectionError as e:
             error(e)
             return False
         return response.json()

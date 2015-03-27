@@ -85,31 +85,36 @@ Syntaxhighlighting should be disabled for the first category, while global searc
 Todo
 ====
 SHORT TERM
+- Conceal (Generalization of listchars)
+  - UI gets a modified version of the text
+  - Needed for characters with more than 1 width, like tabs, since every character in the
+    ui version of the text must be of width 1, for ease of computations
 - Contextual completion
   - For completion it is also needed that the full text can be constructed including the pending operation.
   - Make ycm also shutdown on crash
+  - Make ycm requests async
 - Make mode keymaps configurable per document.
   - Mode keymaps have to be created OnDocumentInit
   - Solution: each document has its own mode objects.
-- Snippet expansion
-- Conceal (Generalization of listchars)
-  - UI gets a modified version of the text
 - Text datastructure that is optimized for text editing
 - Make labeling generation asynchronous
 - Make it possible to use movedown/up as narrowing selectors
 - Selectaround
 - Different forms of wrapping left/right + word/character
 - Fix unnecessary pylint complains
-- Reimplement repeat, since classes can't be decorated
-  - Problem: how to handle next_document etc? We don't want those to be recorded.
 - Implement commandmode as a persistent command, similar to undomode
 - Improve syntax highlighting, for instance by disregarding quotes inside comments and strings
   - select around should maybe also disregard brackets etc in comments and strings
 - Enhance selector set
-- Incorporate testing with multiple documents
-- Unittests for pattern select machinery
+- Snippet technology
+  - Expand and surround/refactoring
+- Reimplement repeat, since classes can't be decorated
+  - Record input of user
+  - Problem: how to handle next_document etc? We don't want those to be recorded.
 
 LONG TERM
+- Incorporate testing with multiple documents
+- Unittests for pattern select machinery
 - Think about how to decorate classes easily, without disabling subclassing
   - Can't decorate classes by functions: this turns them into functions
   - This means that they can't be used as parentclass
