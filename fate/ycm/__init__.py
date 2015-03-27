@@ -9,6 +9,7 @@ def start_ycm_server(doc):
     info('Trying to start ycm server...')
 
     server = YcmdHandle.StartYcmdAndReturnHandle()
+    #server.WaitUntilReady()
     doc.completer = server
     info('Ycm server started successfully...')
     doc.OnQuit.add(exit_ycm_server)

@@ -17,6 +17,9 @@ class RandomizedActionTest(BaseTestCase):
             print('Skipping randomized tests')
             return
 
+        # Hack to allow setUp to be called properly
+        self.tearDown()
+
         commands_per_run = 50
         runs = 500
         if args.long:
@@ -24,6 +27,7 @@ class RandomizedActionTest(BaseTestCase):
         if args.rerun or args.seed:
             runs = 1
 
+        self.successes = 0
         for run in range(runs):
             self.setUp()
             seed = self.getseed()
@@ -33,6 +37,13 @@ class RandomizedActionTest(BaseTestCase):
             random.seed(seed)
             self.run_test(seed, commands_per_run)
             self.tearDown()
+
+        # Want to know for sure all tests are really executed
+        assert self.successes == runs
+        print("SUCCESS...")
+
+        # Hack to allow tearDown to be called properly
+        self.setUp()
 
     def getseed(self):
         if args.seed != None:
@@ -81,3 +92,5 @@ class RandomizedActionTest(BaseTestCase):
                 print('Current selection: {}'.format(self.document.selection))
                 print('Current pattern: {}'.format(self.document.search_pattern))
                 raise
+
+        self.successes += 1

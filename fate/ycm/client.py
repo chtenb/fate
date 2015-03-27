@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from logging import debug
+from logging import debug, error
 
 from base64 import b64encode, b64decode
 import hashlib
@@ -100,8 +100,12 @@ class YcmdHandle(object):
         if not self.IsAlive():
             return False
         params = {'include_subservers': 1} if include_subservers else None
-        response = self.GetFromHandler('ready', params)
-        response.raise_for_status()
+        try:
+            response = self.GetFromHandler('ready', params)
+            response.raise_for_status()
+        except (requests.ConnectionError, requests.HTTPError) as e:
+            error(e)
+            return False
         return response.json()
 
     def Shutdown(self):
