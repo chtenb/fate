@@ -23,12 +23,15 @@ However, there are several issues that need to be adressed.
 De code base is old and getting messy and is therefore hard to maintain.
 It is not very extensible, even though vim has its own scripting language.
 Vim language is neither easy, readable nor fast.
-The architecture needs to be revised, for instance, it should not be restricted to a single thread.
+The architecture needs to be revised, for instance, it should not be restricted to a
+single thread.
 Another bad thing is that vim tries to be backward compatible too much (even with vi!).
 This results in all kinds of quirks that only exist for historical reasons.
-We don't want that. Once in a while, backward compatibility needs to be broken due to new developments or new insights.
+We don't want that. Once in a while, backward compatibility needs to be broken due to new
+developments or new insights.
 Python's transition to version 3 is a good example of this.
-Neovim tries to fix some of these problems, which is a good thing in my opinion, but it is not drastically enough.
+Neovim tries to fix some of these problems, which is a good thing in my opinion, but it is
+not drastically enough.
 So we are not trying to be compatible with vim, let alone vi.
 
 Given these things, the best option is to write a new text editor from scratch.
@@ -37,20 +40,25 @@ The language of choice is Python, because
 
 - it is easy, which is not only a good thing in itself, but also makes doing contributions easier
 - allows to write relatively short and elegant code
-- naturally the scripting language will be python as well, such that we get the scripting machinery almost for free
-- because there are several python implementations, this even potentially allows fate to be run in-browser
+- naturally the scripting language will be python as well, such that we get the scripting
+  machinery almost for free
+- because there are several python implementations, this even potentially allows fate to
+  be run in-browser
 
-Vim has several user interfaces, due to the many platforms and user preferences.
-To anticipate on this, we will separate the user interface from the underlying machinery.
+Vim has several user interfaces, due to the many platforms and user preferences.  To
+anticipate on this, we will separate the user interface from the underlying machinery.
 
-While writing a text editor from scratch anyway, we have the opportunity to rethink the way vim works.
+While writing a text editor from scratch anyway, we have the opportunity to rethink the
+way vim works.
 There is room for improvement.
 
 Vim's visual mode removed the need for marks (kind of).
 Why don't we take this one step further?
-Let's make all motions visual, such that we can select a word by pressing `w`, and then change it by pressing `c`.
+Let's make all motions visual, such that we can select a word by pressing `w`, and then
+change it by pressing `c`.
 In vim we would have to press `cw`, not getting feedback on what we selected.
-From an architectural point of view, the new approach is also appealing, as it removes the need for a distinction between visual mode and normal mode.
+From an architectural point of view, the new approach is also appealing, as it removes the
+need for a distinction between visual mode and normal mode.
 The syntax diagram will be easier, there is no need for a change mode, which accepts motions,
 but instead we can just select something and apply an operator.
 Note that we remove the concept of a cursor.
@@ -60,27 +68,38 @@ Secondly, we like to generalize vim's modal approach.
 We want the user to be able to add new modes easily.
 This way things like snippet expansion can be implemented with a snippet mode.
 
-Thirdly, we will not invent our own regex language like vim did, but stick to python's regex language.
+Thirdly, we will not invent our own regex language or scripting language like vim did, but
+stick to python and it's regex language.
 It is a good, well documented, well known engine, and we get it for free.
 
 Design
 ======
 Here we state some important design decisions that were made.
 
-Performance
------------
-To be able to efficiently do operations on the text while keeping the possibility to execute regex queries, we need a C data structure that acts as a string (implementing python's buffer protocol) but which is a different tree structure underneath.
-TODO: is the text lazily loaded from the harddisk?
+Performance of text modifications
+---------------------------------
+To be able to efficiently do operations on the text while keeping the possibility to
+execute regex queries, we need a C/C++ data structure that acts as a string (implementing
+python's buffer protocol) but which is a different tree structure underneath.
+Question: is the text lazily loaded from the harddisk?
 
-There are two categories of syntactic constructs that we want to match in a text:
-- those that require the entire text to be parsed (e.g. constructs with ambiguous delimiters such as strings)
+Text display augmenting features (a.k.a. syntax highlighting and text concealment)
+----------------------------------------------------------------------------------
+There are two categories of syntactic constructs that we may want to match and augment in a text:
+- those that require the entire text to be parsed (e.g. constructs with ambiguous
+  delimiters such as strings)
 - those that don't (e.g. keywords, matching parenthesis)
 
-The first category need the entire text, and can thus only be performed if the textsize is small enough or if its not used frequently or automatically (syntax highlighting) and the user is willing to wait that long.
-The second category can be parsed by only looking in a window.
+The first category needs the entire text, and can thus only be performed if the textsize is
+small enough or if its not used frequently or automatically (syntax highlighting) and the
+user is willing to wait that long.
+The second category can be parsed by only looking in a small window of the text.
 
-Syntaxhighlighting should be disabled for the first category, while global search should not.
-
+A text display augmenting feature can be implemented by a map from positions to objects,
+e.g. an array with an offset or a dictionary. Mapping from intervals instead of positions
+will only decrease space requirements with a constant, while increasing the time
+requirements with a constant.
+How can we represent non-injective relationships?
 
 Todo
 ====
@@ -89,8 +108,11 @@ SHORT TERM
   - UI gets a modified version of the text
   - Needed for characters with more than 1 width, like tabs, since every character in the
     ui version of the text must be of width 1, for ease of computations
+  - Rewrite syntax highlighting to work similarly
+    - Allows multiple labels per character? I.e. error and number/string at the same time
 - Contextual completion
-  - For completion it is also needed that the full text can be constructed including the pending operation.
+  - For completion it is also needed that the full text can be constructed including the
+    pending operation.
   - Make ycm also shutdown on crash
   - Make ycm requests async
 - Make mode keymaps configurable per document.
@@ -127,7 +149,8 @@ LONG TERM
 - Focus on non-atomic operations
 - Idea: jumplist of lines of changes
 - Easier file opening
-- Some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same. If one changes, the other changes with it.
+- Some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same.
+  If one changes, the other changes with it.
 
 [docs]: http://chiel92.github.io/fate/
 [fate-tui]: http://github.com/Chiel92/fate-tui

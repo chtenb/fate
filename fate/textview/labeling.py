@@ -3,10 +3,19 @@ import logging
 
 from ..document import Document
 from ..event import Event
-from .labeling import Labeling
 
 # Dependencies
 from .. import filetype
+
+
+class Labeling(dict):
+
+    """A Labeling is a mapping from the text to string labels"""
+
+    def add(self, interval, label):
+        beg, end = interval
+        for position in range(beg, end):
+            self[position] = label
 
 
 def load_labeling_script(document):
@@ -16,9 +25,12 @@ def load_labeling_script(document):
 
     if document.filetype:
         try:
-            module = import_module(__name__ + '.' + document.filetype)
-        except ImportError:
-            logging.info('No labeling script found for filetype ' + document.filetype)
+            module = import_module(__name__[:-len('labeling')] + document.filetype)
+        except ImportError as e:
+            if e.name == document.filetype:
+                logging.info('No labeling script found for filetype ' + document.filetype)
+            else:
+                raise
         else:
             logging.info('Found labeling script for filetype ' + document.filetype)
             document.OnTextChanged.add(generate_labeling)

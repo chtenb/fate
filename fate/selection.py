@@ -21,6 +21,11 @@ class Interval:
         return (isinstance(obj, Interval)
                 and (self.beg, self.end) == (obj.beg, obj.end))
 
+    def __lt__(self, obj):
+        if not isinstance(obj, Interval):
+            raise ValueError
+        return (self.beg, self.end) < (obj.beg, obj.end)
+
     def __add__(self, obj):
         """Add second interval to first interval."""
         if isinstance(obj, Interval):

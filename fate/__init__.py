@@ -22,7 +22,7 @@ from . import formatting
 from . import errorchecking
 from . import ycm
 from . import filetype
-from . import labeling
+from . import textview
 
 from . import keymap
 from . import normalmode

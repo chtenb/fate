@@ -6,23 +6,32 @@ from collections import deque
 from .event import Event
 from abc import ABC, abstractmethod, abstractproperty
 
-class UserInterface(ABC):
+class UserInterfaceAPI(ABC):
 
-    """Abstract base class for userinteraces. """
+    """Abstract base class for userinterace APIs."""
 
-    def __init__(self, document):
-        self.document = document
+    def __init__(self, doc):
+        self.doc = doc
         self.inputqueue = deque()
         self.OnUserInput = Event()
 
+        self.viewstart = 0
+        self.viewend = 0
+        self.viewpos_to_origpos = []
+        self.origpos_to_viewpos = []
+
+        self.textview = ''
+        self.labelingview = []
+        self.selectionview = None
+
     @abstractproperty
     def viewport_size(self):
-        """Get viewport size."""
+        """Get viewport size as a tuple (width, height)."""
         pass
 
     @abstractproperty
     def viewport_offset(self):
-        """Get and set viewport offset."""
+        """Get and set viewport offset as a single text position."""
         pass
 
     @abstractmethod

@@ -2,7 +2,7 @@
 from .selection import Selection, Interval
 from .event import Event
 from . import commands
-from .userinterface import UserInterface
+from .userinterface import UserInterfaceAPI
 from . import pointer
 from .navigation import center_around_selection
 
@@ -35,6 +35,7 @@ class Document():
         self.OnQuit = Event()
         self.OnActivate = Event()
         self.OnPrompt = Event()
+        self.OnSelectionChange = Event()
 
         self.filename = filename
 
@@ -44,7 +45,7 @@ class Document():
         if not self.create_userinterface:
             raise Exception('No function specified in Document.create_userinterface.')
         self.ui = self.create_userinterface(self)
-        if not isinstance(self.ui, UserInterface):
+        if not isinstance(self.ui, UserInterfaceAPI):
             raise Exception('document.ui not an instance of UserInterface.')
 
         # Load the default key map
@@ -112,6 +113,7 @@ class Document():
 
         # Update the userinterface viewport to center around first interval
         center_around_selection(self)
+        self.OnSelectionChange.fire(self)
 
     def processinput(self, userinput):
         """This method is called when this document receives userinput."""
