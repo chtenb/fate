@@ -1,12 +1,25 @@
 from ..document import Document
 from ..event import Event
-from ..selection import Interval, Selection
+from ..selection import Interval
 
-from bisect import bisect_left, bisect_right
+from bisect import bisect_left
 from logging import debug
 
 
-class Conceal():
+def init_conceal(doc):
+    doc.view.conceal = Conceal(doc)
+
+    doc.OnGenerateGlobalConceal = Event()
+    doc.OnGenerateLocalConceal = Event()
+
+    # Examples
+    doc.OnGenerateLocalConceal.add(conceal_tabs)
+    doc.OnGenerateGlobalConceal.add(conceal_eol)
+
+Document.OnDocumentInit.add(init_conceal)
+
+
+class Conceal:
 
     """Functionality for text concealment."""
 
@@ -40,11 +53,7 @@ class Conceal():
         self.doc.OnGenerateGlobalConceal.fire(self.doc)
         self.global_substitutions.sort()
 
-    def refresh_textview(self, doc):
-        """
-        Compute a piece of text for the UI to display.
-        Updates textview and the corresponding positions mappings.
-        """
+    def refresh(self, doc):
         viewport_offset = self.doc.ui.viewport_offset
         width, height = self.doc.ui.viewport_size
         max_length = width * height + 1
@@ -72,7 +81,7 @@ class Conceal():
         while vpos < max_length and opos < len(text):
             # Add remaining non-concealed text
             if subst_index >= len(substitutions):
-                length = max_length - vpos
+                length = min(max_length - vpos, len(text) - opos)
                 vpos_to_opos.extend(range(opos, opos + length))
                 opos_to_vpos.extend(range(vpos, vpos + length))
                 textview_builder.append(text[opos:opos + length])
@@ -102,6 +111,7 @@ class Conceal():
                 opos += olength
                 subst_index += 1
 
+
         # Extend mappings to allow (exclusive) interval ends to be mapped
         vpos_to_opos.append(opos + 1)
         opos_to_vpos.append(vpos + 1)
@@ -111,62 +121,15 @@ class Conceal():
         assert len(textview) == textview_length
         assert textview_length <= max_length
 
-        self.doc.ui.textview = textview
-        self.doc.ui.textview_length = textview_length
-        self.doc.ui.vpos_to_opos = vpos_to_opos
-        self.doc.ui.opos_to_vpos = opos_to_vpos
+        self.doc.view.text = textview
+        self.doc.view.text_length = textview_length
+        self.doc.view.vpos_to_opos = vpos_to_opos
+        self.doc.view.opos_to_vpos = opos_to_vpos
 
-        debug(vpos_to_opos)
-        debug(opos_to_vpos)
+        #debug(vpos_to_opos)
+        #debug(opos_to_vpos)
         assert len(vpos_to_opos) >= textview_length
         assert len(opos_to_vpos) >= viewport_offset - opos
-
-        # TODO: move stuff below to different functions
-
-        # Construct labeling view
-        labelingview = []
-        for i in range(len(textview)):
-            opos = vpos_to_opos[i]
-            if opos in self.doc.labeling:
-                labelingview.append(self.doc.labeling[opos])
-            else:
-                labelingview.append('')
-        self.doc.ui.labelingview = labelingview
-
-        # Construct selection view
-        # Find starting interval in selection
-        # debug(self.substitutions)
-        selection_start = bisect_left(self.doc.selection, Interval(viewport_offset,
-                                                                   viewport_offset))
-        selection_end = bisect_left(self.doc.selection, Interval(textview_length,
-                                                                 textview_length))
-        selectionview = Selection()
-        debug(self.doc.selection[selection_start:selection_end])
-        for beg, end in self.doc.selection[selection_start:selection_end]:
-            beg = max(0, beg - viewport_offset)
-            end = min(textview_length, end - viewport_offset)
-            debug(len(opos_to_vpos))
-            debug((beg, end))
-            vbeg = opos_to_vpos[beg]
-            vend = opos_to_vpos[end]
-            # vend = opos_to_vpos[end - 1] + 1 # End is after last position in interval
-            debug((vbeg, vend))
-            selectionview.add(Interval(vbeg, vend))
-        self.doc.ui.selectionview = selectionview
-
-        debug(labelingview)
-        debug(selectionview)
-
-
-def init_events(doc):
-    doc.OnGenerateGlobalConceal = Event()
-    doc.OnGenerateLocalConceal = Event()
-    doc.conceal = Conceal(doc)
-
-    doc.OnTextChanged.add(doc.conceal.generate_global_substitutions)
-    doc.OnSelectionChange.add(doc.conceal.refresh_textview)
-    doc.OnGenerateLocalConceal.add(conceal_tabs)
-    doc.OnGenerateGlobalConceal.add(conceal_eol)
 
 
 def conceal_tabs(doc, start_pos, max_length):
@@ -183,5 +146,3 @@ def conceal_eol(doc):
             break
         if doc.text[i] == '\n':
             doc.conceal.global_substitute(Interval(i, i + 1), '$\n')
-
-Document.OnDocumentInit.add(init_events)

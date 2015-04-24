@@ -1,4 +1,6 @@
-NOTE: Still very experimental and not ready for use.
+DISCLAIMER:
+THIS PROJECT IS IN AN EXPERIMENTAL STATE. NO INDIVIDUALS AFFILIATED WITH THIS PROJECT CAN BE
+HELD RESPONSIBLE FOR ANY KIND OF DAMAGE CAUSED BY USAGE OF THIS SOFTWARE.
 
 [![Build Status](https://travis-ci.org/Chiel92/fate.svg?branch=action-machinery-rewrite)](https://travis-ci.org/Chiel92/fate)
 
@@ -6,20 +8,16 @@ Fate
 ====
 F.A.T.E. is a highly programmable text editor, mainly intended for programming purposes.
 
-Documentation
--------------
-Available [here][docs].
-
-User Interface
+How to install
 --------------
 Available [here][fate-tui]
 
-Vim
----
-How is fate related to vim?
-I'm a vim user myself.
-Vim is a great text editor.
-However, there are several issues that need to be adressed.
+What you should know
+--------------------
+What originally started out as a rewrite of Vim in python, ended up as an entirely new text
+editor.
+I'm a vim user myself. Vim is a great text editor.
+However, there are several issues I felt that needed to be adressed.
 De code base is old and getting messy and is therefore hard to maintain.
 It is not very extensible, even though vim has its own scripting language.
 Vim language is neither easy, readable nor fast.
@@ -71,6 +69,11 @@ This way things like snippet expansion can be implemented with a snippet mode.
 Thirdly, we will not invent our own regex language or scripting language like vim did, but
 stick to python and it's regex language.
 It is a good, well documented, well known engine, and we get it for free.
+
+
+Documentation
+-------------
+Available [here][docs].
 
 Design
 ======

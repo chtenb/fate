@@ -20,9 +20,10 @@ from . import (clipboard, commandmode, commandtools, document, filecommands,
 # Load standard plugins
 from . import formatting
 from . import errorchecking
+from . import highlighting
 from . import ycm
 from . import filetype
-from . import textview
+from . import view
 
 from . import keymap
 from . import normalmode
@@ -59,6 +60,7 @@ def run():
     """Main input loop for fate."""
     while document.activedocument != None:
         doc = document.activedocument
+        doc.view.refresh()
         doc.ui.touch()
         userinput = doc.ui.getinput()
         doc.processinput(userinput)

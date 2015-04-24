@@ -1,6 +1,6 @@
 import random
 from re import escape
-from ..userinterface import UserInterface
+from ..userinterface import UserInterfaceAPI
 from ..commandmode import publics
 from .. import commands
 
@@ -29,12 +29,12 @@ command_names.sort()
 compound_input_space = command_values + key_space
 
 
-class RandomizedUserSimulator(UserInterface):
+class RandomizedUserSimulator(UserInterfaceAPI):
 
     """UserInterface which simulates some random behaviour for testing purposes."""
 
-    def __init__(self, document):
-        UserInterface.__init__(self, document)
+    def __init__(self, doc):
+        UserInterfaceAPI.__init__(self, doc)
         self.nextkey = None
         self.offset = (0, 0)
 
@@ -53,8 +53,8 @@ class RandomizedUserSimulator(UserInterface):
         """Get and set viewport offset."""
         self.offset = value
 
-    def quit(self, document):
-        assert document is self.document
+    def quit(self, doc):
+        assert doc is self.doc
 
     def _getuserinput(self):
         if self.nextkey:
@@ -70,12 +70,12 @@ class RandomizedUserSimulator(UserInterface):
         return self.nextkey
 
     def newinput(self):
-        if not self.document.mode:
+        if not self.doc.mode:
             command_name = random.choice(command_names)
             return command_dict[command_name]
 
         # If we are in a certain mode we try to construct a meaningful input space
-        mode = self.document.mode
+        mode = self.doc.mode
         input_space = ['Cancel']
         input_space.extend(
             [c for c in mode.allowedcommands if not c in forbidden_commands])

@@ -7,7 +7,7 @@ re_keyword = re.compile(r'\b({})\b'.format('|'.join(keywords)))
 
 
 def init(document):
-    document.OnGenerateLabeling.add(main)
+    document.OnGenerateGlobalHighlighting.add(main)
 
 
 def main(document):

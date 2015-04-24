@@ -15,15 +15,6 @@ class UserInterfaceAPI(ABC):
         self.inputqueue = deque()
         self.OnUserInput = Event()
 
-        self.viewstart = 0
-        self.viewend = 0
-        self.viewpos_to_origpos = []
-        self.origpos_to_viewpos = []
-
-        self.textview = ''
-        self.labelingview = []
-        self.selectionview = None
-
     @abstractproperty
     def viewport_size(self):
         """Get viewport size as a tuple (width, height)."""

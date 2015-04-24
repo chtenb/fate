@@ -5,10 +5,10 @@ import keyword
 re_keyword = re.compile(r'\b({})\b'.format('|'.join(keyword.kwlist)))
 re_comment = re.compile('#.*\n')
 
-def init(document):
-    document.OnGenerateLabeling.add(main)
+def init(doc):
+    doc.OnGenerateGlobalHighlighting.add(main)
 
-def main(document):
+def main(doc):
     regex_list = [(re_keyword, 'keyword'), (re_number, 'number'), (re_string, 'string'),
                   (re_comment, 'comment')]
-    regex_labels(document, regex_list)
+    regex_labels(doc, regex_list)

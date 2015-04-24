@@ -10,4 +10,4 @@ def regex_labels(document, l):
     for regex, label in l:
         matches = regex.finditer(document.text)
         for match in matches:
-            document.labeling.add((match.start(), match.end()), label)
+            document.highlighting.highlight((match.start(), match.end()), label)

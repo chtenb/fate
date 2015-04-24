@@ -12,7 +12,7 @@ re_comment = re.compile('//.*\n')
 
 
 def init(document):
-    document.OnGenerateLabeling.add(main)
+    document.OnGenerateGlobalHighlighting.add(main)
 
 
 def main(document):

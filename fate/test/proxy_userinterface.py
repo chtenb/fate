@@ -1,14 +1,14 @@
 from collections import deque
 from ..filecommands import quit_document
-from ..userinterface import UserInterface
+from ..userinterface import UserInterfaceAPI
 
 
-class ProxyUserInterface(UserInterface):
+class ProxyUserInterface(UserInterfaceAPI):
 
     """UserInterface which simulates some random behaviour for testing purposes."""
 
-    def __init__(self, document):
-        UserInterface.__init__(self, document)
+    def __init__(self, doc):
+        UserInterfaceAPI.__init__(self, doc)
         self.offset = (0, 0)
 
     @property
@@ -29,8 +29,8 @@ class ProxyUserInterface(UserInterface):
     def touch(self):
         pass
 
-    def quit(self, document):
-        assert document is self.document
+    def quit(self, doc):
+        assert doc is self.doc
 
     def activate(self):
         pass
