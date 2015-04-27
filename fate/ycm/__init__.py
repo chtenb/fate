@@ -6,6 +6,7 @@ from tempfile import gettempdir
 
 
 def start_ycm_server(doc):
+    # TODO: Only start server if wanted
     info('Trying to start ycm server...')
 
     server = YcmdHandle.StartYcmdAndReturnHandle()

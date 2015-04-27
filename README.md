@@ -118,9 +118,9 @@ SHORT TERM
     pending operation.
   - Make ycm also shutdown on crash
   - Make ycm requests async
-- Make mode keymaps configurable per document.
+- Make mode keymaps configurable per document
   - Mode keymaps have to be created OnDocumentInit
-  - Solution: each document has its own mode objects.
+  - Solution: each document has its own mode objects
 - Text datastructure that is optimized for text editing
 - Make labeling generation asynchronous
 - Make it possible to use movedown/up as narrowing selectors
@@ -131,6 +131,8 @@ SHORT TERM
 - Improve syntax highlighting, for instance by disregarding quotes inside comments and strings
   - select around should maybe also disregard brackets etc in comments and strings
 - Enhance selector set
+- Allow fate to be used for bulk file editing
+  - Things like completion need to be disabled for this
 - Snippet technology
   - Expand and surround/refactoring
 - Reimplement repeat, since classes can't be decorated

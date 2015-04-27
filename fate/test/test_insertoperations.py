@@ -16,6 +16,7 @@ class OperatorTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
         selectnextline(self.document)
+        self.document.completer.WaitUntilReady()
 
     def test_change_before(self):
         self.document.ui.feedinput(ChangeBefore)

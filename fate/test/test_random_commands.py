@@ -20,7 +20,7 @@ class RandomizedActionTest(BaseTestCase):
         # Hack to allow setUp to be called properly
         self.tearDown()
 
-        commands_per_run = 50
+        commands_per_run = 1000
         runs = 500
         if args.long:
             runs = 5000

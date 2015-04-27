@@ -12,6 +12,8 @@ def init_conceal(doc):
     doc.OnGenerateGlobalConceal = Event()
     doc.OnGenerateLocalConceal = Event()
 
+    doc.OnTextChanged.add(doc.view.conceal.generate_global_substitutions)
+
     # Examples
     doc.OnGenerateLocalConceal.add(conceal_tabs)
     doc.OnGenerateGlobalConceal.add(conceal_eol)
@@ -137,7 +139,7 @@ def conceal_tabs(doc, start_pos, max_length):
         if i >= len(doc.text):
             break
         if doc.text[i] == '\t':
-            doc.conceal.local_substitute(Interval(i, i + 1), ' ' * doc.tabwidth)
+            doc.view.conceal.local_substitute(Interval(i, i + 1), ' ' * doc.tabwidth)
 
 
 def conceal_eol(doc):
@@ -145,4 +147,4 @@ def conceal_eol(doc):
         if i >= len(doc.text):
             break
         if doc.text[i] == '\n':
-            doc.conceal.global_substitute(Interval(i, i + 1), '$\n')
+            doc.view.conceal.global_substitute(Interval(i, i + 1), '$\n')
