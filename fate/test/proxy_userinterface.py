@@ -9,7 +9,7 @@ class ProxyUserInterface(UserInterfaceAPI):
 
     def __init__(self, doc):
         UserInterfaceAPI.__init__(self, doc)
-        self.offset = (0, 0)
+        self.offset = 0
 
     @property
     def viewport_size(self):
@@ -24,6 +24,7 @@ class ProxyUserInterface(UserInterfaceAPI):
     @viewport_offset.setter
     def viewport_offset(self, value):
         """Get and set viewport offset."""
+        assert isinstance(value, int)
         self.offset = value
 
     def touch(self):

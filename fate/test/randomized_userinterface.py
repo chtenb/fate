@@ -36,7 +36,7 @@ class RandomizedUserSimulator(UserInterfaceAPI):
     def __init__(self, doc):
         UserInterfaceAPI.__init__(self, doc)
         self.nextkey = None
-        self.offset = (0, 0)
+        self.offset = 0
 
     @property
     def viewport_size(self):
@@ -51,6 +51,7 @@ class RandomizedUserSimulator(UserInterfaceAPI):
     @viewport_offset.setter
     def viewport_offset(self, value):
         """Get and set viewport offset."""
+        assert isinstance(value, int)
         self.offset = value
 
     def quit(self, doc):

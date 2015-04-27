@@ -50,7 +50,7 @@ class Mode(ABC):
 
     def __init__(self, document, callback=None):
         self.keymap = {}
-        self.allowedcommands = []
+        self.allowedcommands = [self.start, self.stop]
         self.callback = callback
 
     def start(self, document):

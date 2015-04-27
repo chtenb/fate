@@ -40,7 +40,8 @@ def parse_file(doc):
 
 
 def complete(doc):
-    if doc.completer.IsReady():
+    if doc.completer.IsReady() and hasattr(doc, 'tempfile'):
+        # It may happen that the server was not ready for parsing, but is ready now
         line, column = position_to_coord(doc.mode.cursor_position(doc), doc.text)
         info((line, column))
         result = doc.completer.SendCodeCompletionRequest(test_filename=doc.tempfile,

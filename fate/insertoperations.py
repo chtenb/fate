@@ -24,7 +24,7 @@ class InsertMode(Mode):
 
     def __init__(self, doc, callback=None):
         Mode.__init__(self, doc, callback)
-        self.allowedcommands = [document.next_document, document.previous_document]
+        self.allowedcommands.extend([document.next_document, document.previous_document])
 
         # Init trivial starting operation
         self.preview_operation = self.compute_operation(doc)
@@ -96,6 +96,8 @@ class Completable(InsertMode):
         self.newcontent = doc.selection.content(doc)
 
         InsertMode.__init__(self, doc, callback)
+        self.allowedcommands.extend([self.next_completion, self.next_completion_or_tab,
+                                     self.previous_completion])
 
         self.keymap.update({
             '\t': self.next_completion_or_tab,
@@ -110,13 +112,13 @@ class Completable(InsertMode):
         return len(doc.selection) == 1 and doc.completer != None
 
     def next_completion(self, doc):
-        if self.complete_enabled(doc):
+        if self.complete_enabled(doc) and self.completions:
             self.selected_completion = ((self.selected_completion + 1)
                                         % len(self.completions))
             self.insert_completion(doc)
 
     def previous_completion(self, doc):
-        if self.complete_enabled(doc):
+        if self.complete_enabled(doc) and self.completions:
             self.selected_completion = ((self.selected_completion - 1)
                                         % len(self.completions))
             self.insert_completion(doc)
@@ -196,9 +198,9 @@ class ChangeAfter(Completable):
         # with a larger number of intervals.
         # Therefore we take indices modulo the length of the lists
         #l = len(self.insertions)
-        #newcontent = [doc.selection.content(doc)[i % l][:-self.deletions[i % l] or None]
+        # newcontent = [doc.selection.content(doc)[i % l][:-self.deletions[i % l] or None]
                       #+ self.insertions[i % l]
-                      #for i in range(len(doc.selection))]
+                      # for i in range(len(doc.selection))]
         return Operation(doc, self.newcontent[:])
 
     def insert_completion(self, doc):

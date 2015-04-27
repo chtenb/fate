@@ -1,5 +1,6 @@
 from .mode import Mode
 from .document import Document
+from logging import error
 
 Document.promptinput = ''
 
@@ -23,7 +24,7 @@ class Prompt(Mode):
             else:
                 self.inputstring += key
         else:
-            raise NotImplementedError('To be done.')
+            error('Prompt can not process non-string input')
 
     def start(self, doc):
         Mode.start(self, doc)

@@ -17,12 +17,18 @@ class UserInterfaceAPI(ABC):
 
     @abstractproperty
     def viewport_size(self):
-        """Get viewport size as a tuple (width, height)."""
+        """
+        Get viewport size as a tuple (width, height).
+        Must both be positive.
+        """
         pass
 
     @abstractproperty
     def viewport_offset(self):
-        """Get and set viewport offset as a single text position."""
+        """
+        Get and set viewport offset as a single text position.
+        Must be positive.
+        """
         pass
 
     @abstractmethod

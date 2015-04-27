@@ -71,7 +71,6 @@ class Conceal:
                          self.global_substitutions[first_global_subst:last_global_subst])
         substitutions.sort()
 
-        viewport_offset = self.doc.ui.viewport_offset
         textview_builder = []  # Stringbuilder for text to be displayed
         vpos = 0  # Current position in view text, i.e. length of text builded so far
         opos = viewport_offset  # Current position in original text
@@ -121,7 +120,6 @@ class Conceal:
         textview_length = vpos
         textview = ''.join(textview_builder)
         assert len(textview) == textview_length
-        assert textview_length <= max_length
 
         self.doc.view.text = textview
         self.doc.view.text_length = textview_length
