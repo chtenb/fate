@@ -16,11 +16,11 @@ What you should know
 --------------------
 What originally started out as a rewrite of Vim in python, ended up as an entirely new text
 editor.
-I'm a vim user myself. Vim is a great text editor.
+Vim is a great text editor.
 However, there are several issues I felt that needed to be adressed.
 De code base is old and getting messy and is therefore hard to maintain.
 It is not very extensible, even though vim has its own scripting language.
-Vim language is neither easy, readable nor fast.
+VimLanguage is neither easy, readable nor fast.
 The architecture needs to be revised, for instance, it should not be restricted to a
 single thread.
 Another bad thing is that vim tries to be backward compatible too much (even with vi!).
@@ -42,6 +42,7 @@ The language of choice is Python, because
   machinery almost for free
 - because there are several python implementations, this even potentially allows fate to
   be run in-browser
+- performance critical parts can easily be implemented as a C or C++ extension
 
 Vim has several user interfaces, due to the many platforms and user preferences.  To
 anticipate on this, we will separate the user interface from the underlying machinery.
@@ -156,6 +157,7 @@ LONG TERM
 - Easier file opening
 - Some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same.
   If one changes, the other changes with it.
+- Binary search for selections?
 
 [docs]: http://chiel92.github.io/fate/
 [fate-tui]: http://github.com/Chiel92/fate-tui

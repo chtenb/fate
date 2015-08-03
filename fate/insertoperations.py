@@ -13,7 +13,6 @@ from .commands import (emptybefore, selectpreviousfullline, selectindent,
 from .clipboard import copy, clear, paste_before, Cut
 from .mode import Mode
 from . import document
-from . import ycm
 from abc import abstractmethod
 from logging import error, debug
 
@@ -106,6 +105,10 @@ class Completable(InsertMode):
 
     @abstractmethod
     def cursor_position(self, doc):
+        """
+        This method should not be overriden by the completion engine, but rather by an
+        instance of a completable insert operation.
+        """
         pass
 
     def complete_enabled(self, doc):
@@ -131,14 +134,21 @@ class Completable(InsertMode):
 
     @abstractmethod
     def insert_completion(self, doc):
+        """
+        This method should not be overriden by the completion engine, but rather by an
+        instance of a completable insert operation.
+        """
         pass
 
     def update_completions(self, doc):
+        """
+        This method should be overriden by the completion engine.
+        """
         assert self.complete_enabled(doc)
         beg = doc.selection[0][0]
 
-        ycm.parse_file(doc)
-        complete_result = ycm.complete(doc)
+        doc.completer.parse_file(doc)
+        complete_result = doc.completer.complete(doc)
         if complete_result:
             self.completion_start_pos, self.completions = complete_result
             self.completions.insert(0, self.newcontent[0])
@@ -148,6 +158,7 @@ class Completable(InsertMode):
             self.completion_start_pos = -1
 
         self.selected_completion = 0
+
 
     def insert_and_update(self, doc, userinput):
         self.insert(doc, userinput)

@@ -13,7 +13,7 @@ info('Starting fate.')
 # Load modules exposing commands, to make sure the commands module contains all core
 # commands
 from . import commands
-from . import (clipboard, commandmode, commandtools, document, filecommands,
+from . import (clipboard, commandmode, commandtools, completer, document, filecommands,
                insertoperations, operators, repeat, search, selectors,
                selectaround, undotree, pointer)
 
@@ -21,7 +21,6 @@ from . import (clipboard, commandmode, commandtools, document, filecommands,
 from . import formatting
 from . import errorchecking
 from . import highlighting
-from . import ycm
 from . import filetype
 from . import view
 
