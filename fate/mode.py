@@ -41,6 +41,8 @@ The only reference existing is through the callback.
 REMARK:
 A mode is thus not necessarily stateful.
 How can we modify a mode keymap for a single document?
+It is not entirely clear when you should just execute a command and when to feed it to
+document.
 """
 from abc import ABC
 

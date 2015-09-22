@@ -123,6 +123,7 @@ def select_around_interval(string, beg, end, fst, snd):
     #nbeg, nend = max([match1, match2], key=interval_length)
 
     # If interval remains the same try selecting one level higher
+    # TODO: fix infinite recursion
     if (beg, end) == (nbeg, nend):
         if beg > 0:
             return select_around_interval(string, beg - 1, end, fst, snd)

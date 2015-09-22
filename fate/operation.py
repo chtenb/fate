@@ -13,16 +13,11 @@ class Operation(Undoable):
     has been applied.
     """
 
-    def __init__(self, document, newcontent=None, selection=None):
-        selection = selection or document.selection
+    def __init__(self, doc, newcontent, selection=None):
+        selection = selection or doc.selection
         self.oldselection = selection
-        self.old_content = selection.content(document)
-        try:
-            self.newcontent = newcontent or self.old_content[:]
-        except AttributeError:
-            # newcontent has been overriden
-            # TODO neater fix for this
-            pass
+        self.old_content = selection.content(doc)
+        self.newcontent = newcontent
 
     def __str__(self):
         attributes = [('oldselection', self.oldselection),
@@ -42,16 +37,16 @@ class Operation(Undoable):
             result.add(Interval(beg, end))
         return result
 
-    def do(self, document):
+    def do(self, doc):
         """Execute operation."""
-        self._apply(document)
+        self._apply(doc)
 
-    def undo(self, document):
+    def undo(self, doc):
         """Undo operation."""
-        self._apply(document, inverse=True)
+        self._apply(doc, inverse=True)
 
-    def _apply(self, document, inverse=False):
-        """Apply self to the document."""
+    def _apply(self, doc, inverse=False):
+        """Apply self to the doc."""
         if inverse:
             oldselection = self.compute_newselection()
             newselection = self.oldselection
@@ -61,17 +56,13 @@ class Operation(Undoable):
             oldselection = self.oldselection
             newcontent = self.newcontent
 
-        #print(document.text)
-        #print('old: ' + str(oldselection))
-        #print('new: ' + str(newselection))
-
         # Make sure the application of this operation is valid at this moment
-        oldselection.validate(document)
+        oldselection.validate(doc)
         assert len(newselection) == len(oldselection)
         assert len(newcontent) == len(self.old_content)
 
-        partition = oldselection.partition(document)
-        partition_content = [(in_selection, document.text[beg:end])
+        partition = oldselection.partition(doc)
+        partition_content = [(in_selection, doc.text[beg:end])
                              for in_selection, (beg, end) in partition]
 
         count = 0
@@ -83,6 +74,6 @@ class Operation(Undoable):
             else:
                 result.append(string)
 
-        document.text = ''.join(result)
-        document.selection = newselection
+        doc.text = ''.join(result)
+        doc.selection = newselection
 

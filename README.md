@@ -114,31 +114,34 @@ SHORT TERM
     ui version of the text must be of width 1, for ease of computations
   - Rewrite syntax highlighting to work similarly
     - Allows multiple labels per character? I.e. error and number/string at the same time
-- Contextual completion
-  - For completion it is also needed that the full text can be constructed including the
-    pending operation.
-  - Make ycm also shutdown on crash
-  - Make ycm requests async
 - Make mode keymaps configurable per document
   - Mode keymaps have to be created OnDocumentInit
   - Solution: each document has its own mode objects
-- Text datastructure that is optimized for text editing
 - Make labeling generation asynchronous
 - Make it possible to use movedown/up as narrowing selectors
 - Selectaround
 - Different forms of wrapping left/right + word/character
 - Fix unnecessary pylint complains
+- Enhance selector set
+
+MIDDLE TERM
+- Contextual completion
+  - For completion it is also needed that the full text can be constructed including the
+    pending operation.
+  - Make ycm also shutdown on crash
+  - Make ycm requests async
+- Text datastructure that is optimized for text editing
+- Allow fate to be used for bulk file editing
+  - Things like completion need to be disabled for this
 - Implement commandmode as a persistent command, similar to undomode
 - Improve syntax highlighting, for instance by disregarding quotes inside comments and strings
   - select around should maybe also disregard brackets etc in comments and strings
-- Enhance selector set
-- Allow fate to be used for bulk file editing
-  - Things like completion need to be disabled for this
 - Snippet technology
   - Expand and surround/refactoring
 - Reimplement repeat, since classes can't be decorated
   - Record input of user
   - Problem: how to handle next_document etc? We don't want those to be recorded.
+- Easier file opening
 
 LONG TERM
 - Incorporate testing with multiple documents
@@ -154,7 +157,6 @@ LONG TERM
 - Switch to alternative regex engine?
 - Focus on non-atomic operations
 - Idea: jumplist of lines of changes
-- Easier file opening
 - Some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same.
   If one changes, the other changes with it.
 - Binary search for selections?

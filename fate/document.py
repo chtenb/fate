@@ -71,16 +71,17 @@ class Document():
         # self.getkey()
 
         if len(documentlist) == 1:
-            logging.debug('fate - document: close the last document by setting activedoc to None')
+            logging.debug(
+                'fate - document: close the last document by setting activedocument to None')
             activedocument = None
             return
 
         if index < len(documentlist) - 1:
-            nextdocument = documentlist[index + 1]
+            nextdoc = documentlist[index + 1]
         else:
-            nextdocument = documentlist[index - 1]
+            nextdoc = documentlist[index - 1]
 
-        nextdocument.activate()
+        nextdoc.activate()
         documentlist.remove(self)
 
     @property
@@ -117,33 +118,30 @@ class Document():
 
     def processinput(self, userinput):
         """This method is called when this document receives userinput."""
-        # If the cancel key has been pressed, convert input to Cancel
-        if userinput == self.cancelkey:
-            userinput = 'Cancel'
-
+        if userinput == 'ctrl-\\':
+            raise KeyboardInterrupt
         logging.debug('Input: ' + repr(userinput))
-
         self.mode.processinput(self, userinput)
 
 
-def next_document(document):
+def next_document(doc):
     """Go to the next document."""
-    index = documentlist.index(document)
-    ndocument = documentlist[(index + 1) % len(documentlist)]
-    ndocument.activate()
+    index = documentlist.index(doc)
+    ndoc = documentlist[(index + 1) % len(documentlist)]
+    ndoc.activate()
 commands.next_document = next_document
 
 
-def previous_document(document):
+def previous_document(doc):
     """Go to the previous document."""
-    index = documentlist.index(document)
-    ndocument = documentlist[(index - 1) % len(documentlist)]
-    ndocument.activate()
+    index = documentlist.index(doc)
+    ndoc = documentlist[(index - 1) % len(documentlist)]
+    ndoc.activate()
 commands.previous_document = previous_document
 
 
 def goto_document(index):
     """Command constructor to go to the document at given index."""
-    def wrapper(document):
+    def wrapper(doc):
         documentlist[index].activate()
-    return wrapper
+        return wrapper

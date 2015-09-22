@@ -16,13 +16,12 @@ class OperatorTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
         selectnextline(self.document)
-        self.document.completer.WaitUntilReady()
 
     def test_change_before(self):
         self.document.ui.feedinput(ChangeBefore)
         for char in '\nasdf\b\b \n \n \n\n\b\b\n':
             self.document.ui.feedinput(char)
-        self.document.ui.feedinput('Cancel')
+        self.document.ui.feedinput(self.document.cancelkey)
         self.document.ui.feedinput(deactivate)
         run()
 
@@ -36,7 +35,7 @@ class OperatorTest(BaseTestCase):
         self.document.ui.feedinput(ChangeAfter)
         for char in '\nasdf\b\b \n \n \n\n\b\b\n':
             self.document.ui.feedinput(char)
-        self.document.ui.feedinput('Cancel')
+        self.document.ui.feedinput(self.document.cancelkey)
         self.document.ui.feedinput(deactivate)
         run()
 
@@ -50,7 +49,7 @@ class OperatorTest(BaseTestCase):
         self.document.ui.feedinput(ChangeInPlace)
         for char in '\nasdf\b\b \n \n \n\n\b\b\n':
             self.document.ui.feedinput(char)
-        self.document.ui.feedinput('Cancel')
+        self.document.ui.feedinput(self.document.cancelkey)
         self.document.ui.feedinput(deactivate)
         run()
 
@@ -64,11 +63,11 @@ class OperatorTest(BaseTestCase):
         self.document.ui.feedinput(ChangeAfter)
         for char in '\n\n  (hi)':
             self.document.ui.feedinput(char)
-        self.document.ui.feedinput('Cancel')
+        self.document.ui.feedinput(self.document.cancelkey)
         self.document.ui.feedinput(selectpreviousword)
         self.document.ui.feedinput(ChangeAround)
         self.document.ui.feedinput('\n')
-        self.document.ui.feedinput('Cancel')
+        self.document.ui.feedinput(self.document.cancelkey)
 
         self.document.ui.feedinput(deactivate)
         run()

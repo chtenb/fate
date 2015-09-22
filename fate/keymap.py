@@ -7,20 +7,20 @@ i.e. functions which take an UserInterface object.
 from . import commands
 from .document import Document
 
-Document.cancelkey = 'Esc'  # Esc is now remapped to Cancel
+Document.cancelkey = 'esc'  # Esc is now remapped to Cancel
 default = {
     # In normalmode the cancel key switches to normal select mode or empties thselection
-    'Cancel': commands.escape,
-    'Ctrl-s': commands.save,
-    'Ctrl-l': commands.load,
-    'Ctrl-q': commands.quit_document,
-    'Ctrl-x': commands.force_quit,
-    'Ctrl-o': commands.open_document,
-    'Ctrl-n': commands.next_document,
-    'Ctrl-p': commands.previous_document,
-    'F(3)': commands.formattext,
-    'F(4)': commands.checkerrors,
-    'F(5)': commands.errormode,
+    'cancel': commands.escape,
+    'ctrl-s': commands.save,
+    'ctrl-l': commands.load,
+    'ctrl-q': commands.quit_document,
+    'ctrl-x': commands.force_quit,
+    'ctrl-o': commands.open_document,
+    'ctrl-n': commands.next_document,
+    'ctrl-p': commands.previous_document,
+    'f3': commands.formattext,
+    'f4': commands.checkerrors,
+    'f5': commands.errormode,
     'f': commands.local_find,
     'F': commands.local_find_backward,
     '/': commands.search,
@@ -46,14 +46,14 @@ default = {
     ']': commands.selectaround_char,
     'm': commands.join,
     'z': commands.emptybefore,
-    'Ctrl-a': commands.selectall,
+    'ctrl-a': commands.selectall,
     'I': commands.selectindent,
     'v': commands.lock,
     'V': commands.unlock,
     'R': commands.release,
     'u': commands.undo,
     'U': commands.redo,
-    'Ctrl-u': commands.undomode,
+    'ctrl-u': commands.undomode,
     'y': commands.copy,
     'Y': commands.clear,
     'p': commands.paste_after,
@@ -72,8 +72,8 @@ default = {
     '.': commands.repeat,
     '~': commands.uppercase,
     '`': commands.lowercase,
-    'Ctrl-f': commands.pagedown,
-    'Ctrl-b': commands.pageup,
+    'ctrl-f': commands.pagedown,
+    'ctrl-b': commands.pageup,
 }
 
 

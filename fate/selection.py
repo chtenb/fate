@@ -1,5 +1,5 @@
 """This module contains the Interval and the Selection class."""
-
+from logging import debug
 
 class Interval:
 
@@ -49,8 +49,8 @@ class Interval:
         else:
             return NotImplemented
 
-    def content(self, document):
-        return document.text[max(0, self.beg):min(len(document.text), self.end)]
+    def content(self, doc):
+        return doc.text[max(0, self.beg):min(len(doc.text), self.end)]
 
     def __hash__(self):
         return hash((self.beg, self.end))
@@ -68,6 +68,11 @@ class Selection:
     def __getitem__(self, index):
         return self._intervals[index]
 
+    def __setitem__(self, index, item):
+        if not isinstance(item, Interval):
+            raise ValueError('Selections can only contain intervals')
+        self._intervals[index] = item
+
     def __len__(self):
         return len(self._intervals)
 
@@ -78,29 +83,29 @@ class Selection:
         return (isinstance(obj, Selection)
                 and self._intervals == obj._intervals)
 
-    def __call__(self, document):
-        """Set self to be the current selection of the document."""
+    def __call__(self, doc):
+        """Set self to be the current selection of the doc."""
         if not self.isempty:
-            document.selection = self
+            doc.selection = self
 
     @property
     def isempty(self):
         """Check if we have intervals."""
         return not bool(self._intervals)
 
-    def validate(self, document):
+    def validate(self, doc):
         """Raise exception if selection is not valid."""
         if self.isempty:
             raise Exception('Selection is empty.')
-        if not self._intervals[-1][1] <= len(document.text):
+        if not self._intervals[-1][1] <= len(doc.text):
             raise Exception(
                 'Selection {} is not valid for a text with length {}.'
-                .format(self, len(document.text))
+                .format(self, len(doc.text))
             )
 
-    def content(self, document):
+    def content(self, doc):
         """Return the content of self."""
-        return [document.text[max(0, beg):min(len(document.text), end)]
+        return [doc.text[max(0, beg):min(len(doc.text), end)]
                 for beg, end in self]
 
     def index(self, interval):
@@ -218,9 +223,9 @@ class Selection:
     def __rsub__(self, obj):
         return self - obj
 
-    def complement(self, document):
+    def complement(self, doc):
         """Return the complementary selection of self."""
-        intervals = [interval for in_selection, interval in self.partition(document)
+        intervals = [interval for in_selection, interval in self.partition(doc)
                      if not in_selection]
         return Selection(intervals)
 
@@ -234,14 +239,14 @@ class Selection:
                 result.add(Interval(beg, end))
         return result
 
-    def partition(self, document):
+    def partition(self, doc):
         """
         Return a sorted list containing all intervals in self
         together with all complementary intervals.
         """
         positions = [pos for interval in self for pos in interval]
         positions.insert(0, 0)
-        positions.append(len(document.text))
+        positions.append(len(doc.text))
         in_selection = False
 
         result = []
@@ -249,6 +254,7 @@ class Selection:
             interval = Interval(positions[i - 1], positions[i])
             result.append((in_selection, interval))
             in_selection = not in_selection
+
         return result
 
     def intersects(self, interval):
