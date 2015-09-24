@@ -76,6 +76,9 @@ class Selection:
     def __len__(self):
         return len(self._intervals)
 
+    def __repr__(self):
+        return 'Selection: {}'.format(self)
+
     def __str__(self):
         return ', '.join(str(i) for i in self._intervals)
 

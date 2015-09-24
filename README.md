@@ -131,8 +131,16 @@ MIDDLE TERM
   - Make ycm also shutdown on crash
   - Make ycm requests async
 - Text datastructure that is optimized for text editing
-- Allow fate to be used for bulk file editing
-  - Things like completion need to be disabled for this
+  - For small to normal texts: plain string
+  - As soon as the text gets too big, split up into (not too small) blocks of a fixed size.
+    Use a binary search tree to find the right block fast.
+    Functionality that need the entire text as plain string must be disabled in this mode.
+    Substring search must be implemented manually, regex search is only possible on a local
+    scale.
+  - Switching between these modes should be done automatically, but it should be possible to
+    override manually.
+- Allow fate to be used for bulk file editing according to some given script
+  - Things like completion need to be disabled for this to speed up starting fate
 - Implement commandmode as a persistent command, similar to undomode
 - Improve syntax highlighting, for instance by disregarding quotes inside comments and strings
   - select around should maybe also disregard brackets etc in comments and strings
