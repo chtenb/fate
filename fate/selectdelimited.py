@@ -13,7 +13,7 @@ from .selectors import intervalselector_withmode
 from . import commands
 
 
-def select_enclosing_char(doc, interval, char=None, backward=False):
+def select_delimiting_char(doc, interval, char=None, backward=False):
     """
     Select around given character.
     Return None if not all intervals are surrounded.
@@ -30,11 +30,10 @@ def select_enclosing_char(doc, interval, char=None, backward=False):
 
     # For each interval find the smallest surrounding pair
     if not backward:
-        match_beg = doc.text.find(beg_delim, beg)
-        if match_beg == -1:
-            return
-        match_end = doc.text.find(end_delim, match_beg + 1) + 1
-        if match_end == -1:
+        try:
+            match_beg = doc.text.index(beg_delim, beg)
+            match_end = doc.text.index(end_delim, match_beg + 1) + 1
+        except ValueError:
             return
 
         if beg == match_beg and end == match_end:
@@ -44,11 +43,10 @@ def select_enclosing_char(doc, interval, char=None, backward=False):
             # Include delimiters
             return Interval(match_beg, match_end)
     else:
-        match_beg = doc.text.rfind(beg_delim, 0, beg)
-        if match_beg == -1:
-            return
-        match_end = doc.text.find(end_delim, match_beg + 1) + 1
-        if match_end == -1:
+        try:
+            match_beg = doc.text.rindex(beg_delim, 0, beg)
+            match_end = doc.text.index(end_delim, match_beg + 1) + 1
+        except ValueError:
             return
 
         if beg == match_beg + 1 and end == match_end - 1:
@@ -58,32 +56,32 @@ def select_enclosing_char(doc, interval, char=None, backward=False):
             # Exclude delimiters
             return Interval(match_beg + 1, match_end - 1)
 
-select_enclosing_char_helper = intervalselector_withmode(select_enclosing_char)
+select_delimiting_char_helper = intervalselector_withmode(select_delimiting_char)
 
 
-def select_next_enclosing_char(doc):
-    char = doc.ui.getkey()
+def select_next_delimiting_char(doc, char=None):
+    char = char or doc.ui.getkey()
     if char == doc.cancelkey:
         return
-    return select_enclosing_char_helper(doc, char=char, backward=False)
-commands.select_next_enclosing_char = select_next_enclosing_char
+    return select_delimiting_char_helper(doc, char=char, backward=False)
+commands.select_next_delimiting_char = select_next_delimiting_char
 
 
-def select_previous_enclosing_char(doc):
-    char = doc.ui.getkey()
+def select_previous_delimiting_char(doc, char=None):
+    char = char or doc.ui.getkey()
     if char == doc.cancelkey:
         return
-    return select_enclosing_char_helper(doc, char=char, backward=True)
-commands.select_previous_enclosing_char = select_previous_enclosing_char
+    return select_delimiting_char_helper(doc, char=char, backward=True)
+commands.select_previous_delimiting_char = select_previous_delimiting_char
 
 
-def select_enclosing(doc, interval, backward=False):
+def select_delimiting(doc, interval, backward=False):
     """Select around common surrounding character pair."""
     default_chars = ['{', '[', '(', '<', '\'', '"']
     candidates = []
 
     for char in default_chars:
-        candidate = select_enclosing_char(doc, interval, char=char, backward=backward)
+        candidate = select_delimiting_char(doc, interval, char=char, backward=backward)
         if candidate != None:
             candidates.append(candidate)
     if candidates:
@@ -92,12 +90,12 @@ def select_enclosing(doc, interval, backward=False):
 
 
 @intervalselector_withmode
-def select_next_enclosing(doc, interval):
-    return select_enclosing(doc, interval, backward=False)
-commands.select_next_enclosing = select_next_enclosing
+def select_next_delimiting(doc, interval):
+    return select_delimiting(doc, interval, backward=False)
+commands.select_next_delimiting = select_next_delimiting
 
 
 @intervalselector_withmode
-def select_previous_enclosing(doc, interval):
-    return select_enclosing(doc, interval, backward=True)
-commands.select_previous_enclosing = select_previous_enclosing
+def select_previous_delimiting(doc, interval):
+    return select_delimiting(doc, interval, backward=True)
+commands.select_previous_delimiting = select_previous_delimiting

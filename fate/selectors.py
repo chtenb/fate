@@ -17,6 +17,12 @@ the commands module, not the function itself.
 """
 import re
 from functools import wraps
+from .selection import Selection, Interval
+from logging import debug, info
+
+#
+# DECORATORS
+#
 
 
 def partial(func, *args, __name__='', __docs__='', **keywords):
@@ -33,9 +39,67 @@ def partial(func, *args, __name__='', __docs__='', **keywords):
     wrapper.__docs__ = __docs__
     return wrapper
 
+
+def selector(function):
+    """Turn given selector in a command that takes a document."""
+    @wraps(function)
+    def wrapper(document, *args, selection=None, selectmode=None, preview=False, **kwargs):
+        selection = selection or document.selection
+        selectmode = selectmode or document.selectmode
+
+        result = function(document, *args, selection=selection, selectmode=selectmode, **kwargs)
+
+        if preview:
+            return result
+        if result != None:
+            result(document)
+    return wrapper
+
+
+def intervalselector(function):
+    """Turn given intervalselector in a command that takes a document."""
+    @wraps(function)
+    @selector
+    def wrapper(document, selection, *args, selectmode='', **kwargs):
+        new_intervals = []
+        for interval in selection:
+            new_interval = function(document, interval, *args, selectmode=selectmode, **kwargs)
+            if new_interval == None:
+                return
+            new_intervals.append(new_interval)
+        return Selection(new_intervals)
+    return wrapper
+
+
+def intervalselector_withmode(function):
+    """
+    Turn given intervalselector in a command that takes a document and process
+    according to selectmode.
+    """
+    @wraps(function)
+    @intervalselector
+    def wrapper(document, interval, *args, selectmode='', **kwargs):
+        new_interval = function(document, interval, *args, **kwargs)
+        if new_interval == None:
+            return
+
+        beg, end = interval
+        nbeg, nend = new_interval
+        if selectmode == 'head':
+            # beg is fixed, but end is determined by new interval
+            return Interval(beg, max(beg, nend))
+        if selectmode == 'tail':
+            # end is fixed, but beg is determined by new interval
+            return Interval(min(end, nbeg), end)
+        return new_interval
+    return wrapper
+
+
+#
+# COLLECTION OF PREDEFINED SELECTORS
+#
+
 from . import commands
-from .selection import Selection, Interval
-from logging import debug, info
 
 
 def escape(document):
@@ -59,23 +123,6 @@ commands.tailselectmode = tailselectmode
 def normalselectmode(document):
     document.selectmode = ''
 commands.normalselectmode = normalselectmode
-
-
-def selector(function):
-    """Turn given selector in a command that takes a document."""
-    @wraps(function)
-    def wrapper(document, *args, selection=None, selectmode=None, preview=False, **kwargs):
-        selection = selection or document.selection
-        selectmode = selectmode or document.selectmode
-
-        result = function(document, selection, selectmode)
-
-        if preview:
-            return result
-        if result != None:
-            result(document)
-    return wrapper
-
 
 
 def selectall(document, selection, selectmode=''):
@@ -107,45 +154,6 @@ def complement(document, selection, selectmode=''):
     """Return the complement."""
     return Selection(selection.complement(document))
 commands.complement = selector(complement)
-
-
-def intervalselector(function):
-    """Turn given intervalselector in a command that takes a document."""
-    @wraps(function)
-    @selector
-    def wrapper(document, selection, *args, selectmode='', **kwargs):
-        new_intervals = []
-        for interval in selection:
-            new_interval = function(document, interval, selectmode)
-            if new_interval == None:
-                return
-            new_intervals.append(new_interval)
-        return Selection(new_intervals)
-    return wrapper
-
-
-def intervalselector_withmode(function):
-    """
-    Turn given intervalselector in a command that takes a document and process
-    according to selectmode.
-    """
-    @wraps(function)
-    @intervalselector
-    def wrapper(document, interval, *args, selectmode='', **kwargs):
-        new_interval = function(document, interval)
-        if new_interval == None:
-            return
-
-        beg, end = interval
-        nbeg, nend = new_interval
-        if selectmode == 'head':
-            # beg is fixed, but end is determined by new interval
-            return Interval(beg, max(beg, nend))
-        if selectmode == 'tail':
-            # end is fixed, but beg is determined by new interval
-            return Interval(min(end, nbeg), end)
-        return new_interval
-    return wrapper
 
 
 def emptybefore(document, interval, selectmode=''):

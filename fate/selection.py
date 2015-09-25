@@ -4,7 +4,8 @@ from logging import debug
 class Interval:
 
     def __init__(self, beg, end):
-        assert 0 <= beg <= end
+        if not 0 <= beg <= end:
+            raise ValueError('({}, {}) is not a valid interval'.format(beg, end))
         self.beg = beg
         self.end = end
 
@@ -17,28 +18,28 @@ class Interval:
     def __repr__(self):
         return 'Interval' + str(self)
 
-    def __eq__(self, obj):
-        return (isinstance(obj, Interval)
-                and (self.beg, self.end) == (obj.beg, obj.end))
+    def __eq__(self, other):
+        return (isinstance(other, Interval)
+                and (self.beg, self.end) == (other.beg, other.end))
 
-    def __lt__(self, obj):
-        if not isinstance(obj, Interval):
+    def __lt__(self, other):
+        if not isinstance(other, Interval):
             raise ValueError
-        return (self.beg, self.end) < (obj.beg, obj.end)
+        return (self.beg, self.end) < (other.beg, other.end)
 
-    def __add__(self, obj):
+    def __add__(self, other):
         """Add second interval to first interval."""
-        if isinstance(obj, Interval):
-            return Interval(min(self.beg, obj.beg), max(self.end, obj.end))
+        if isinstance(other, Interval):
+            return Interval(min(self.beg, other.beg), max(self.end, other.end))
         else:
             return NotImplemented
 
-    def __sub__(self, obj):
+    def __sub__(self, other):
         """Substract second interval from first interval."""
-        if isinstance(obj, Interval):
+        if isinstance(other, Interval):
             beg, end = self
             nbeg, nend = self
-            mbeg, mend = obj
+            mbeg, mend = other
             if mbeg <= beg:
                 nbeg = max(beg, mend)
             if mend >= end:
