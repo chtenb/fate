@@ -54,7 +54,7 @@ commands.copy = copy
 
 def paste(document, before):
     """
-    This is not an actor, but serves as helper function for PasteBefore and PasteAfter.
+    This is not an actor, but serves as helper function for paste_before and paste_after.
     """
     if document.clipboard:
         old_content = document.selection.content(document)
@@ -68,20 +68,19 @@ def paste(document, before):
             x, y = clipboard_content[i % clipboard_len], old_interval_content
             new_content.append(x + y if before else y + x)
 
-        return new_content
+        operation = Operation(document, new_content)
+        operation(document)
 
 
 def paste_before(document):
     """Paste clipboard before current selection."""
-    operation = Operation(document, paste(document, before=True))
-    operation(document)
+    paste(document, before=True)
 commands.paste_before = paste_before
 
 
 def paste_after(document):
     """Paste clipboard after current selection."""
-    operation = Operation(document, paste(document, before=False))
-    operation(document)
+    paste(document, before=False)
 commands.paste_after = paste_after
 
 

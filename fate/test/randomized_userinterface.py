@@ -13,7 +13,7 @@ key_space = list(
     !@#$%&*()
     \n\t\b
     """
-) + 30 * ['Cancel'] + ['Esc', 'Up', 'Down', 'Left', 'Right']
+) + 30 * ['esc'] + ['up', 'down', 'left', 'right']
 
 command_dict = publics(commands)
 forbidden_command_names = ['open_document', 'quit_document', 'force_quit', 'quit_all',

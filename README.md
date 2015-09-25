@@ -108,6 +108,7 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
+- Fix use of selectmode in selectors.
 - Conceal (Generalization of listchars)
   - UI gets a modified version of the text
   - Needed for characters with more than 1 width, like tabs, since every character in the
@@ -118,8 +119,6 @@ SHORT TERM
   - Mode keymaps have to be created OnDocumentInit
   - Solution: each document has its own mode objects
 - Make labeling generation asynchronous
-- Make it possible to use movedown/up as narrowing selectors
-- Selectaround
 - Different forms of wrapping left/right + word/character
 - Fix unnecessary pylint complains
 - Enhance selector set

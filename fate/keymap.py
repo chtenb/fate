@@ -45,7 +45,7 @@ default = {
     ')': commands.select_next_delimiting,
     '(': commands.select_previous_delimiting,
     ']': commands.select_next_delimiting_char,
-    ']': commands.select_previous_delimiting_char,
+    '[': commands.select_previous_delimiting_char,
     'm': commands.join,
     'z': commands.emptybefore,
     'ctrl-a': commands.selectall,
