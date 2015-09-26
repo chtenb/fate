@@ -3,8 +3,8 @@ from .selection import Selection, Interval
 from .event import Event
 from . import commands
 from .userinterface import UserInterfaceAPI
-from . import pointer
 from .navigation import center_around_selection
+from .selecting import SelectModes
 
 import logging
 
@@ -40,7 +40,7 @@ class Document():
         self.filename = filename
 
         self._selection = Selection(Interval(0, 0))
-        self.selectmode = ''
+        self.selectmode = SelectModes.normal
 
         if not self.create_userinterface:
             raise Exception('No function specified in Document.create_userinterface.')

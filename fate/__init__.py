@@ -14,8 +14,8 @@ info('Starting fate.')
 # commands
 from . import commands
 from . import (clipboard, commandmode, commandtools, completer, document, filecommands,
-               insertoperations, operators, repeat, search, selectors,
-               selectdelimited, undotree, pointer)
+               insertoperations, operators, repeat, search, selecting,
+               undotree, pointer)
 
 # Load standard plugins
 from . import formatting

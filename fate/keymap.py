@@ -10,7 +10,7 @@ from .document import Document
 Document.cancelkey = 'esc'  # Esc is now remapped to Cancel
 default = {
     # In normalmode the cancel key switches to normal select mode or empties thselection
-    'cancel': commands.escape,
+    'esc': commands.escape,
     'ctrl-s': commands.save,
     'ctrl-l': commands.load,
     'ctrl-q': commands.quit_document,

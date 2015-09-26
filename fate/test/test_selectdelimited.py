@@ -1,6 +1,6 @@
 from ..selection import Interval, Selection
-from ..selectdelimited import (select_next_delimiting, select_next_delimiting_char,
-                               select_previous_delimiting)
+from ..selecting.selectdelimited import (select_next_delimiting, select_next_delimiting_char,
+                                         select_previous_delimiting)
 from .basetestcase import BaseTestCase
 
 

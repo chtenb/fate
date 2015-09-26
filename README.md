@@ -108,7 +108,7 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
-- Fix use of selectmode in selectors.
+- Tests for selectors.
 - Conceal (Generalization of listchars)
   - UI gets a modified version of the text
   - Needed for characters with more than 1 width, like tabs, since every character in the

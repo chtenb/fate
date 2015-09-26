@@ -3,6 +3,8 @@ from re import escape
 from ..userinterface import UserInterfaceAPI
 from ..commandmode import publics
 from .. import commands
+from .. import keymap # Dependency
+from ..document import Document
 
 # All keys that can be entered by the user simulator
 # Esc is included more often, to keep the insertions relatively small
@@ -13,7 +15,7 @@ key_space = list(
     !@#$%&*()
     \n\t\b
     """
-) + 30 * ['esc'] + ['up', 'down', 'left', 'right']
+) + 30 * [Document.cancelkey] + ['up', 'down', 'left', 'right']
 
 command_dict = publics(commands)
 forbidden_command_names = ['open_document', 'quit_document', 'force_quit', 'quit_all',

@@ -8,8 +8,8 @@ We must allow both inclusive and exclusive selections, unless they coincide with
 selections.
 """
 
-from .selection import Interval
-from .selectors import intervalselector_withmode
+from ..selection import Interval
+from .decorators import intervalselector_withmode
 from . import commands
 
 

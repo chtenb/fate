@@ -4,10 +4,11 @@ Module containing insertmode implementations.
 import re
 from . import commands
 from .operation import Operation
-from .operators import Append, Insert, delete
+from .operators import Append, Insert
 from .selection import Interval
 from .commandtools import Compose
-from .selectors import selectfullline as selectfullline
+from . import selecting # Dependency
+from .selecting.selectpattern import selectfullline
 from .commands import (emptybefore, emptyafter, selectpreviousfullline, selectindent,
                        selectnextfullline, selectnextchar, selectpreviouschar)
 from .clipboard import copy, clear, paste_before, Cut
