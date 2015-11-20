@@ -24,7 +24,6 @@ from . import highlighting
 from . import filetype
 from . import view
 
-from . import keymap
 from . import normalmode
 
 # TODO: why doesn't pylint recognize functions in the commands module

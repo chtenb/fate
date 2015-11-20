@@ -3,7 +3,7 @@ from re import escape
 from ..userinterface import UserInterfaceAPI
 from ..commandmode import publics
 from .. import commands
-from .. import keymap # Dependency
+from .. import normalmode # Dependency
 from ..document import Document
 
 # All keys that can be entered by the user simulator

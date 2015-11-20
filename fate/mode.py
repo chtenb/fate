@@ -1,34 +1,22 @@
 """
-Mode are persistent commands, i.e. commands that take additional user input
-to complete, and that may be interrupted by other commands (such as switching
-to another document) without being cancelled.
-Effectively, a mode takes over the way user input is handled, but only to a certain level.
+A mode takes over the way user input is handled, but only to a certain level.
 
-Sometimes you want to be able to continue with something after the mode has finished.
-Therefore modes should be able to take a callback function.
-This way modes can be used inside other commands.
-
-
-
-IDEA:
 The current mode decides how input is handled.
 So any user input is passed to the processinput method of the current mode.
 
 For example, suppose we are in normal mode.
 If the user presses i for insert mode, the i is passed to the normal mode.
-The normal mode looks in its keymap and decides that we should enter insert mode.
-The normal mode then creates an insert mode object, and stores it in his submode field.
-To do this, it needs to perform an isinstance check.
-Any input that follows will still be passed to the normal mode,
-but normal mode passes it on to its submode, in this case the insert mode.
-If the insert mode wants to stop at some point, it could notify the
-normal mode by setting a boolean or by calling a callback function for instance.
-PROBLEM: a mode is not a command anymore
+The normal mode looks in its keymap and executes the enter_insertmode command.
+This command starts the documents insertmode, which puts itself in doc.mode
+When insertmode is done, it puts normalmode back in doc.mode and executes its callback,
+if provided.
 
-What if we are in some mode and inside another command we want to go into another mode?
-Say we want to go into undo mode and change the point in history and go back.
+Sometimes you want to be able to continue with something after the mode has finished.
+Therefore modes should be able to take a callback function.
+This way modes can be used inside other commands.
+However, say we want to go into undo mode and change the point in history and go back.
 Not necessary, just execute the commands for changing the point in history.
-So switching modes inside another command doesn't make sense,
+So switching modes inside another command is not always the way to go,
 since a mode only affects how input is handled.
 
 It seems that using callbacks for finishing a mode is the only option.
@@ -37,52 +25,96 @@ How do we implement Compose then?
 Compose will not be a mode. It just fires modes passing itself as a callback.
 Disadvantage: the toplevel composition isn't visible.
 The only reference existing is through the callback.
-
-REMARK:
-A mode is thus not necessarily stateful.
-How can we modify a mode keymap for a single document?
-It is not entirely clear when you should just execute a command and when to feed it to
-document.
 """
 from abc import ABC
+from logging import error
+
+# We want to be able to adjust modes and their keymaps for individual documents
+# Therefore, OnModeInit is fired before OnDocumentInit, so that all functions fired
+# by OnDocumentInit can  access the modes.
+
+
+# TODO: to make mode keymaps configurable in OnDocumentInit, we could either
+# make the commands methods of the mode.
+# doc.undomode.keymap['w'] = doc.undomode.somecommand
+# Do we want to have doc s member, in this case?
+#
+# Another way is to make them commands.
+# doc.undomode.keymap['w'] = somecommand
+# A downside of the latter is that the commands have to be imported
 
 class Mode(ABC):
 
     """Abstract class to make creating new modes more convenient."""
+    __name__ = ''
 
-    def __init__(self, document, callback=None):
-        self.keymap = {}
+    def __init__(self, doc):
+        self.doc = doc
+        self.keymap = {doc.cancelkey: self.stop}
         self.allowedcommands = [self.start, self.stop]
-        self.callback = callback
 
-    def start(self, document):
+    def start(self, doc, callback=None):
         """Must be called to start the mode."""
-        #assert document.mode == None
-        document.mode = self
+        if not doc == self.doc:
+            raise ValueError(
+                'The passed document is not the same as the member document.')
 
-    def stop(self, document):
+        if doc.mode:
+            doc.mode.stop(doc)
+        self.callback = callback
+        doc.mode = self
+
+    def stop(self, doc):
         """Must be called to stop the mode."""
-        document.mode = document.normalmode
+        if not doc == self.doc:
+            raise ValueError(
+                'The passed document is not the same as the member document.')
+
+        doc.mode = doc.normalmode
         if self.callback:
-            self.callback(document)
+            self.callback(doc)
 
     def __str__(self):
-        try:
-            return self.__name__
-        except AttributeError:
-            return self.__class__.__name__
+        return self.__name__ or self.__class__.__name__
 
-    def processinput(self, document, userinput):
-        raise NotImplementedError('An abstract method is not callable.')
+    def processinput(self, doc, userinput):
+        if not doc == self.doc:
+            raise ValueError(
+                'The passed document is not the same as the member document.')
+
+        # If a direct command is given: execute if we allow it
+        if type(userinput) != str:
+            if userinput in self.allowedcommands:
+                userinput(doc)
+                return True
+            else:
+                return False
+
+        # If a key in our keymap is given: execute it
+        if userinput in self.keymap:
+            command = self.keymap[userinput]
+            command(doc)
+            return True
+
+        # If a key in doc.keymap is given: execute if we allow it
+        if userinput in doc.normalmode.keymap:
+            command = doc.normalmode.keymap[userinput]
+            if command in self.allowedcommands:
+                command(doc)
+                return True
+            else:
+                return False
+
+        return False
 
 
-def input_to_command(document, userinput, keymap=None):
+def input_to_command(doc, userinput, keymap=None):
     """
     Convert given userinput to a command.
     If keymap is not given, document.keymap is used.
     Returns None if userinput is a key but is not in keymap.
     """
-    keymap = keymap or document.keymap
+    keymap = keymap or doc.mode.keymap
     if type(userinput) == str:
         key = userinput
         if key in keymap:
@@ -93,9 +125,3 @@ def input_to_command(document, userinput, keymap=None):
         command = userinput
 
     return command
-
-
-def normalmode(document, userinput):
-    """Process input as if we were in normal mode."""
-    command = input_to_command(document, userinput)
-    command(document)

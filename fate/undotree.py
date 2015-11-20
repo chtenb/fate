@@ -17,8 +17,8 @@ class UndoTree:
     sequence = None
     sequence_depth = 0
 
-    def __init__(self, document):
-        self.document = document
+    def __init__(self, doc):
+        self.doc = doc
         self.root = Node(None)
         self.current_node = self.root
 
@@ -29,7 +29,7 @@ class UndoTree:
 
         if self.current_node.parent:
             for command in reversed(self.current_node.commands):
-                command.undo(self.document)
+                command.undo(self.doc)
             self.current_node = self.current_node.parent
 
     def redo(self, child_index=-1):
@@ -43,7 +43,7 @@ class UndoTree:
 
             self.current_node = self.current_node.children[child_index]
             for command in self.current_node.commands:
-                command.do(self.document)
+                command.do(self.doc)
 
     def add(self, command):
         """Add a new undoable command."""
@@ -117,25 +117,23 @@ class Node:
         self.children.append(node)
 
 
-def init(document):
-    document.undotree = UndoTree(document)
+def init(doc):
+    doc.undotree = UndoTree(doc)
 Document.OnDocumentInit.add(init)
 
 
 
 # Some commands for interacting with the undo tree
-def undo(document):
+def undo(doc):
     """Undo last command."""
-    document.undotree.undo()
+    doc.undotree.undo()
 commands.undo = undo
 
 
-def redo(document):
+def redo(doc):
     """Redo last undo."""
-    document.undotree.redo()
+    doc.undotree.redo()
 commands.redo = redo
-
-# TODO: turn up, down, right, left into commands?
 
 class UndoMode(Mode):
 
@@ -144,91 +142,79 @@ class UndoMode(Mode):
     You can only switch branches between siblings.
     """
 
-    def __init__(self, document, callback=None):
-        Mode.__init__(self, document, callback)
-        self.keymap = {
+    def __init__(self, doc):
+        Mode.__init__(self, doc)
+        self.keymap.update({
             'Left': self.left,
             'Right': self.right,
             'Up': self.up,
             'Down': self.down,
-            'Cancel': self.stop
-        }
-        self.allowedcommands = [
+        })
+        self.allowedcommands.extend([
             next_document, previous_document, quit_document,
             quit_all, open_document, force_quit
-        ]
+        ])
 
+    def start(self, doc):
+        debug('Starting undo mode')
         # Make sure the child_index is set to the index we now have
-        self.child_index = self.current_index(document)
+        self.child_index = self.current_index()
+        Mode.stop(self, doc)
 
-        self.start(document)
-
-        #debug('length: ' + str(len(undotree.current_node.children)))
-        #debug('index: ' + str(child_index))
-
-    def processinput(self, document, userinput):
-        # If a direct command is given: execute if we allow it
-        if type(userinput) != str and userinput in self.allowedcommands:
-            userinput(document)
-            return
-
-        # If a key in our keymap is given: execute it
-        if userinput in self.keymap:
-            command = self.keymap[userinput]
-            command(document)
-            return
-
-        # If a key in document.keymap is given: execute if we allow it
-        if userinput in document.keymap:
-            command = document.keymap[userinput]
-            if command in self.allowedcommands:
-                command(document)
-
-
-    def stop(self, document):
+    def stop(self, doc):
         debug('Exiting undo mode')
-        Mode.stop(self, document)
+        Mode.stop(self, doc)
 
-    def left(self, document):
+    def left(self, doc):
         # We can always just call undo; if there is no parent it will do nothing
-        document.undotree.undo()
+        doc.undotree.undo()
 
-    def right(self, document):
+    def right(self, doc):
         # We can always just call redo(0); if there is no child it will do nothing
         self.child_index = 0
-        document.undotree.redo()
+        doc.undotree.redo()
 
-    def up(self, document):
+    def up(self, doc):
         self.child_index -= 1
         # update() will take care of having a valid child_index
-        self.update_child_index(document)
+        self.update_child_index()
 
-    def down(self, document):
+    def down(self, doc):
         self.child_index += 1
         # update() will take care of having a valid child_index
-        self.update_child_index(document)
+        self.update_child_index()
 
-    def update_child_index(self, document):
+    def update_child_index(self):
         """Undo and execute the child pointed by the current child_index."""
-        if document.undotree.current_node.parent != None:
-            document.undotree.undo()
+        if self.doc.undotree.current_node.parent != None:
+            self.doc.undotree.undo()
 
             # The child index must be bound to the correct domain
-            self.child_index = self.bound(self.child_index, document)
+            self.child_index = self.bound(self.child_index)
 
-            document.undotree.redo(self.child_index)
+            self.doc.undotree.redo(self.child_index)
 
-    def bound(self, child_index, document):
+    def bound(self, child_index):
         """Bound the given child_index to be a valid index."""
-        l = len(document.undotree.current_node.children)
+        l = len(self.doc.undotree.current_node.children)
         if l > 0:
             child_index = min(child_index, l - 1)
             child_index = max(child_index, 0)
             assert 0 <= child_index < l
         return child_index
 
-    def current_index(self, document):
-        node = document.undotree.current_node
+    def current_index(self):
+        node = self.doc.undotree.current_node
         return node.parent.children.index(node) if node.parent != None else 0
 
 commands.undomode = UndoMode
+
+def init_undomode(doc):
+    doc.undomode = UndoMode(doc)
+Document.OnModeInit.add(init_undomode)
+
+
+def enter_undomode(doc, callback):
+    doc.undomode.start(callback)
+commands.enter_undomode = enter_undomode
+

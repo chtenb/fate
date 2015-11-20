@@ -55,7 +55,7 @@ def checkerrors(doc):
             for etype, interval, _ in errorlist:
                 beg, end = interval
                 for pos in range(beg, end):
-                    doc.labeling[pos] = etype
+                    doc.highlighting[pos] = etype
             return
         except IOError:
             # The current error checker is probably not installed

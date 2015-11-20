@@ -108,22 +108,23 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
-- Tests for selectors.
+- Make mode keymaps configurable per document
+  - Mode keymaps have to be created OnDocumentInit
+  - Solution: each document has its own mode objects
 - Conceal (Generalization of listchars)
   - UI gets a modified version of the text
   - Needed for characters with more than 1 width, like tabs, since every character in the
     ui version of the text must be of width 1, for ease of computations
+  - Problem: move up/down needs to known width of modified characters
   - Rewrite syntax highlighting to work similarly
     - Allows multiple labels per character? I.e. error and number/string at the same time
-- Make mode keymaps configurable per document
-  - Mode keymaps have to be created OnDocumentInit
-  - Solution: each document has its own mode objects
-- Make labeling generation asynchronous
 - Different forms of wrapping left/right + word/character
-- Fix unnecessary pylint complains
-- Enhance selector set
+- Make labeling generation asynchronous
+- Tests for selectors.
 
 MIDDLE TERM
+- Fix unnecessary pylint complains
+- Enhance selector set
 - Contextual completion
   - For completion it is also needed that the full text can be constructed including the
     pending operation.

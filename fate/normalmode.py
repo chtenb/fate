@@ -1,24 +1,124 @@
 from .mode import Mode, input_to_command
 from .document import Document
-from .keymap import default
 from . import pointer
+from . import commands
 
 from copy import copy
 import logging
+
+
+def print_keymap(document):
+    """Prints the keys with their explanation."""
+    def print_key(key, command):
+        """Prints single key with docstring."""
+        print(key + ': ' + command.__docs__)
+
+    for key, command in document.keymap.items():
+        print_key(key, command)
+
+Document.cancelkey = 'esc'  # Esc is now remapped to Cancel
+
+default_keymap = {
+    # In normalmode the cancel key switches to normal select mode or empties thselection
+    'esc': commands.escape,
+    'ctrl-s': commands.save,
+    'ctrl-l': commands.load,
+    'ctrl-q': commands.quit_document,
+    'ctrl-x': commands.force_quit,
+    'ctrl-o': commands.open_document,
+    'ctrl-n': commands.next_document,
+    'ctrl-p': commands.previous_document,
+    'f3': commands.formattext,
+    'f4': commands.checkerrors,
+    'f5': commands.errormode,
+    'f': commands.local_find,
+    'F': commands.local_find_backward,
+    '/': commands.search,
+    '*': commands.search_current_content,
+    'n': commands.search_next,
+    'N': commands.search_previous,
+    ':': commands.commandmode,
+    'j': commands.movedown,
+    'k': commands.moveup,
+    'J': commands.selectnextfullline,
+    'K': commands.selectpreviousfullline,
+    'l': commands.selectnextchar,
+    'h': commands.selectpreviouschar,
+    'g': commands.selectline,
+    'G': commands.selectfullline,
+    'w': commands.selectnextword,
+    'b': commands.selectpreviousword,
+    'W': commands.selectnextclass,
+    'B': commands.selectpreviousclass,
+    '}': commands.selectnextparagraph,
+    '{': commands.selectpreviousparagraph,
+    ')': commands.select_next_delimiting,
+    '(': commands.select_previous_delimiting,
+    ']': commands.select_next_delimiting_char,
+    '[': commands.select_previous_delimiting_char,
+    'm': commands.join,
+    'z': commands.emptybefore,
+    'ctrl-a': commands.selectall,
+    'I': commands.selectindent,
+    'v': commands.lock,
+    'V': commands.unlock,
+    'R': commands.release,
+    'u': commands.undo,
+    'U': commands.redo,
+    'ctrl-u': commands.undomode,
+    'y': commands.copy,
+    'Y': commands.clear,
+    'p': commands.paste_after,
+    'P': commands.paste_after,
+    'r': commands.headselectmode,
+    'e': commands.tailselectmode,
+    'd': commands.delete,
+    'i': commands.ChangeBefore,
+    'a': commands.ChangeAfter,
+    's': commands.ChangeAround,
+    'c': commands.changeinplace,
+    'o': commands.OpenLineAfter,
+    'O': commands.OpenLineBefore,
+    'x': commands.Cut,
+    'X': commands.CutChange,
+    '.': commands.repeat,
+    '~': commands.uppercase,
+    '`': commands.lowercase,
+    'ctrl-f': commands.pagedown,
+    'ctrl-b': commands.pageup,
+}
+
 
 class NormalMode(Mode):
 
     """Docstring for NormalMode. """
 
-    keymap = copy(default)
+    def __init__(self, doc):
+        Mode.__init__(self, doc)
+        self.keymap = copy(default_keymap)
+
+    def start(self, doc, callback=None):
+        """Must be called to start the mode."""
+        if not doc == self.doc:
+            raise ValueError(
+                'The passed document is not the same as the member document.')
+        if callback:
+            raise ValueError('normalmode does not take a callback.')
+
+        if doc.mode:
+            doc.mode.stop(doc)
+        doc.mode = self
+
+    def stop(self, doc):
+        pass
 
     def processinput(self, doc, userinput):
         if isinstance(userinput, pointer.PointerInput):
             self.process_pointerinput(userinput)
         else:
-            command = input_to_command(doc, userinput)
+            command = input_to_command(self.doc, userinput)
             if command:
-                command(doc)
+                command(self.doc)
 
     def process_pointerinput(self, userinput):
         assert isinstance(userinput, pointer.PointerInput)
@@ -29,8 +129,13 @@ class NormalMode(Mode):
         else:
             logging.debug('You clicked at position ' + str(userinput.pos))
 
-def add_normalmode(doc):
-    doc.normalmode = NormalMode(doc)
-    doc.mode = doc.normalmode
 
-Document.OnDocumentInit.add(add_normalmode)
+def init_normalmode(doc):
+    doc.normalmode = NormalMode(doc)
+Document.OnModeInit.add(init_normalmode)
+
+
+def enter_normalmode(doc, callback):
+    doc.normalmode.start(callback)
+commands.enter_normalmode = enter_normalmode
+

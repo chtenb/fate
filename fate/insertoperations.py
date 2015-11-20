@@ -14,8 +14,9 @@ from .commands import (emptybefore, emptyafter, selectpreviousfullline, selectin
 from .clipboard import copy, clear, paste_before, Cut
 from .mode import Mode
 from . import document
+from .document import Document
 from abc import abstractmethod
-from logging import error, debug
+from logging import debug
 from copy import deepcopy
 
 
@@ -23,27 +24,17 @@ class InsertMode(Mode):
 
     """Abstract class for operations dealing with insertion of text."""
 
-    def __init__(self, doc, callback=None):
-        Mode.__init__(self, doc, callback)
+    def __init__(self, doc):
+        Mode.__init__(self, doc)
         self.allowedcommands.extend([document.next_document, document.previous_document])
-        self.keymap = {
-            doc.cancelkey: self.stop,
-        }
 
+    def start(self, doc):
         self.preview_operation = None
-        self.start(doc)
+        Mode.start(self, doc)
+        self.update_operation(doc)
 
     def processinput(self, doc, userinput):
-        if type(userinput) != str:
-            if userinput in self.allowedcommands:
-                userinput(doc)
-            else:
-                error('Can\'t process input {}'.format(repr(userinput)))
-        elif userinput in self.keymap:
-            # If userinput is in keymap, execute corresponding command
-            self.keymap[userinput](doc)
-        else:
-            # Other wise, insert it
+        if not Mode.processinput(self, doc, userinput):
             self.insert_and_update(doc, userinput)
 
     def insert_and_update(self, doc, userinput):
@@ -93,11 +84,13 @@ class ChangeInPlace(InsertMode):
     Make incremental changes to the selected text.
     """
 
-    def __init__(self, doc, callback=None):
+    def __init__(self, doc):
+        InsertMode.__init__(self, doc)
+
+    def start(self, doc):
         self.newcontent = ['' for _ in doc.selection]
         self.oldselection = deepcopy(doc.selection)
-        InsertMode.__init__(self, doc, callback)
-        self.update_operation(doc)
+        Mode.start(self, doc)
 
     def insert(self, doc, string):
         for i in range(len(self.oldselection)):
@@ -139,8 +132,15 @@ class ChangeInPlace(InsertMode):
         """
         return Operation(doc, self.newcontent[:], deepcopy(self.oldselection))
 
+def init_changeinplace(doc):
+    doc.changeinplace = ChangeInPlace(doc)
+Document.OnModeInit.add(init_changeinplace)
 
-commands.ChangeInPlace = ChangeInPlace
+def changeinplace(doc):
+    doc.changeinplace.start(doc)
+commands.changeinplace = changeinplace
+
+# TODO:
 
 ChangeBefore = Compose(emptybefore, ChangeInPlace, name='ChangeBefore')
 commands.ChangeBefore = ChangeBefore
@@ -156,14 +156,15 @@ class ChangeAround(InsertMode):
     and adds `insertions` around each interval.
     """
 
-    def __init__(self, doc, callback=None):
+    def __init__(self, doc):
+        InsertMode.__init__(self, doc)
+
+    def start(self, doc):
         # Insertions before and after can differ because of autoindentation
         self.insertions_before = [''] * len(doc.selection)
         self.insertions_after = [''] * len(doc.selection)
         self.deletions = [0] * len(doc.selection)
-
-        InsertMode.__init__(self, doc, callback)
-        self.update_operation(doc)
+        Mode.start(self, doc)
 
     def cursor_position(self, doc):
         return doc.selection[0][0]

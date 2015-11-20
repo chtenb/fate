@@ -6,20 +6,21 @@ from .userinterface import UserInterfaceAPI
 from .navigation import center_around_selection
 from .selecting import SelectModes
 
-import logging
+from logging import info, debug
 
 documentlist = []
 activedocument = None
 
 
-class Document():
+class Document:
 
     """Contains all objects of one file editing document"""
     OnDocumentInit = Event()
+    OnModeInit = Event()
     create_userinterface = None
     _text = ''
     saved = True
-    mode = None
+    mode = None #TODO: mke mode property which must always store a valid Mode
 
     expandtab = False
     tabwidth = 4
@@ -48,11 +49,8 @@ class Document():
         if not isinstance(self.ui, UserInterfaceAPI):
             raise Exception('document.ui not an instance of UserInterface.')
 
-        # Load the default key map
-        from .keymap import default
-        self.keymap = {}
-        self.keymap.update(default)
-
+        self.OnModeInit.fire(self)
+        self.mode = self.normalmode
         self.OnDocumentInit.fire(self)
 
         if filename:
@@ -60,19 +58,14 @@ class Document():
 
     def quit(self):
         """Quit document."""
-        logging.info('Quitting document ' + str(self))
+        info('Quitting document ' + str(self))
         self.OnQuit.fire(self)
         global activedocument
         index = documentlist.index(self)
 
-        # debug(str(documentlist))
-        #debug("self: " + str(self.document))
-        #debug("index: " + str(index))
-        # self.getkey()
 
         if len(documentlist) == 1:
-            logging.debug(
-                'fate - document: close the last document by setting activedocument to None')
+            info('Closing the last document by setting activedocument to None')
             activedocument = None
             return
 
@@ -120,7 +113,8 @@ class Document():
         """This method is called when this document receives userinput."""
         if userinput == 'ctrl-\\':
             raise KeyboardInterrupt
-        logging.debug('Input: ' + repr(userinput))
+        debug('Mode:' + repr(self.mode))
+        debug('Input: ' + repr(userinput))
         self.mode.processinput(self, userinput)
 
 
