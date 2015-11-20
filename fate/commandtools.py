@@ -43,11 +43,11 @@ class Undoable:
 # Then extend mode must be executed at creation time,
 # in order to create the intended selection.
 # However, this violates the principle that the document must not be
-# touched while only creating an command.
+# touched while only creating a command.
 # The solution is that compositions don't return an command and thus
 # cannot be inspected
 # If this functionality is required nonetheless,
-# the composition must be defined in an command body
+# the composition must be defined in a command body
 
 # PROBLEM:
 # how do you know whether to wait or to proceed after executing a mode
