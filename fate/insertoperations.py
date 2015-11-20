@@ -221,13 +221,13 @@ class ChangeAround(InsertMode):
 commands.ChangeAround = ChangeAround
 
 
-OpenLineAfter = Compose(selectpreviousfullline, selectindent, copy,
+OpenLineAfter = Compose(selectindent, copy,
                         selectnextfullline, Append('\n'), selectpreviouschar, emptybefore,
                         paste_before, clear, ChangeAfter, name='OpenLineAfter',
                         docs='Open a line after interval')
 commands.OpenLineAfter = OpenLineAfter
 
-OpenLineBefore = Compose(selectnextfullline, selectindent, copy,
+OpenLineBefore = Compose(commands.selectfullline, selectindent, copy,
                          selectnextfullline, Insert('\n'), selectnextchar, emptybefore,
                          paste_before, clear, ChangeAfter, name='OpenLineBefore',
                          docs='Open a line before interval')
