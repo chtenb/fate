@@ -4,13 +4,6 @@ A mode takes over the way user input is handled, but only to a certain level.
 The current mode decides how input is handled.
 So any user input is passed to the processinput method of the current mode.
 
-For example, suppose we are in normal mode.
-If the user presses i for insert mode, the i is passed to the normal mode.
-The normal mode looks in its keymap and executes the enter_insertmode command.
-This command starts the documents insertmode, which puts itself in doc.mode
-When insertmode is done, it puts normalmode back in doc.mode and executes its callback,
-if provided.
-
 Sometimes you want to be able to continue with something after the mode has finished.
 Therefore modes should be able to take a callback function.
 This way modes can be used inside other commands.
@@ -25,23 +18,27 @@ How do we implement Compose then?
 Compose will not be a mode. It just fires modes passing itself as a callback.
 Disadvantage: the toplevel composition isn't visible.
 The only reference existing is through the callback.
+
+
+We want to be able to adjust modes and their keymaps for individual documents
+Therefore, OnModeInit is fired before OnDocumentInit, so that all functions fired
+by OnDocumentInit can access the modes.
+By convention, the modes should be stored as members of the document, like
+doc.normalmode.
+
+To make mode keymaps configurable in OnDocumentInit, we could either
+make the commands methods of the mode.
+doc.undomode.keymap['w'] = doc.undomode.somecommand
+Do we want to have doc s member, in this case?
+
+Another way is to make them commands.
+doc.undomode.keymap['w'] = somecommand
+A downside of the latter is that the commands have to be imported
+
+There is no convention yet on how to do this.
 """
 from abc import ABC
 from logging import error
-
-# We want to be able to adjust modes and their keymaps for individual documents
-# Therefore, OnModeInit is fired before OnDocumentInit, so that all functions fired
-# by OnDocumentInit can  access the modes.
-
-
-# TODO: to make mode keymaps configurable in OnDocumentInit, we could either
-# make the commands methods of the mode.
-# doc.undomode.keymap['w'] = doc.undomode.somecommand
-# Do we want to have doc s member, in this case?
-#
-# Another way is to make them commands.
-# doc.undomode.keymap['w'] = somecommand
-# A downside of the latter is that the commands have to be imported
 
 class Mode(ABC):
 
@@ -54,7 +51,11 @@ class Mode(ABC):
         self.allowedcommands = [self.start, self.stop]
 
     def start(self, doc, callback=None):
-        """Must be called to start the mode."""
+        """
+        Must be called to start the mode.
+        If there is another mode pending, stop it.
+        Then put self in the mode field of the document.
+        """
         if not doc == self.doc:
             raise ValueError(
                 'The passed document is not the same as the member document.')
@@ -65,7 +66,10 @@ class Mode(ABC):
         doc.mode = self
 
     def stop(self, doc):
-        """Must be called to stop the mode."""
+        """
+        Must be called to stop the mode.
+        Put the documents normalmode in the mode field and execute possible callback.
+        """
         if not doc == self.doc:
             raise ValueError(
                 'The passed document is not the same as the member document.')
@@ -78,12 +82,16 @@ class Mode(ABC):
         return self.__name__ or self.__class__.__name__
 
     def processinput(self, doc, userinput):
+        """
+        Tries to process the given input.
+        Returns True if succeeded, False otherwise.
+        """
         if not doc == self.doc:
             raise ValueError(
                 'The passed document is not the same as the member document.')
 
         # If a direct command is given: execute if we allow it
-        if type(userinput) != str:
+        if not isinstance(userinput, str):
             if userinput in self.allowedcommands:
                 userinput(doc)
                 return True
@@ -115,7 +123,7 @@ def input_to_command(doc, userinput, keymap=None):
     Returns None if userinput is a key but is not in keymap.
     """
     keymap = keymap or doc.mode.keymap
-    if type(userinput) == str:
+    if isinstance(userinput, str):
         key = userinput
         if key in keymap:
             command = keymap[key]

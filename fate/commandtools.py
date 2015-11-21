@@ -20,16 +20,16 @@ class Undoable:
     of the undo method to the concrete subclasses.
     """
 
-    def __call__(self, document):
+    def __call__(self, doc):
         """Add command to the undotree and execute it."""
-        document.undotree.add(self)
-        self.do(document)
+        doc.undotree.add(self)
+        self.do(doc)
 
-    def undo(self, document):
+    def undo(self, doc):
         """Undo command."""
         raise NotImplementedError("An abstract method is not callable.")
 
-    def do(self, document):
+    def do(self, doc):
         """
         Execute command without it being added to the undotree again,
         e.g. for performing a redo.
@@ -56,7 +56,10 @@ class Undoable:
 # processed. If you need to switch between behaviours of certain commands (like head/tail
 # selection) you should toggle a bool somewhere.
 
-
+# TODO: Modes in nestesd compositions are not recognized as modes,
+# so the toplevel Compound will just continue.
+# Solution: make compounds take a callback function, and let it treat compounds
+# in the same manner as modes.
 def Compose(*subcommands, name='', docs=''):
     """
     In order to be able to conveniently chain commands, we provide a
@@ -64,36 +67,36 @@ def Compose(*subcommands, name='', docs=''):
     The undoable subcommands should be undoable as a whole.
     """
     # We need to define a new class for each composition
-    # It must derive from Mode, in case any of the subcommands is a mode (??)
     class Compound:
 
-        def __init__(self, document):
+        def __init__(self, doc):
             self.subcommands = subcommands
 
             self.todo = deque(self.subcommands[:])
-            document.undotree.start_sequence()
-            self.proceed(document)
+            doc.undotree.start_sequence()
+            self.proceed(doc)
 
-        def proceed(self, document):
-            """This function gets called when a submode finishes."""
+        def proceed(self, doc):
+            """
+            This function gets called when a submode finishes,
+            as it is passed as a callback function to submodes.
+            """
             while self.todo:
                 command = self.todo.popleft()
                 while 1:
                     # Pass ourselves as callback when executing a mode
                     if isclass(command) and issubclass(command, Mode):
-                        command(document, self.proceed)
+                        mode = command(doc) 
+                        mode.start(doc, self.proceed)
                         return
 
-                    result = command(document)
+                    result = command(doc)
                     if not callable(result):
                         break
                     command = result
 
             # Now we are completely finished
-            document.undotree.end_sequence()
-
-        def processinput(self, document, userinput):
-            raise Exception('Can\'t process input')
+            doc.undotree.end_sequence()
 
     Compound.__name__ = name
     Compound.__docs__ = docs
