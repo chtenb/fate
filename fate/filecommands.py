@@ -59,7 +59,7 @@ def open_file(doc):
     """Open a new document."""
     filename = doc.modes.prompt.inputstring
     document.Document(filename)
-commands.open_document = Compose(ask_filename, open_file)
+commands.open_file = Compose(ask_filename, open_file)
 
 
 # TODO: make pressing esc work

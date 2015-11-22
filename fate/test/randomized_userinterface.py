@@ -3,11 +3,13 @@ from re import escape
 from ..userinterface import UserInterfaceAPI
 from ..commandmode import publics
 from .. import commands
-from .. import normalmode # Dependency
+from .. import normalmode  # Dependency
 from ..document import Document
+from ..filecommands import open_file, quit_document, force_quit, quit_all
+from ..errorchecking import checkerrors
+from ..formatting import formattext
 
 # All keys that can be entered by the user simulator
-# Esc is included more often, to keep the insertions relatively small
 key_space = list(
     """
     1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM
@@ -17,19 +19,16 @@ key_space = list(
     """
 ) + 30 * [Document.cancelkey] + ['up', 'down', 'left', 'right']
 
-command_dict = publics(commands)
-forbidden_command_names = ['open_document', 'quit_document', 'force_quit', 'quit_all',
-                           'formattext', 'checkerrors']
-forbidden_commands = [command_dict[name] for name in forbidden_command_names]
-for name in forbidden_command_names:
-    command_dict.pop(name)
-command_names = list(command_dict.keys())
-command_values = list(command_dict.values())
+command_space = publics(commands)
+forbidden_commands = [open_file, quit_document, force_quit, quit_all, formattext, checkerrors]
+for c in forbidden_commands:
+    command_space.pop(c.__name__)
+
+compound_input_space = list(command_space.values()) + key_space
 # Sorting is needed to be able to reproduce a seeded random test case
-command_names.sort()
+compound_input_space.sort(key=str)
 
-compound_input_space = command_values + key_space
-
+print(compound_input_space)
 
 class RandomizedUserSimulator(UserInterfaceAPI):
 
@@ -43,7 +42,7 @@ class RandomizedUserSimulator(UserInterfaceAPI):
     @property
     def viewport_size(self):
         """Get viewport size."""
-        return (500, 500)
+        return (100, 500)
 
     @property
     def viewport_offset(self):
@@ -61,11 +60,11 @@ class RandomizedUserSimulator(UserInterfaceAPI):
 
     def _getuserinput(self):
         if self.nextkey:
-            nextkey = self.nextkey
+            result = self.nextkey
             self.nextkey = None
         else:
-            nextkey = self.newinput()
-        return nextkey
+            result = self.newinput()
+        return result
 
     def peekinput(self):
         if not self.nextkey:
@@ -73,23 +72,18 @@ class RandomizedUserSimulator(UserInterfaceAPI):
         return self.nextkey
 
     def newinput(self):
-        if not self.doc.mode:
-            command_name = random.choice(command_names)
-            return command_dict[command_name]
-
-        # If we are in a certain mode we try to construct a meaningful input space
-        mode = self.doc.mode
-        input_space = ['Cancel']
-        input_space.extend(
-            [c for c in mode.allowedcommands if not c in forbidden_commands])
-
-        if mode.keymap:
-            input_space.extend(mode.keymap.values())
-        else:
-            input_space.extend(key_space)
-
-        if not input_space:
+        # With a certain chance give arbitrary input instead of looking at the keymap
+        if random.randint(0, 1) == 0:
             input_space = compound_input_space
+        else:
+            # We try to construct a meaningful input space w.r.t. the mode
+            mode = self.doc.mode
+            input_space = [Document.cancelkey]
+            input_space = mode.allowedcommands
+            input_space.extend(mode.keymap.values())
+
+            input_space = [x for x in input_space if not x in forbidden_commands]
+            input_space.sort(key=str)
 
         #print('Inputspace = ' + str(input_space))
         return random.choice(input_space)

@@ -91,25 +91,21 @@ class ErrorMode(Mode):
     Walk around in error list using j/k.
     """
 
-    def __init__(self, doc, callback=None):
-        Mode.__init__(self, doc, callback)
-        self.keymap = {
+    def __init__(self, doc):
+        Mode.__init__(self, doc)
+        self.keymap.update({
             'k': self.up,
             'j': self.down,
             '\n': self.jump_to_error,
-            'Cancel': self.stop
-        }
+        })
         self.allowedcommands = [
             commands.next_document, commands.previous_document, commands.quit_document,
-            commands.quit_all, commands.open_document, commands.force_quit
+            commands.quit_all, commands.open_file, commands.force_quit
         ]
-
-        checkerrors(doc)
-        self.start(doc)
 
     def processinput(self, doc, userinput):
         # If a direct command is given: execute if we allow it
-        if type(userinput) != str and userinput in self.allowedcommands:
+        if not isinstance(userinput, str) and userinput in self.allowedcommands:
             userinput(doc)
             return
 
@@ -119,9 +115,9 @@ class ErrorMode(Mode):
             command(doc)
             return
 
-        # If a key in doc.keymap is given: execute if we allow it
-        if userinput in doc.keymap:
-            command = doc.keymap[userinput]
+        # If a key in doc.modes.normalmode.keymap is given: execute if we allow it
+        if userinput in doc.modes.normalmode.keymap:
+            command = doc.modes.normalmode.keymap[userinput]
             if command in self.allowedcommands:
                 command(doc)
 
@@ -139,4 +135,10 @@ class ErrorMode(Mode):
         errorinterval = doc.errorlist[doc.errorlist.current][1]
         Selection([errorinterval])(doc)
 
-commands.errormode = ErrorMode
+def init_errormode(doc):
+    doc.modes.errormode = ErrorMode(doc)
+Document.OnModeInit.add(init_errormode)
+
+def start_errormode(doc):
+    doc.modes.errormode.start(doc)
+commands.start_errormode = start_errormode

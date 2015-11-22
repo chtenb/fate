@@ -11,7 +11,7 @@ from . import selecting # Dependency
 from .selecting.selectpattern import selectfullline
 from .commands import (emptybefore, emptyafter, selectpreviousfullline, selectindent,
                        selectnextfullline, selectnextchar, selectpreviouschar)
-from .clipboard import copy, clear, paste_before, Cut
+from .clipboard import copy, clear, paste_before, cut
 from .mode import Mode
 from . import document
 from .document import Document
@@ -236,17 +236,17 @@ commands.start_changearound = start_changearound
 
 openlineafter = Compose(selectindent, copy,
                         selectnextfullline, Append('\n'), selectpreviouschar, emptybefore,
-                        paste_before, clear, get_changeinplace, name='OpenLineAfter',
+                        paste_before, clear, get_changeinplace, name='openlineafter',
                         docs='Open a line after interval')
 commands.openlineafter = openlineafter
 
 openlinebefore = Compose(commands.selectfullline, selectindent, copy,
                          selectnextfullline, Insert('\n'), selectnextchar, emptybefore,
-                         paste_before, clear, get_changeinplace, name='OpenLineBefore',
+                         paste_before, clear, get_changeinplace, name='openlinebefore',
                          docs='Open a line before interval')
 commands.openlinebefore = openlinebefore
 
-cutchange = Compose(Cut, get_changeinplace,
-                    name='Cut & Change', docs='Copy and change selected text.')
+cutchange = Compose(cut, get_changeinplace,
+                    name='cutchange', docs='Copy and change selected text.')
 commands.cutchange = cutchange
 

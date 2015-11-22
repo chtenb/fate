@@ -74,10 +74,6 @@ class RandomizedActionTest(BaseTestCase):
         for i in range(commands_per_run):
             userinput = self.document.ui.getinput()
 
-            # If the cancel key has been pressed, convert input to Cancel
-            if userinput == self.document.cancelkey:
-                userinput = 'Cancel'
-
             if args.verbose:
                 try:
                     name = userinput.__name__

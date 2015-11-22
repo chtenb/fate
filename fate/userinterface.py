@@ -76,13 +76,13 @@ class UserInterfaceAPI(ABC):
     def getkey(self):
         """
         Get character typed by user.
-        Returns Cancel if interrupted by a command.
+        Returns cancelkey if interrupted by a command.
         """
         userinput = self.peekinput()
         if type(userinput) == str:
             return self.getinput()
         else:
-            return 'Cancel'
+            return self.doc.cancelkey
 
     def feedinput(self, userinput):
         self.inputqueue.appendleft(userinput)

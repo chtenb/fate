@@ -16,7 +16,7 @@ def print_keymap(document):
     for key, command in document.keymap.items():
         print_key(key, command)
 
-Document.cancelkey = 'esc'  # Esc is now remapped to Cancel
+Document.cancelkey = 'esc'  # Esc is now remapped to cancelkey
 
 default_keymap = {
     # In normalmode the cancel key switches to normal select mode or empties thselection
@@ -25,12 +25,12 @@ default_keymap = {
     'ctrl-l': commands.load,
     'ctrl-q': commands.quit_document,
     'ctrl-x': commands.force_quit,
-    'ctrl-o': commands.open_document,
+    'ctrl-o': commands.open_file,
     'ctrl-n': commands.next_document,
     'ctrl-p': commands.previous_document,
     'f3': commands.formattext,
     'f4': commands.checkerrors,
-    'f5': commands.errormode,
+    'f5': commands.start_errormode,
     'f': commands.local_find,
     'F': commands.local_find_backward,
     '/': commands.search,
@@ -82,7 +82,7 @@ default_keymap = {
     'c': commands.start_changeinplace,
     'o': commands.openlineafter,
     'O': commands.openlinebefore,
-    'x': commands.Cut,
+    'x': commands.cut,
     'X': commands.cutchange,
     '.': commands.repeat,
     '~': commands.uppercase,
@@ -139,7 +139,7 @@ def init_normalmode(doc):
 Document.OnModeInit.add(init_normalmode)
 
 
-def enter_normalmode(doc, callback):
-    doc.modes.normalmode.start(callback)
-commands.enter_normalmode = enter_normalmode
+def start_normalmode(doc, callback=None):
+    doc.modes.normalmode.start(doc, callback)
+commands.start_normalmode = start_normalmode
 

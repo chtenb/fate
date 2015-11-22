@@ -212,7 +212,7 @@ def init_undomode(doc):
 Document.OnModeInit.add(init_undomode)
 
 
-def start_undomode(doc, callback):
-    doc.modes.undomode.start(callback)
+def start_undomode(doc, callback=None):
+    doc.modes.undomode.start(doc, callback=callback)
 commands.start_undomode = start_undomode
 

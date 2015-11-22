@@ -90,6 +90,6 @@ def clear(document):
 commands.clear = clear
 
 
-Cut = Compose(copy, delete, name='Cut', docs='Copy and delete selected text.')
-commands.Cut = Cut
+cut = Compose(copy, delete, name='cut', docs='Copy and delete selected text.')
+commands.cut = cut
 
