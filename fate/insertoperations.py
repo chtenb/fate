@@ -144,6 +144,7 @@ def start_changeinplace(doc):
 commands.start_changeinplace = start_changeinplace
 
 
+# TODO: get_changeinplace not working
 changebefore = Compose(emptybefore, get_changeinplace, name='ChangeBefore')
 commands.changebefore = changebefore
 
@@ -166,7 +167,7 @@ class ChangeAround(InsertMode):
         self.insertions_before = [''] * len(doc.selection)
         self.insertions_after = [''] * len(doc.selection)
         self.deletions = [0] * len(doc.selection)
-        Mode.start(self, doc, *args, **kwargs)
+        InsertMode.start(self, doc, *args, **kwargs)
 
     def cursor_position(self, doc):
         return doc.selection[0][0]

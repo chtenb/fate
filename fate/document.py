@@ -12,6 +12,13 @@ documentlist = []
 activedocument = None
 
 
+class Namespace:
+    """
+    Allow easy namespacing within attributes of an object.
+    """
+    pass
+
+
 class Document:
 
     """Contains all objects of one file editing document"""
@@ -35,7 +42,6 @@ class Document:
         self.OnWrite = Event()
         self.OnQuit = Event()
         self.OnActivate = Event()
-        self.OnPrompt = Event()
         self.OnSelectionChange = Event()
 
         self.filename = filename
@@ -49,6 +55,7 @@ class Document:
         if not isinstance(self.ui, UserInterfaceAPI):
             raise Exception('document.ui not an instance of UserInterface.')
 
+        self.modes = Namespace() # TODO: store modes in here
         self.OnModeInit.fire(self)
         self.mode = self.normalmode
         self.OnDocumentInit.fire(self)

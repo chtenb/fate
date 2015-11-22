@@ -4,7 +4,7 @@ the command history.
 """
 from . import commands
 from .document import Document, next_document, previous_document
-from .filecommands import quit_document, quit_all, open_document, force_quit
+from .filecommands import quit_document, quit_all, open_file, force_quit
 from .mode import Mode
 from logging import debug
 
@@ -152,7 +152,7 @@ class UndoMode(Mode):
         })
         self.allowedcommands.extend([
             next_document, previous_document, quit_document,
-            quit_all, open_document, force_quit
+            quit_all, open_file, force_quit
         ])
 
     def start(self, doc):

@@ -8,7 +8,6 @@ from . import document
 from .commandtools import Compose
 from .selection import Selection, Interval
 import selectors # Depend on selectors to be loaded
-from .prompt import prompt
 
 def save(doc, filename=None):
     """Save document text to file."""
@@ -51,17 +50,19 @@ def load(doc, filename=None):
 commands.load = load
 
 
-def open_document(doc):
+def ask_filename(doc):
+    doc.modes.prompt.start(doc, 'Filename: ')
+def open_file(doc):
     """Open a new document."""
-    filename = doc.promptinput
+    filename = doc.modes.prompt.inputstring
     document.Document(filename)
-commands.open_document = Compose(prompt('Filename: '), open_document)
+commands.open_document = Compose(ask_filename, open_file)
 
 
 def quit_document(doc):
     """Close current document."""
     def check_answer(doc):
-        answer = doc.promptinput
+        answer = doc.modes.prompt.inputstring
         if answer == 'y':
             doc.quit()
         elif answer == 'n':
@@ -70,7 +71,7 @@ def quit_document(doc):
             quit_document(doc)
 
     if not doc.saved:
-        ask_quit = prompt('Unsaved changes! Really quit? (y/n)')
+        ask_quit = doc.modes.prompt.start('Unsaved changes! Really quit? (y/n/esc)')
         ask_quit(doc, check_answer)
     else:
         doc.quit()

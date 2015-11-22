@@ -50,6 +50,10 @@ class Mode(ABC):
         self.keymap = {doc.cancelkey: self.stop}
         self.allowedcommands = [self.start, self.stop]
 
+    def __call__(self, doc, callback=None):
+        """Alternative way to call start() to be able to use a mode as a command."""
+        self.start(doc, callback)
+
     def start(self, doc, callback=None):
         """
         Must be called to start the mode.

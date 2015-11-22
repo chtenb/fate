@@ -6,7 +6,6 @@ from collections import deque
 from inspect import isclass
 from .mode import Mode
 
-
 class Undoable:
 
     """
@@ -56,7 +55,7 @@ class Undoable:
 # processed. If you need to switch between behaviours of certain commands (like head/tail
 # selection) you should toggle a bool somewhere.
 
-# TODO: Modes in nestesd compositions are not recognized as modes,
+# TODO: Modes in nested compositions are not recognized as modes,
 # so the toplevel Compound will just continue.
 # Solution: make compounds take a callback function, and let it treat compounds
 # in the same manner as modes.
@@ -84,13 +83,15 @@ def Compose(*subcommands, name='', docs=''):
             while self.todo:
                 command = self.todo.popleft()
                 while 1:
+                    debug('command: {}'.format(command))
                     # Pass ourselves as callback when executing a mode
                     if isclass(command) and issubclass(command, Mode):
-                        mode = command(doc) 
+                        mode = command(doc)
                         mode.start(doc, self.proceed)
                         return
 
                     result = command(doc)
+                    debug('result: {}'.format(result))
                     if not callable(result):
                         break
                     command = result

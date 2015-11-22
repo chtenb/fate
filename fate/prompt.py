@@ -5,19 +5,17 @@ from logging import error
 Document.promptinput = ''
 
 class Prompt(Mode):
-    def __init__(self, document, callback=None):
-        Mode.__init__(self, document, callback)
+    def __init__(self, doc):
+        Mode.__init__(self, doc)
         self.inputstring = ''
-        self.start(document)
 
-    def processinput(self, document, userinput):
+    def processinput(self, doc, userinput):
         if isinstance(userinput, str):
             key = userinput
-            if key == 'Cancel':
-                self.stop(document)
+            if key == doc.cancelkey:
+                self.stop(doc)
             elif key == '\n':
-                document.promptinput = self.inputstring
-                self.stop(document)
+                self.stop(doc)
             elif len(key) > 1:
                 # key not supported
                 pass
@@ -26,18 +24,14 @@ class Prompt(Mode):
         else:
             error('Prompt can not process non-string input')
 
-    def start(self, doc):
-        Mode.start(self, doc)
-        doc.OnPrompt.fire(doc)
+    def start(self, doc, prompt_string='>', callback=None):
+        self.prompt_string = prompt_string
+        Mode.start(self, doc, callback)
 
     def stop(self, doc):
         Mode.stop(self, doc)
-        doc.OnPrompt.fire(doc)
 
-def prompt(promptstring='>'):
-    """Constructor for the prompt mode."""
-    class PromptWithString(Prompt):
-        def __init__(self, document, callback=None):
-            Prompt.__init__(self, document, callback)
-            self.promptstring = promptstring
-    return PromptWithString
+def init_prompt(doc):
+    doc.modes.prompt = Prompt(doc)
+Document.OnModeInit.add(init_prompt)
+
