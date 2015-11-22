@@ -68,7 +68,7 @@ default_keymap = {
     'R': commands.release,
     'u': commands.undo,
     'U': commands.redo,
-    'ctrl-u': commands.undomode,
+    'ctrl-u': commands.start_undomode,
     'y': commands.copy,
     'Y': commands.clear,
     'p': commands.paste_after,
@@ -135,11 +135,11 @@ class NormalMode(Mode):
 
 
 def init_normalmode(doc):
-    doc.normalmode = NormalMode(doc)
+    doc.modes.normalmode = NormalMode(doc)
 Document.OnModeInit.add(init_normalmode)
 
 
 def enter_normalmode(doc, callback):
-    doc.normalmode.start(callback)
+    doc.modes.normalmode.start(callback)
 commands.enter_normalmode = enter_normalmode
 

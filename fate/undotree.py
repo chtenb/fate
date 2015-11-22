@@ -155,13 +155,13 @@ class UndoMode(Mode):
             quit_all, open_file, force_quit
         ])
 
-    def start(self, doc):
+    def start(self, doc, *args, **kwargs):
         debug('Starting undo mode')
         # Make sure the child_index is set to the index we now have
         self.child_index = self.current_index()
-        Mode.stop(self, doc)
+        Mode.start(self, doc, *args, **kwargs)
 
-    def stop(self, doc):
+    def stop(self, doc, *args, **kwargs):
         debug('Exiting undo mode')
         Mode.stop(self, doc)
 
@@ -207,14 +207,12 @@ class UndoMode(Mode):
         node = self.doc.undotree.current_node
         return node.parent.children.index(node) if node.parent != None else 0
 
-commands.undomode = UndoMode
-
 def init_undomode(doc):
-    doc.undomode = UndoMode(doc)
+    doc.modes.undomode = UndoMode(doc)
 Document.OnModeInit.add(init_undomode)
 
 
-def enter_undomode(doc, callback):
-    doc.undomode.start(callback)
-commands.enter_undomode = enter_undomode
+def start_undomode(doc, callback):
+    doc.modes.undomode.start(callback)
+commands.start_undomode = start_undomode
 

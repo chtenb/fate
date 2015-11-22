@@ -24,8 +24,9 @@ class Prompt(Mode):
         else:
             error('Prompt can not process non-string input')
 
-    def start(self, doc, prompt_string='>', callback=None):
-        self.prompt_string = prompt_string
+    def start(self, doc, promptstring='>', callback=None):
+        self.inputstring = ''
+        self.promptstring = promptstring
         Mode.start(self, doc, callback)
 
     def stop(self, doc):

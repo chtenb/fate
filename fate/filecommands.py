@@ -7,7 +7,8 @@ from .operation import Operation
 from . import document
 from .commandtools import Compose
 from .selection import Selection, Interval
-import selectors # Depend on selectors to be loaded
+import selectors  # Depend on selectors to be loaded
+
 
 def save(doc, filename=None):
     """Save document text to file."""
@@ -52,6 +53,8 @@ commands.load = load
 
 def ask_filename(doc):
     doc.modes.prompt.start(doc, 'Filename: ')
+
+
 def open_file(doc):
     """Open a new document."""
     filename = doc.modes.prompt.inputstring
@@ -59,6 +62,7 @@ def open_file(doc):
 commands.open_document = Compose(ask_filename, open_file)
 
 
+# TODO: make pressing esc work
 def quit_document(doc):
     """Close current document."""
     def check_answer(doc):
@@ -71,8 +75,8 @@ def quit_document(doc):
             quit_document(doc)
 
     if not doc.saved:
-        ask_quit = doc.modes.prompt.start('Unsaved changes! Really quit? (y/n/esc)')
-        ask_quit(doc, check_answer)
+        doc.modes.prompt.start(doc, promptstring='Unsaved changes! Really quit? (y/n/esc)',
+                               callback=check_answer)
     else:
         doc.quit()
 commands.quit_document = quit_document
@@ -92,4 +96,3 @@ def force_quit(doc=None):
     for doc in docs:
         doc.quit()
 commands.force_quit = force_quit
-

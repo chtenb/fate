@@ -57,7 +57,7 @@ class Document:
 
         self.modes = Namespace() # TODO: store modes in here
         self.OnModeInit.fire(self)
-        self.mode = self.normalmode
+        self.mode = self.modes.normalmode
         self.OnDocumentInit.fire(self)
 
         if filename:

@@ -78,7 +78,7 @@ class Mode(ABC):
             raise ValueError(
                 'The passed document is not the same as the member document.')
 
-        doc.mode = doc.normalmode
+        doc.mode = doc.modes.normalmode
         if self.callback:
             self.callback(doc)
 
@@ -109,8 +109,8 @@ class Mode(ABC):
             return True
 
         # If a key in doc.keymap is given: execute if we allow it
-        if userinput in doc.normalmode.keymap:
-            command = doc.normalmode.keymap[userinput]
+        if userinput in doc.modes.normalmode.keymap:
+            command = doc.modes.normalmode.keymap[userinput]
             if command in self.allowedcommands:
                 command(doc)
                 return True

@@ -133,14 +133,14 @@ class ChangeInPlace(InsertMode):
         return Operation(doc, self.newcontent[:], deepcopy(self.oldselection))
 
 def init_changeinplace(doc):
-    doc.changeinplace = ChangeInPlace(doc)
+    doc.modes.changeinplace = ChangeInPlace(doc)
 Document.OnModeInit.add(init_changeinplace)
 
 def get_changeinplace(doc):
-    return doc.changeinplace
+    return doc.modes.changeinplace
 
 def start_changeinplace(doc):
-    doc.changeinplace.start(doc)
+    doc.modes.changeinplace.start(doc)
 commands.start_changeinplace = start_changeinplace
 
 
@@ -223,14 +223,14 @@ class ChangeAround(InsertMode):
 
 
 def init_changearound(doc):
-    doc.changearound = ChangeAround(doc)
+    doc.modes.changearound = ChangeAround(doc)
 Document.OnModeInit.add(init_changearound)
 
 def get_changearound(doc):
-    return doc.changearound
+    return doc.modes.changearound
 
 def start_changearound(doc):
-    doc.changearound.start(doc)
+    doc.modes.changearound.start(doc)
 commands.start_changearound = start_changearound
 
 
