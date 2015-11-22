@@ -12,7 +12,6 @@ from logging import debug, error
 # Dependencies
 from .. import filetype
 
-from traceback import extract_tb
 
 class ErrorChecker:
 
@@ -98,10 +97,10 @@ class ErrorMode(Mode):
             'j': self.down,
             '\n': self.jump_to_error,
         })
-        self.allowedcommands = [
+        self.allowedcommands.extend([
             commands.next_document, commands.previous_document, commands.quit_document,
             commands.quit_all, commands.open_file, commands.force_quit
-        ]
+        ])
 
     def processinput(self, doc, userinput):
         # If a direct command is given: execute if we allow it
@@ -132,7 +131,12 @@ class ErrorMode(Mode):
         doc.errorlist.current = min(len(doc.errorlist) - 1, doc.errorlist.current + 1)
 
     def jump_to_error(self, doc):
-        errorinterval = doc.errorlist[doc.errorlist.current][1]
+        try:
+            current_error = doc.errorlist[doc.errorlist.current]
+        except IndexError:
+            return
+
+        errorinterval = current_error[1]
         Selection([errorinterval])(doc)
 
 def init_errormode(doc):

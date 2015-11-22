@@ -28,7 +28,6 @@ compound_input_space = list(command_space.values()) + key_space
 # Sorting is needed to be able to reproduce a seeded random test case
 compound_input_space.sort(key=str)
 
-print(compound_input_space)
 
 class RandomizedUserSimulator(UserInterfaceAPI):
 
@@ -76,14 +75,19 @@ class RandomizedUserSimulator(UserInterfaceAPI):
         if random.randint(0, 1) == 0:
             input_space = compound_input_space
         else:
-            # We try to construct a meaningful input space w.r.t. the mode
+            # Try to construct a meaningful input space w.r.t. the mode
             mode = self.doc.mode
-            input_space = [Document.cancelkey]
-            input_space = mode.allowedcommands
-            input_space.extend(mode.keymap.values())
+            # Save the input_space for each mode, to speed things up
+            if not hasattr(mode, 'input_space'):
+                input_space = [Document.cancelkey]
+                input_space = mode.allowedcommands
+                input_space.extend(mode.keymap.values())
 
-            input_space = [x for x in input_space if not x in forbidden_commands]
-            input_space.sort(key=str)
+                input_space = [x for x in input_space if not x in forbidden_commands]
+                input_space.sort(key=str)
+                mode.input_space = input_space
+            else:
+                input_space = mode.input_space
 
         #print('Inputspace = ' + str(input_space))
         return random.choice(input_space)
