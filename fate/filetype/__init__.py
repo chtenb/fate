@@ -20,7 +20,7 @@ def detect_filetype(doc):
             doc.filetype = filetype
     doc.OnDocumentInit.add_for_once(doc.OnFileTypeLoaded.fire)
 
-Document.OnFileTypeLoaded = Event()
+Document.OnFileTypeLoaded = Event('OnFileTypeLoaded')
 Document.OnDocumentInit.add(detect_filetype)
 
 import logging

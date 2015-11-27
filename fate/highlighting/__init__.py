@@ -24,7 +24,7 @@ def load_highlighting_script(doc):
         try:
             module = import_module(__name__ + '.' + doc.filetype)
         except ImportError as e:
-            if e.name == doc.filetype:
+            if e.name == doc.filetype: # Catch import error non-recursively
                 logging.info('No labeling script found for filetype ' + doc.filetype)
             else:
                 raise
@@ -33,11 +33,15 @@ def load_highlighting_script(doc):
             module.init(doc)
 
 
+def clear_highlighting(doc):
+    doc.highlighting.clear()
+
 def init_highlighting(doc):
-    doc.OnGenerateGlobalHighlighting = Event()
-    doc.OnGenerateLocalHighlighting = Event()
+    doc.OnGenerateGlobalHighlighting = Event('OnGenerateGlobalHighlighting')
+    doc.OnGenerateLocalHighlighting = Event('OnGenerateLocalHighlighting')
     doc.highlighting = Highlighting()
 
+    doc.OnTextChanged.add(clear_highlighting)
     doc.OnTextChanged.add(doc.OnGenerateGlobalHighlighting.fire)
 
 Document.OnDocumentInit.add(init_highlighting)

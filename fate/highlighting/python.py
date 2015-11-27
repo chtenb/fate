@@ -5,6 +5,7 @@ import keyword
 re_keyword = re.compile(r'\b({})\b'.format('|'.join(keyword.kwlist)))
 re_comment = re.compile('#.*\n')
 
+
 def init(doc):
     doc.OnGenerateGlobalHighlighting.add(main)
 

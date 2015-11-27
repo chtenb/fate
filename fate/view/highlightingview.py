@@ -1,3 +1,4 @@
+from logging import debug
 
 def refresh_highlightingview(doc):
     # Construct highlighting view
@@ -9,4 +10,5 @@ def refresh_highlightingview(doc):
         else:
             highlightingview.append('')
     doc.view.highlighting = highlightingview
+    # debug(highlightingview)
 

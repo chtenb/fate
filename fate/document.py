@@ -22,8 +22,8 @@ class Namespace:
 class Document:
 
     """Contains all objects of one file editing document"""
-    OnDocumentInit = Event()
-    OnModeInit = Event()
+    OnDocumentInit = Event('OnDocumentInit')
+    OnModeInit = Event('OnModeInit')
     create_userinterface = None
     _text = ''
     saved = True
@@ -37,12 +37,12 @@ class Document:
 
     def __init__(self, filename=""):
         documentlist.append(self)
-        self.OnTextChanged = Event()
-        self.OnRead = Event()
-        self.OnWrite = Event()
-        self.OnQuit = Event()
-        self.OnActivate = Event()
-        self.OnSelectionChange = Event()
+        self.OnTextChanged = Event('OnTextChanged')
+        self.OnRead = Event('OnRead')
+        self.OnWrite = Event('OnWrite')
+        self.OnQuit = Event('OnQuit')
+        self.OnActivate = Event('OnActivate')
+        self.OnSelectionChange = Event('OnSelectionChange')
 
         self.filename = filename
 

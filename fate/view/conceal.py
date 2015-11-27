@@ -9,14 +9,15 @@ from logging import debug
 def init_conceal(doc):
     doc.view.conceal = Conceal(doc)
 
-    doc.OnGenerateGlobalConceal = Event()
-    doc.OnGenerateLocalConceal = Event()
+    doc.OnGenerateGlobalConceal = Event('OnGenerateGlobalConceal')
+    doc.OnGenerateLocalConceal = Event('OnGenerateLocalConceal')
 
     doc.OnTextChanged.add(doc.view.conceal.generate_global_substitutions)
 
     # Examples
-    doc.OnGenerateLocalConceal.add(conceal_tabs)
-    doc.OnGenerateGlobalConceal.add(conceal_eol)
+    # FIXME
+    # doc.OnGenerateLocalConceal.add(conceal_tabs)
+    # doc.OnGenerateGlobalConceal.add(conceal_eol)
 
 Document.OnDocumentInit.add(init_conceal)
 
