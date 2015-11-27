@@ -5,6 +5,7 @@ from .selecting.decorators import intervalselector_withmode
 from .document import Document
 from .commandtools import Compose
 from functools import partial
+import logging
 
 Document.search_pattern = ''
 
@@ -24,16 +25,20 @@ def local_find_backward(doc):
 commands.local_find_backward = local_find_backward
 
 
+# TODO: fix search have correct promptstring
+# TODO: make searching work again
+def ask_search_string(doc):
+    doc.modes.prompt.promptstring = '/'
+    return doc.modes.prompt
 def execute_search(doc):
-    doc.search_pattern = doc.promptinput
+    doc.search_pattern = doc.modes.prompt.inputstring
+    logging.debug('Pattern: ' + doc.search_pattern)
     if doc.search_pattern:
         try:
             command = selectpattern(doc.search_pattern, doc, doc.selection)
             command(doc)
         except re.error as e:
             doc.ui.notify(str(e))
-def ask_search_string(doc):
-    doc.modes.prompt.start(doc, '/')
 commands.search = Compose(ask_search_string, execute_search)
 
 
