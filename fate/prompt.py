@@ -1,8 +1,6 @@
 from .mode import Mode
 from .document import Document
-from logging import error
-
-Document.promptinput = ''
+from logging import error, debug
 
 class Prompt(Mode):
     def __init__(self, doc):
@@ -17,8 +15,7 @@ class Prompt(Mode):
             elif key == '\n':
                 self.stop(doc)
             elif len(key) > 1:
-                # key not supported
-                pass
+                debug('Search key {} not supported.'.format(key))
             else:
                 self.inputstring += key
         else:
@@ -31,6 +28,7 @@ class Prompt(Mode):
 
     def stop(self, doc):
         Mode.stop(self, doc)
+        debug('End prompt: ' + self.inputstring)
 
 def init_prompt(doc):
     doc.modes.prompt = Prompt(doc)
