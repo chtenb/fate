@@ -14,9 +14,9 @@ def init_conceal(doc):
 
     doc.OnTextChanged.add(doc.view.conceal.generate_global_substitutions)
 
+    doc.OnGenerateLocalConceal.add(conceal_tabs)
+
     # Examples
-    # FIXME
-    # doc.OnGenerateLocalConceal.add(conceal_tabs)
     # doc.OnGenerateGlobalConceal.add(conceal_eol)
 
 Document.OnDocumentInit.add(init_conceal)
@@ -138,7 +138,8 @@ def conceal_tabs(doc, start_pos, max_length):
         if i >= len(doc.text):
             break
         if doc.text[i] == '\t':
-            doc.view.conceal.local_substitute(Interval(i, i + 1), ' ' * doc.tabwidth)
+            viewstring = ' ' * (doc.tabwidth - 1) + '\u21E5'
+            doc.view.conceal.local_substitute(Interval(i, i + 1), viewstring)
 
 
 def conceal_eol(doc):

@@ -1,6 +1,5 @@
-DISCLAIMER:
-THIS PROJECT IS IN AN EXPERIMENTAL STATE. NO INDIVIDUALS AFFILIATED WITH THIS PROJECT CAN BE
-HELD RESPONSIBLE FOR ANY KIND OF DAMAGE CAUSED BY USAGE OF THIS SOFTWARE.
+This project is in an experimental state. No individuals affiliated with this project can be
+held responsible for any kind of damage caused by usage of this software.
 
 [![Build Status](https://travis-ci.org/Chiel92/fate.svg?branch=action-machinery-rewrite)](https://travis-ci.org/Chiel92/fate)
 
@@ -108,16 +107,6 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
-- Make mode keymaps configurable per document
-  - Mode keymaps have to be created OnDocumentInit
-  - Solution: each document has its own mode objects
-- Conceal (Generalization of listchars)
-  - UI gets a modified version of the text
-  - Needed for characters with more than 1 width, like tabs, since every character in the
-    ui version of the text must be of width 1, for ease of computations
-  - Problem: move up/down needs to known width of modified characters
-  - Rewrite syntax highlighting to work similarly
-    - Allows multiple labels per character? I.e. error and number/string at the same time
 - Different forms of wrapping left/right + word/character
 - Make labeling generation asynchronous
 - Tests for selectors.
@@ -144,6 +133,7 @@ MIDDLE TERM
 - Implement commandmode as a persistent command, similar to undomode
 - Improve syntax highlighting, for instance by disregarding quotes inside comments and strings
   - select around should maybe also disregard brackets etc in comments and strings
+  - Maybe it helps to only match regex per line in some cases
 - Snippet technology
   - Expand and surround/refactoring
 - Reimplement repeat, since classes can't be decorated

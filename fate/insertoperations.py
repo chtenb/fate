@@ -234,7 +234,7 @@ def start_changearound(doc):
 commands.start_changearound = start_changearound
 
 
-openlineafter = Compose(selectindent, copy,
+openlineafter = Compose(commands.selectfullline, selectindent, copy,
                         selectnextfullline, Append('\n'), selectpreviouschar, emptybefore,
                         paste_before, clear, get_changeinplace, name='openlineafter',
                         docs='Open a line after interval')
