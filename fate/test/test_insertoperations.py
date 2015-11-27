@@ -3,7 +3,7 @@ This module provides testcases for insertoperations.
 Auto indentation is covered.
 """
 from ..commands import selectnextline, selectpreviousword
-from ..insertoperations import changeafter, changebefore, start_changeinplace, start_changearound
+from ..insertoperations import changeafter, changebefore, changeinplace, changearound
 from ..undotree import undo
 from .basetestcase import BaseTestCase
 from .. import document
@@ -46,7 +46,7 @@ class OperatorTest(BaseTestCase):
         self.assertEqual('import sys\n\n', self.document.text[:12])
 
     def test_change_in_place(self):
-        self.document.ui.feedinput(start_changeinplace)
+        self.document.ui.feedinput(changeinplace)
         for char in '\nasdf\b\b \n \n \n\n\b\b\n':
             self.document.ui.feedinput(char)
         self.document.ui.feedinput(self.document.cancelkey)
@@ -65,7 +65,7 @@ class OperatorTest(BaseTestCase):
             self.document.ui.feedinput(char)
         self.document.ui.feedinput(self.document.cancelkey)
         self.document.ui.feedinput(selectpreviousword)
-        self.document.ui.feedinput(start_changearound)
+        self.document.ui.feedinput(changearound)
         self.document.ui.feedinput('\n')
         self.document.ui.feedinput(self.document.cancelkey)
 
