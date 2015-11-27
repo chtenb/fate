@@ -46,4 +46,4 @@ class View:
         self.conceal.refresh(self.doc)
         refresh_highlightingview(self.doc)
         refresh_selectionview(self.doc)
-        debug('refreshing view')
+        # debug('refreshing view')

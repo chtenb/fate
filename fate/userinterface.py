@@ -13,7 +13,7 @@ class UserInterfaceAPI(ABC):
     def __init__(self, doc):
         self.doc = doc
         self.inputqueue = deque()
-        self.OnUserInput = Event()
+        self.OnUserInput = Event('OnUserInput')
 
     @abstractproperty
     def viewport_size(self):
