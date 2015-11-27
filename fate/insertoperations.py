@@ -136,19 +136,16 @@ def init_changeinplace(doc):
     doc.modes.changeinplace = ChangeInPlace(doc)
 Document.OnModeInit.add(init_changeinplace)
 
-def get_changeinplace(doc):
+def changeinplace(doc):
     return doc.modes.changeinplace
 
-def start_changeinplace(doc):
-    doc.modes.changeinplace.start(doc)
-commands.start_changeinplace = start_changeinplace
+commands.changeinplace = changeinplace
 
 
-# TODO: get_changeinplace not working
-changebefore = Compose(emptybefore, get_changeinplace, name='ChangeBefore')
+changebefore = Compose(emptybefore, changeinplace, name='ChangeBefore')
 commands.changebefore = changebefore
 
-changeafter = Compose(emptyafter, get_changeinplace, name='ChangeAfter')
+changeafter = Compose(emptyafter, changeinplace, name='ChangeAfter')
 commands.changeafter = changeafter
 
 
@@ -226,27 +223,24 @@ def init_changearound(doc):
     doc.modes.changearound = ChangeAround(doc)
 Document.OnModeInit.add(init_changearound)
 
-def get_changearound(doc):
+def changearound(doc):
     return doc.modes.changearound
-
-def start_changearound(doc):
-    doc.modes.changearound.start(doc)
-commands.start_changearound = start_changearound
+commands.changearound = changearound
 
 
 openlineafter = Compose(commands.selectfullline, selectindent, copy,
                         selectnextfullline, Append('\n'), selectpreviouschar, emptybefore,
-                        paste_before, clear, get_changeinplace, name='openlineafter',
+                        paste_before, clear, changeafter, name='openlineafter',
                         docs='Open a line after interval')
 commands.openlineafter = openlineafter
 
 openlinebefore = Compose(commands.selectfullline, selectindent, copy,
                          selectnextfullline, Insert('\n'), selectnextchar, emptybefore,
-                         paste_before, clear, get_changeinplace, name='openlinebefore',
+                         paste_before, clear, changeafter, name='openlinebefore',
                          docs='Open a line before interval')
 commands.openlinebefore = openlinebefore
 
-cutchange = Compose(cut, get_changeinplace,
+cutchange = Compose(cut, changeinplace,
                     name='cutchange', docs='Copy and change selected text.')
 commands.cutchange = cutchange
 

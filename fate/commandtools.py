@@ -66,10 +66,13 @@ def Compose(*subcommands, name='', docs=''):
     The undoable subcommands should be undoable as a whole.
     """
     # We need to define a new class for each composition
+    # This is because compounds have state, so each execution is in fact a creation of a
+    # new object.
     class Compound:
 
-        def __init__(self, doc):
+        def __init__(self, doc, callback=None):
             self.subcommands = subcommands
+            self.callback = callback
 
             self.todo = deque(self.subcommands[:])
             doc.undotree.start_sequence()
@@ -83,21 +86,28 @@ def Compose(*subcommands, name='', docs=''):
             while self.todo:
                 command = self.todo.popleft()
                 while 1:
-                    debug('command: {}'.format(command))
+                    debug('Subcommand: {}'.format(command))
                     # Pass ourselves as callback when executing a mode
-                    if isclass(command) and issubclass(command, Mode):
-                        mode = command(doc)
-                        mode.start(doc, self.proceed)
+                    if isinstance(command, Mode):
+                        command(doc, callback=self.proceed)
+                        return
+
+                    # Also pass ourselves as callback when executing a Compound,
+                    # since this compound may contain a mode
+                    if isclass(command) and issubclass(command, Compound):
+                        command(doc, callback=self.proceed)
                         return
 
                     result = command(doc)
-                    debug('result: {}'.format(result))
                     if not callable(result):
                         break
                     command = result
 
             # Now we are completely finished
             doc.undotree.end_sequence()
+
+            if self.callback:
+                self.callback(doc)
 
     Compound.__name__ = name
     Compound.__docs__ = docs

@@ -78,6 +78,7 @@ class UndoTree:
         if self.sequence_depth == 0:
             self.sequence = Node(self.current_node)
         self.sequence_depth += 1
+        debug('Starting undo sequence. Entering depth: {}'.format(self.sequence_depth))
 
     def end_sequence(self):
         """
@@ -85,6 +86,8 @@ class UndoTree:
         """
         if self.sequence_depth < 1:
             raise Exception('Cannot end sequence; no sequence present.')
+
+        debug('Ending undo sequence. Leaving depth: {}'.format(self.sequence_depth))
 
         if self.sequence_depth == 1:
             if self.sequence.commands != []:
@@ -145,10 +148,10 @@ class UndoMode(Mode):
     def __init__(self, doc):
         Mode.__init__(self, doc)
         self.keymap.update({
-            'Left': self.left,
-            'Right': self.right,
-            'Up': self.up,
-            'Down': self.down,
+            'left': self.left,
+            'right': self.right,
+            'up': self.up,
+            'down': self.down,
         })
         self.allowedcommands.extend([
             next_document, previous_document, quit_document,
@@ -212,7 +215,7 @@ def init_undomode(doc):
 Document.OnModeInit.add(init_undomode)
 
 
-def start_undomode(doc, callback=None):
-    doc.modes.undomode.start(doc, callback=callback)
-commands.start_undomode = start_undomode
+def undomode(doc):
+    return doc.modes.undomode
+commands.undomode = undomode
 

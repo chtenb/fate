@@ -30,7 +30,7 @@ default_keymap = {
     'ctrl-p': commands.previous_document,
     'f3': commands.formattext,
     'f4': commands.checkerrors,
-    'f5': commands.start_errormode,
+    'f5': commands.errormode,
     'f': commands.local_find,
     'F': commands.local_find_backward,
     '/': commands.search,
@@ -68,7 +68,7 @@ default_keymap = {
     'R': commands.release,
     'u': commands.undo,
     'U': commands.redo,
-    'ctrl-u': commands.start_undomode,
+    'ctrl-u': commands.undomode,
     'y': commands.copy,
     'Y': commands.clear,
     'p': commands.paste_after,
@@ -78,8 +78,8 @@ default_keymap = {
     'd': commands.delete,
     'i': commands.changebefore,
     'a': commands.changeafter,
-    's': commands.start_changearound,
-    'c': commands.start_changeinplace,
+    's': commands.changearound,
+    'c': commands.changeinplace,
     'o': commands.openlineafter,
     'O': commands.openlinebefore,
     'x': commands.cut,
@@ -121,8 +121,8 @@ class NormalMode(Mode):
             self.process_pointerinput(userinput)
         else:
             command = input_to_command(self.doc, userinput)
-            if command:
-                command(self.doc)
+            while callable(command):
+                command = command(self.doc)
 
     def process_pointerinput(self, userinput):
         assert isinstance(userinput, pointer.PointerInput)
@@ -139,7 +139,7 @@ def init_normalmode(doc):
 Document.OnModeInit.add(init_normalmode)
 
 
-def start_normalmode(doc, callback=None):
-    doc.modes.normalmode.start(doc, callback)
-commands.start_normalmode = start_normalmode
+def normalmode(doc):
+    return doc.modes.normalmode
+commands.normalmode = normalmode
 

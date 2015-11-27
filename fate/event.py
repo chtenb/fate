@@ -25,7 +25,7 @@ class Event:
 
     def fire(self, *args):
         """Launch the event by calling all handlers with self as argument."""
-        logging.debug('Firing event {}'.format(self.__name__))
+        # logging.debug('Firing event {}'.format(self.__name__))
         for handler in self._handlers:
             try:
                 handler(*args)
@@ -40,7 +40,7 @@ class Event:
                 logging.error(e, exc_info=True)
 
         self._temp_handlers = []
-        logging.debug('Finished event {}'.format(self.__name__))
+        # logging.debug('Finished event {}'.format(self.__name__))
 
     def add_for_once(self, handler):
         """

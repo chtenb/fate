@@ -143,6 +143,6 @@ def init_errormode(doc):
     doc.modes.errormode = ErrorMode(doc)
 Document.OnModeInit.add(init_errormode)
 
-def start_errormode(doc):
-    doc.modes.errormode.start(doc)
-commands.start_errormode = start_errormode
+def errormode(doc):
+    return doc.modes.errormode
+commands.errormode = errormode

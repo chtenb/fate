@@ -107,18 +107,21 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
+- Make composition undoable in one keystroke
 - Different forms of wrapping left/right + word/character
 - Make labeling generation asynchronous
 - Tests for selectors.
+- Implement repeat
+  - Record input of user
+  - next_document should also be recorded: this just makes repeat more powerful
+  - Be able to save these macros, and be able to construct macros via literal input
+    This makes it easy to record a macro and use it for bulk editing
+- Allow fate to be used for bulk file editing according to some given script
+  - Things like completion need to be disabled for this to speed up starting fate
 
 MIDDLE TERM
 - Fix unnecessary pylint complains
 - Enhance selector set
-- Contextual completion
-  - For completion it is also needed that the full text can be constructed including the
-    pending operation.
-  - Make ycm also shutdown on crash
-  - Make ycm requests async
 - Text datastructure that is optimized for text editing
   - For small to normal texts: plain string
   - As soon as the text gets too big, split up into (not too small) blocks of a fixed size.
@@ -128,17 +131,12 @@ MIDDLE TERM
     scale.
   - Switching between these modes should be done automatically, but it should be possible to
     override manually.
-- Allow fate to be used for bulk file editing according to some given script
-  - Things like completion need to be disabled for this to speed up starting fate
 - Implement commandmode as a persistent command, similar to undomode
 - Improve syntax highlighting, for instance by disregarding quotes inside comments and strings
   - select around should maybe also disregard brackets etc in comments and strings
   - Maybe it helps to only match regex per line in some cases
 - Snippet technology
   - Expand and surround/refactoring
-- Reimplement repeat, since classes can't be decorated
-  - Record input of user
-  - Problem: how to handle next_document etc? We don't want those to be recorded.
 - Easier file opening
 
 LONG TERM
