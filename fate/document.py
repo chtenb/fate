@@ -6,7 +6,7 @@ from .userinterface import UserInterfaceAPI
 from .navigation import center_around_selection
 from .selecting import SelectModes
 
-from logging import info, debug
+from logging import error, info, debug
 
 documentlist = []
 activedocument = None
@@ -35,7 +35,7 @@ class Document:
 
     locked_selection = None
 
-    def __init__(self, filename=""):
+    def __init__(self, filename=''):
         documentlist.append(self)
         self.OnTextChanged = Event('OnTextChanged')
         self.OnRead = Event('OnRead')
@@ -45,6 +45,12 @@ class Document:
         self.OnSelectionChange = Event('OnSelectionChange')
 
         self.filename = filename
+        if filename:
+            try:
+                with open(filename, 'r') as fd:
+                    self._text = fd.read()
+            except (FileNotFoundError, PermissionError) as e:
+                error(str(e))
 
         self._selection = Selection(Interval(0, 0))
         self.selectmode = SelectModes.normal
@@ -60,8 +66,8 @@ class Document:
         self.mode = self.modes.normalmode
         self.OnDocumentInit.fire(self)
 
-        if filename:
-            commands.load(self)
+        self.OnRead.fire(self)
+        self.OnTextChanged.fire(self)
 
     def quit(self):
         """Quit document."""
