@@ -107,10 +107,12 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
+- Make sure the view updates fast enough to be in sync with userinterface.viewportoffset and
+  viewportsize.
 - Implement repeat
   - Record input of user
   - next_document should also be recorded: this just makes repeat more powerful
-  - Be able to save these macros, and be able to construct macros via literal input
+  - Be able to save these macros, and be able to construct macros via literal input.
     This makes it easy to record a macro and use it for bulk editing
 - Allow fate to be used for bulk file editing according to some given script
   - Things like completion need to be disabled for this to speed up starting fate

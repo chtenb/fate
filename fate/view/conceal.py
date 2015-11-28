@@ -138,7 +138,8 @@ def conceal_tabs(doc, start_pos, max_length):
         if i >= len(doc.text):
             break
         if doc.text[i] == '\t':
-            viewstring = ' ' * (doc.tabwidth - 1) + '\u21E5'
+            # viewstring = ' ' * (doc.tabwidth - 1) + '\u21E5'
+            viewstring = ' ' * doc.tabwidth
             doc.view.conceal.local_substitute(Interval(i, i + 1), viewstring)
 
 
