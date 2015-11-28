@@ -107,7 +107,7 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
-- Make tests fully deterministic by seed
+- Make initial file read not a part of undotree.
 - Make sure the view updates fast enough to be in sync with userinterface.viewportoffset and
   viewportsize.
 - Implement repeat

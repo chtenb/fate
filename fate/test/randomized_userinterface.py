@@ -24,6 +24,7 @@ forbidden_commands = [open_file, quit_document, force_quit, quit_all, formattext
 for c in forbidden_commands:
     command_space.pop(c.__name__)
 
+# We have to use the name for sorting, if possible, to make sure the sorting is unique
 def name_or_str(command):
     return command.__name__ if hasattr(command, '__name__') else str(command)
 

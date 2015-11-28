@@ -25,6 +25,7 @@ class UndoTree:
     def undo(self):
         """Undo previous command set current_node to its parent."""
         if self.sequence != None:
+            # TODO: does this have to be a hard fail?
             raise Exception('Cannot perform undo; a sequence of commands is being added')
 
         if self.current_node.parent:
@@ -32,14 +33,15 @@ class UndoTree:
                 command.undo(self.doc)
             self.current_node = self.current_node.parent
 
-    def redo(self, child_index=-1):
-        """Redo most recent next command."""
+    def redo(self, child_index=0):
+        """Redo most recent next command, or command at child_index if specified."""
         if self.sequence != None:
+            # TODO: does this have to be a hard fail?
             raise Exception('Cannot perform redo; a sequence of commands is being added')
 
         if self.current_node and self.current_node.children:
             l = len(self.current_node.children)
-            assert -l <= child_index < l
+            assert 0 <= child_index < l
 
             self.current_node = self.current_node.children[child_index]
             for command in self.current_node.commands:
@@ -61,6 +63,7 @@ class UndoTree:
         Useful for previewing operations.
         """
         if self.sequence != None:
+            # TODO: does this have to be a hard fail?
             raise Exception(
                 'Cannot perform hard undo; a sequence of commands is being added'
             )
@@ -116,8 +119,8 @@ class Node:
         self.commands.append(command)
 
     def add_child(self, node):
-        """Add a child to node."""
-        self.children.append(node)
+        """Add a child to node. First child is most recent."""
+        self.children.insert(0, node)
 
 
 def init(doc):
@@ -170,21 +173,22 @@ class UndoMode(Mode):
 
     def left(self, doc):
         # We can always just call undo; if there is no parent it will do nothing
+        self.child_index = 0
         doc.undotree.undo()
 
     def right(self, doc):
-        # We can always just call redo(0); if there is no child it will do nothing
+        # We can always just call redo; if there is no child it will do nothing
         self.child_index = 0
         doc.undotree.redo()
 
     def up(self, doc):
         self.child_index -= 1
-        # update() will take care of having a valid child_index
+        # update_child_index() will take care of having a valid child_index
         self.update_child_index()
 
     def down(self, doc):
         self.child_index += 1
-        # update() will take care of having a valid child_index
+        # update_child_index() will take care of having a valid child_index
         self.update_child_index()
 
     def update_child_index(self):
