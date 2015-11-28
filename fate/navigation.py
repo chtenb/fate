@@ -3,38 +3,59 @@ This module contains functionality for navigation/browsing through text without 
 """
 from . import commands
 from logging import debug
-from functools import partial
 
 
-def movepage(doc, backward=False):
-    """Constructor function for page up/down commands."""
+def movehalfpagedown(doc):
+    """Move half a page down."""
     width, height = doc.ui.viewport_size
     offset = doc.ui.viewport_offset
-    if backward:
-        new_offset = move_n_wrapped_lines_up(doc.text, width, offset, height)
-    else:
-        new_offset = move_n_wrapped_lines_down(doc.text, width, offset, height)
-    debug('old: {}, new: {}'.format(offset, new_offset))
+    new_offset = move_n_wrapped_lines_down(doc.text, width, offset, int(height / 2))
     doc.ui.viewport_offset = new_offset
-commands.pagedown = movepage
-commands.pageup = partial(movepage, backward=True)
+commands.movehalfpagedown = movehalfpagedown
+
+
+def movehalfpageup(doc):
+    """Move half a page down."""
+    width, height = doc.ui.viewport_size
+    offset = doc.ui.viewport_offset
+    new_offset = move_n_wrapped_lines_up(doc.text, width, offset, int(height / 2))
+    doc.ui.viewport_offset = new_offset
+commands.movehalfpageup = movehalfpageup
+
+
+def movepagedown(doc):
+    """Move a page down."""
+    width, height = doc.ui.viewport_size
+    offset = doc.ui.viewport_offset
+    new_offset = move_n_wrapped_lines_down(doc.text, width, offset, height)
+    doc.ui.viewport_offset = new_offset
+commands.movepagedown = movepagedown
+
+
+def movepageup(doc):
+    """Move a page up."""
+    width, height = doc.ui.viewport_size
+    offset = doc.ui.viewport_offset
+    new_offset = move_n_wrapped_lines_up(doc.text, width, offset, height)
+    doc.ui.viewport_offset = new_offset
+commands.movepageup = movepageup
 
 
 def center_around_selection(doc):
     """Center offset around last interval of selection."""
     width, height = doc.ui.viewport_size
-    doc.ui.viewport_offset = move_n_wrapped_lines_up(doc.text, width,
-                                                     doc.selection[-1][1],
-                                                     int(height / 2))
+    debug('Viewport height: {}, {}'.format(height, doc.selection[-1][1]))
+    nr_lines = move_n_wrapped_lines_up(
+        doc.text, width, doc.selection[-1][1], int(height / 2))
+    doc.ui.viewport_offset = nr_lines
 
 
 def move_n_wrapped_lines_up(text, max_line_width, start, n):
     """Return position that is n lines above start."""
-    position = text.rfind('\n', 0, start)
-    if position <= 0:
-        return 0
+    position = start
     while 1:
-        previousline = text.rfind('\n', 0, position - 1)
+        # Note that for rfind, the end parameter is exclusive
+        previousline = text.rfind('\n', 0, position)
         if previousline <= 0:
             return 0
         n -= int((position - previousline) / max_line_width) + 1
@@ -45,10 +66,8 @@ def move_n_wrapped_lines_up(text, max_line_width, start, n):
 
 def move_n_wrapped_lines_down(text, max_line_width, start, n):
     """Return position that is n lines below start."""
-    position = text.find('\n', start)
+    position = start
     l = len(text) - 1
-    if position == -1 or position == l:
-        return l
     while 1:
         eol = text.find('\n', position)
         if eol == -1 or eol == l:
@@ -98,3 +117,11 @@ def position_to_coord(pos, text):
 
     assert pos == coord_to_position(line, column, text)
     return line, column
+
+def is_position_visible(doc, pos):
+    """Determince whether position is visible on screen."""
+    beg = doc.ui.viewport_offset
+    width, height = doc.ui.viewport_size
+    end = move_n_wrapped_lines_down(doc.text, width, beg, height)
+    return beg <= pos < end
+

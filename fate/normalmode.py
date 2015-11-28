@@ -68,7 +68,7 @@ default_keymap = {
     'R': commands.release,
     'u': commands.undo,
     'U': commands.redo,
-    'ctrl-u': commands.undomode,
+    'Q': commands.undomode,
     'y': commands.copy,
     'Y': commands.clear,
     'p': commands.paste_after,
@@ -87,8 +87,10 @@ default_keymap = {
     '.': commands.repeat,
     '~': commands.uppercase,
     '`': commands.lowercase,
-    'ctrl-f': commands.pagedown,
-    'ctrl-b': commands.pageup,
+    'ctrl-f': commands.movepagedown,
+    'ctrl-b': commands.movepageup,
+    'ctrl-d': commands.movehalfpagedown,
+    'ctrl-u': commands.movehalfpageup,
 }
 
 

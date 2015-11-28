@@ -13,8 +13,8 @@ def refresh_selectionview(doc):
 
     selection_start = bisect_left(doc.selection, Interval(viewport_offset,
                                                           viewport_offset))
-    selection_end = bisect_right(doc.selection, Interval(textview_length,
-                                                         textview_length))
+    selection_end = bisect_right(doc.selection, Interval(viewport_offset + textview_length,
+                                                         viewport_offset + textview_length))
 
     selectionview = Selection()
     #debug(doc.selection[selection_start:selection_end])

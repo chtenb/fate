@@ -3,7 +3,7 @@ from .selection import Selection, Interval
 from .event import Event
 from . import commands
 from .userinterface import UserInterfaceAPI
-from .navigation import center_around_selection
+from .navigation import center_around_selection, is_position_visible
 from .selecting import SelectModes
 from .mode import Mode
 
@@ -131,7 +131,8 @@ class Document:
         self._selection = value
 
         # Update the userinterface viewport to center around first interval
-        center_around_selection(self)
+        if not is_position_visible(self, self._selection[-1][1]):
+            center_around_selection(self)
         self.OnSelectionChange.fire(self)
 
     def processinput(self, userinput):
