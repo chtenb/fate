@@ -24,10 +24,14 @@ forbidden_commands = [open_file, quit_document, force_quit, quit_all, formattext
 for c in forbidden_commands:
     command_space.pop(c.__name__)
 
+def name_or_str(command):
+    return command.__name__ if hasattr(command, '__name__') else str(command)
+
 compound_input_space = list(command_space.values()) + key_space
 # Sorting is needed to be able to reproduce a seeded random test case
-compound_input_space.sort(key=str)
+compound_input_space.sort(key=name_or_str)
 
+# print('Inputspace = ' + str(compound_input_space))
 
 class RandomizedUserSimulator(UserInterfaceAPI):
 
@@ -84,12 +88,12 @@ class RandomizedUserSimulator(UserInterfaceAPI):
                 input_space.extend(mode.keymap.values())
 
                 input_space = [x for x in input_space if not x in forbidden_commands]
-                input_space.sort(key=str)
+                input_space.sort(key=name_or_str)
                 mode.input_space = input_space
             else:
                 input_space = mode.input_space
 
-        #print('Inputspace = ' + str(input_space))
+        # print('Inputspace = ' + str(input_space))
         return random.choice(input_space)
 
     def prompt(self, prompt_string='>'):

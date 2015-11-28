@@ -3,7 +3,7 @@ from . import commands
 from .selecting.selectpattern import selectpattern, select_local_pattern
 from .selecting.decorators import intervalselector_withmode
 from .document import Document
-from .commandtools import Compose
+from .commandtools import compose
 from functools import partial
 import logging
 
@@ -39,7 +39,7 @@ def execute_search(doc):
             command(doc)
         except re.error as e:
             doc.ui.notify(str(e))
-commands.search = Compose(ask_search_string, execute_search)
+commands.search = compose(ask_search_string, execute_search, name='search')
 
 
 def search_current_content(doc):

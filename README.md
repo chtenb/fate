@@ -107,6 +107,7 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
+- Make tests fully deterministic by seed
 - Make sure the view updates fast enough to be in sync with userinterface.viewportoffset and
   viewportsize.
 - Implement repeat
@@ -116,7 +117,6 @@ SHORT TERM
     This makes it easy to record a macro and use it for bulk editing
 - Allow fate to be used for bulk file editing according to some given script
   - Things like completion need to be disabled for this to speed up starting fate
-- Make tests fully deterministic by seed
 
 MIDDLE TERM
 - Different forms of wrapping left/right + word/character?

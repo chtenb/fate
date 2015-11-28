@@ -59,7 +59,7 @@ class Undoable:
 # so the toplevel Compound will just continue.
 # Solution: make compounds take a callback function, and let it treat compounds
 # in the same manner as modes.
-def Compose(*subcommands, name='', docs=''):
+def compose(*subcommands, name, docs=''):
     """
     In order to be able to conveniently chain commands, we provide a
     function that composes a sequence of commands into a single command.

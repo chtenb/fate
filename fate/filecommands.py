@@ -5,7 +5,7 @@ import logging
 from . import commands
 from .operation import Operation
 from . import document
-from .commandtools import Compose
+from .commandtools import compose
 from .selection import Selection, Interval
 import selectors  # Depend on selectors to be loaded
 
@@ -59,7 +59,7 @@ def open_file(doc):
     """Open a new document."""
     filename = doc.modes.prompt.inputstring
     document.Document(filename)
-commands.open_file = Compose(ask_filename, open_file)
+commands.open_file = compose(ask_filename, open_file, name='open_file')
 
 
 # TODO: make pressing esc work

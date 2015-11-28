@@ -12,7 +12,7 @@ For this to work, the clipboard must be usable cross-history.
 from .operation import Operation
 from . import commands
 from .document import Document
-from .commandtools import Compose
+from .commandtools import compose
 from .operators import delete
 
 
@@ -90,6 +90,6 @@ def clear(document):
 commands.clear = clear
 
 
-cut = Compose(copy, delete, name='cut', docs='Copy and delete selected text.')
+cut = compose(copy, delete, name='cut', docs='Copy and delete selected text.')
 commands.cut = cut
 

@@ -6,7 +6,7 @@ from . import commands
 from .operation import Operation
 from .operators import Append, Insert
 from .selection import Interval
-from .commandtools import Compose
+from .commandtools import compose
 from . import selecting # Dependency
 from .selecting.selectpattern import selectfullline
 from .commands import (emptybefore, emptyafter, selectpreviousfullline, selectindent,
@@ -142,10 +142,10 @@ def changeinplace(doc):
 commands.changeinplace = changeinplace
 
 
-changebefore = Compose(emptybefore, changeinplace, name='ChangeBefore')
+changebefore = compose(emptybefore, changeinplace, name='changebefore')
 commands.changebefore = changebefore
 
-changeafter = Compose(emptyafter, changeinplace, name='ChangeAfter')
+changeafter = compose(emptyafter, changeinplace, name='changeafter')
 commands.changeafter = changeafter
 
 
@@ -228,19 +228,19 @@ def changearound(doc):
 commands.changearound = changearound
 
 
-openlineafter = Compose(commands.selectfullline, selectindent, copy,
+openlineafter = compose(commands.selectfullline, selectindent, copy,
                         selectnextfullline, Append('\n'), selectpreviouschar, emptybefore,
                         paste_before, clear, changeafter, name='openlineafter',
                         docs='Open a line after interval')
 commands.openlineafter = openlineafter
 
-openlinebefore = Compose(commands.selectfullline, selectindent, copy,
+openlinebefore = compose(commands.selectfullline, selectindent, copy,
                          selectnextfullline, Insert('\n'), selectnextchar, emptybefore,
                          paste_before, clear, changeafter, name='openlinebefore',
                          docs='Open a line before interval')
 commands.openlinebefore = openlinebefore
 
-cutchange = Compose(cut, changeinplace,
+cutchange = compose(cut, changeinplace,
                     name='cutchange', docs='Copy and change selected text.')
 commands.cutchange = cutchange
 
