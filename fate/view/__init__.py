@@ -1,18 +1,21 @@
 from ..document import Document
 from ..event import Event
 
+from logging import debug
+
 # Dependencies
 from .. import filetype
 
-from logging import debug
 
-def init_textview(doc):
-    #doc.OnRefreshView = Event()
+def init_view(doc):
+    doc.OnRefreshView = Event('OnRefreshView')
     doc.view = View(doc)
 
+    # Refresh at least once to ensure a valid state
+    # Other refreshes must be done by the userinterface
     doc.OnDocumentInit.add_for_once(doc.view.refresh)
 
-Document.OnDocumentInit.add(init_textview)
+Document.OnDocumentInit.add(init_view)
 
 
 from . import conceal
@@ -41,9 +44,10 @@ class View:
         Compute a piece of text for the UI to display.
         Updates textview and the corresponding positions mappings.
         """
-        #doc.OnRefreshView.fire(doc)
+        if doc and self.doc != doc:
+            raise ValueError('Document passed as argument differs from self.doc')
 
+        self.doc.OnRefreshView.fire(doc)
         self.conceal.refresh(self.doc)
         refresh_highlightingview(self.doc)
         refresh_selectionview(self.doc)
-        # debug('refreshing view')

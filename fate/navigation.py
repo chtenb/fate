@@ -2,29 +2,30 @@
 This module contains functionality for navigation/browsing through text without selecting.
 """
 from . import commands
-from logging import info
-from functools import partial
 from logging import debug
+from functools import partial
 
 
-def movepage(document, backward=False):
-    width, height = document.ui.viewport_size
-    offset = document.ui.viewport_offset
+def movepage(doc, backward=False):
+    """Constructor function for page up/down commands."""
+    width, height = doc.ui.viewport_size
+    offset = doc.ui.viewport_offset
     if backward:
-        new_offset = move_n_wrapped_lines_up(document.text, width, offset, height)
+        new_offset = move_n_wrapped_lines_up(doc.text, width, offset, height)
     else:
-        new_offset = move_n_wrapped_lines_down(document.text, width, offset, height)
-    info('old: {}, new: {}'.format(offset, new_offset))
-    document.ui.viewport_offset = new_offset
+        new_offset = move_n_wrapped_lines_down(doc.text, width, offset, height)
+    debug('old: {}, new: {}'.format(offset, new_offset))
+    doc.ui.viewport_offset = new_offset
 commands.pagedown = movepage
 commands.pageup = partial(movepage, backward=True)
 
 
-def center_around_selection(document):
-    width, height = document.ui.viewport_size
-    document.ui.viewport_offset = move_n_wrapped_lines_up(document.text, width,
-                                                          document.selection[0][0],
-                                                          int(height / 2))
+def center_around_selection(doc):
+    """Center offset around last interval of selection."""
+    width, height = doc.ui.viewport_size
+    doc.ui.viewport_offset = move_n_wrapped_lines_up(doc.text, width,
+                                                     doc.selection[-1][1],
+                                                     int(height / 2))
 
 
 def move_n_wrapped_lines_up(text, max_line_width, start, n):
@@ -61,7 +62,7 @@ def move_n_wrapped_lines_down(text, max_line_width, start, n):
 
 def coord_to_position(line, column, text, crop=False):
     pos = 0
-    while line > 1: #line numbers start with 1
+    while line > 1:  # line numbers start with 1
         eol = text.find('\n', pos)
         if eol == -1:
             if crop:
@@ -71,7 +72,7 @@ def coord_to_position(line, column, text, crop=False):
         pos = eol + 1
         line -= 1
 
-    pos += column - 1 #column numbers start with 1
+    pos += column - 1  # column numbers start with 1
     if pos >= len(text) and not crop:
         raise ValueError('Column number reaches beyond text.')
     pos = min(pos, len(text) - 1)
@@ -84,8 +85,8 @@ def position_to_coord(pos, text):
     if pos >= len(text):
         raise ValueError('Position reaches beyond text.')
 
-    i = 0 # First character of current line
-    line = 1 # Line numbers start with 1
+    i = 0  # First character of current line
+    line = 1  # Line numbers start with 1
     while i < pos:
         eol = text.find('\n', i)
         if eol >= pos:
@@ -93,7 +94,7 @@ def position_to_coord(pos, text):
         else:
             line += 1
             i = eol + 1
-    column = pos - i + 1 # Column numbers start with 1
+    column = pos - i + 1  # Column numbers start with 1
 
     assert pos == coord_to_position(line, column, text)
     return line, column

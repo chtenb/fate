@@ -5,6 +5,7 @@ from . import commands
 from .userinterface import UserInterfaceAPI
 from .navigation import center_around_selection
 from .selecting import SelectModes
+from .mode import Mode
 
 from logging import error, info, debug
 
@@ -25,15 +26,16 @@ class Document:
     OnDocumentInit = Event('OnDocumentInit')
     OnModeInit = Event('OnModeInit')
     create_userinterface = None
+
     _text = ''
-    saved = True
-    mode = None #TODO: mke mode property which must always store a valid Mode
+    _mode = None
 
     expandtab = False
     tabwidth = 4
     autoindent = True
 
     locked_selection = None
+    saved = True
 
     def __init__(self, filename=''):
         documentlist.append(self)
@@ -61,7 +63,7 @@ class Document:
         if not isinstance(self.ui, UserInterfaceAPI):
             raise Exception('document.ui not an instance of UserInterface.')
 
-        self.modes = Namespace() # TODO: store modes in here
+        self.modes = Namespace()
         self.OnModeInit.fire(self)
         self.mode = self.modes.normalmode
         self.OnDocumentInit.fire(self)
@@ -90,6 +92,22 @@ class Document:
         nextdoc.activate()
         documentlist.remove(self)
 
+    def activate(self):
+        """Activate this document."""
+        global activedocument
+        activedocument = self
+        self.OnActivate.fire(self)
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, value):
+        if not isinstance(value, Mode):
+            raise ValueError('Object {} is not an instance of Mode'.format(value))
+        self._mode = value
+
     @property
     def text(self):
         return self._text
@@ -101,20 +119,14 @@ class Document:
         self.saved = False
         self.OnTextChanged.fire(self)
 
-    def activate(self):
-        """Activate this document."""
-        global activedocument
-        activedocument = self
-        self.OnActivate.fire(self)
-
     @property
     def selection(self):
         return self._selection
 
     @selection.setter
     def selection(self, value):
-        # Make sure only valid selections are applied
-        assert isinstance(value, Selection)
+        if not isinstance(value, Selection):
+            raise ValueError('Object {} is not an instance of Selection'.format(value))
         value.validate(self)
         self._selection = value
 
