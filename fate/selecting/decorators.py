@@ -2,8 +2,8 @@ from functools import wraps
 from ..selection import Selection, Interval
 from . import SelectModes
 
-def partial(func, *args, name='', docs='', **keywords):
-    """Pragmatic solution for being able to set a name for a partial function"""
+def partial(func, *args, docs='', **keywords):
+    """Pragmatic solution for being able to set a metadata for a partial function"""
     @wraps(func)
     def wrapper(*fargs, **fkeywords):
         newkeywords = keywords.copy()
@@ -12,7 +12,6 @@ def partial(func, *args, name='', docs='', **keywords):
     wrapper.func = func
     wrapper.args = args
     wrapper.keywords = keywords
-    wrapper.name = name
     wrapper.docs = docs
     return wrapper
 

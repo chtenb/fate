@@ -75,17 +75,17 @@ def select_local_pattern(pattern, doc, interval, reverse=False,
 
 
 selectindent = partial(select_local_pattern, r'(?m)^([ \t]*)', reverse=True, group=1,
-                       allow_same_interval=True, name='selectindent')
+                       allow_same_interval=True)
 commands.selectindent = intervalselector_withmode(selectindent)
 
 
 selectline = partial(select_local_pattern, r'(?m)^[ \t]*([^\n]*)', group=1,
-                     allow_same_interval=True, name='selectline')
+                     allow_same_interval=True)
 commands.selectline = intervalselector_withmode(selectline)
 
 
 selectfullline = partial(select_local_pattern, r'[^\n]*\n?',
-                         allow_same_interval=True, name='selectfullline')
+                         allow_same_interval=True)
 commands.selectfullline = intervalselector_withmode(selectfullline)
 
 

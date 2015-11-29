@@ -1,11 +1,11 @@
 from ..operators import Insert
-from ..commands import selectnextword, undo
+from .. import commands
 from .basetestcase import BaseTestCase
 
 class OperatorTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
-        selectnextword(self.document)
+        commands.selectnextword(self.document)
 
     def test_insert(self):
         command = Insert('Foo ')
@@ -13,6 +13,6 @@ class OperatorTest(BaseTestCase):
         expected = 'Foo import sys'
         self.assertEqual(expected, self.document.text[:14])
 
-        undo(self.document)
+        commands.undo(self.document)
         self.assertEqual('import sys', self.document.text[:10])
 

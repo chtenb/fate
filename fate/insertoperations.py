@@ -7,10 +7,9 @@ from .operation import Operation
 from .operators import Append, Insert
 from .selection import Interval
 from .commandtools import compose
-from . import selecting # Dependency
+from . import selecting  # Dependency
 from .selecting.selectpattern import selectfullline
-from .commands import (emptybefore, emptyafter, selectpreviousfullline, selectindent,
-                       selectnextfullline, selectnextchar, selectpreviouschar)
+from . import commands
 from .clipboard import copy, clear, paste_before, cut
 from .mode import Mode
 from . import document
@@ -132,9 +131,11 @@ class ChangeInPlace(InsertMode):
         """
         return Operation(doc, self.newcontent[:], deepcopy(self.oldselection))
 
+
 def init_changeinplace(doc):
     doc.modes.changeinplace = ChangeInPlace(doc)
 Document.OnModeInit.add(init_changeinplace)
+
 
 def changeinplace(doc):
     return doc.modes.changeinplace
@@ -142,10 +143,10 @@ def changeinplace(doc):
 commands.changeinplace = changeinplace
 
 
-changebefore = compose(emptybefore, changeinplace, name='changebefore')
+changebefore = compose(commands.emptybefore, changeinplace)
 commands.changebefore = changebefore
 
-changeafter = compose(emptyafter, changeinplace, name='changeafter')
+changeafter = compose(commands.emptyafter, changeinplace)
 commands.changeafter = changeafter
 
 
@@ -223,24 +224,25 @@ def init_changearound(doc):
     doc.modes.changearound = ChangeAround(doc)
 Document.OnModeInit.add(init_changearound)
 
+
 def changearound(doc):
     return doc.modes.changearound
 commands.changearound = changearound
 
 
-openlineafter = compose(commands.selectfullline, selectindent, copy,
-                        selectnextfullline, Append('\n'), selectpreviouschar, emptybefore,
-                        paste_before, clear, changeafter, name='openlineafter',
+openlineafter = compose(commands.selectfullline, commands.selectindent, copy,
+                        commands.selectnextfullline, Append('\n'),
+                        commands.selectpreviouschar, commands.emptybefore,
+                        paste_before, clear, changeafter,
                         docs='Open a line after interval')
 commands.openlineafter = openlineafter
 
-openlinebefore = compose(commands.selectfullline, selectindent, copy,
-                         selectnextfullline, Insert('\n'), selectnextchar, emptybefore,
-                         paste_before, clear, changeafter, name='openlinebefore',
+openlinebefore = compose(commands.selectfullline, commands.selectindent, copy,
+                         commands.selectnextfullline, Insert('\n'),
+                         commands.selectnextchar, commands.emptybefore,
+                         paste_before, clear, changeafter,
                          docs='Open a line before interval')
 commands.openlinebefore = openlinebefore
 
-cutchange = compose(cut, changeinplace,
-                    name='cutchange', docs='Copy and change selected text.')
+cutchange = compose(cut, changeinplace, docs='Copy and change selected text.')
 commands.cutchange = cutchange
-

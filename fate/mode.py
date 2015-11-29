@@ -60,7 +60,7 @@ class Mode(ABC):
         If there is another mode pending, stop it.
         Then put self in the mode field of the document.
         """
-        if not doc == self.doc:
+        if not doc is self.doc:
             raise ValueError(
                 'The passed document is not the same as the member document.')
 
@@ -74,7 +74,7 @@ class Mode(ABC):
         Must be called to stop the mode.
         Put the documents normalmode in the mode field and execute possible callback.
         """
-        if not doc == self.doc:
+        if not doc is self.doc:
             raise ValueError(
                 'The passed document is not the same as the member document.')
 
@@ -90,7 +90,7 @@ class Mode(ABC):
         Tries to process the given input.
         Returns True if succeeded, False otherwise.
         """
-        if not doc == self.doc:
+        if not doc is self.doc:
             raise ValueError(
                 'The passed document is not the same as the member document.')
 

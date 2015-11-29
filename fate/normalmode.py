@@ -94,7 +94,6 @@ default_keymap = {
 }
 
 
-
 class NormalMode(Mode):
 
     """Docstring for NormalMode. """
@@ -105,7 +104,7 @@ class NormalMode(Mode):
 
     def start(self, doc, callback=None):
         """Must be called to start the mode."""
-        if not doc == self.doc:
+        if not doc is self.doc:
             raise ValueError(
                 'The passed document is not the same as the member document.')
         if callback:
@@ -144,4 +143,3 @@ Document.OnModeInit.add(init_normalmode)
 def normalmode(doc):
     return doc.modes.normalmode
 commands.normalmode = normalmode
-

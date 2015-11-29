@@ -5,7 +5,6 @@ from logging import info
 from ..operation import Operation
 from ..document import Document
 from .. import commands
-from ..commands import selectall
 from ..selection import Selection, Interval
 
 # Dependencies
@@ -33,7 +32,7 @@ def formattext(doc):
 
         # Replace text with formatted text
         oldselection = doc.selection
-        selectall(doc)
+        commands.selectall(doc)
         operation = Operation(doc, newcontent=[newtext])
         operation(doc)
         doc.selection = oldselection.bound(0, len(newtext))

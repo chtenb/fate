@@ -107,6 +107,7 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
+- Make fate on crash save a recovery file to prevent dataloss.
 - Make sure the view updates fast enough to be in sync with userinterface.viewportoffset and
   viewportsize.
 - Implement repeat
@@ -118,6 +119,7 @@ SHORT TERM
   - Things like completion need to be disabled for this to speed up starting fate
 
 MIDDLE TERM
+- Make sphinx documentation up to date.
 - Different forms of wrapping left/right + word/character?
 - Tests for selectors.
 - Make labeling generation asynchronous

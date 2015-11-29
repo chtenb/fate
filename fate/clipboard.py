@@ -90,6 +90,6 @@ def clear(document):
 commands.clear = clear
 
 
-cut = compose(copy, delete, name='cut', docs='Copy and delete selected text.')
+cut = compose(copy, delete, docs='Copy and delete selected text.')
 commands.cut = cut
 

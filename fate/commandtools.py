@@ -55,15 +55,11 @@ class Undoable:
 # processed. If you need to switch between behaviours of certain commands (like head/tail
 # selection) you should toggle a bool somewhere.
 
-# TODO: Modes in nested compositions are not recognized as modes,
-# so the toplevel Compound will just continue.
-# Solution: make compounds take a callback function, and let it treat compounds
-# in the same manner as modes.
-def compose(*subcommands, name, docs=''):
+def compose(*subcommands, docs=''):
     """
     In order to be able to conveniently chain commands, we provide a
     function that composes a sequence of commands into a single command.
-    The undoable subcommands should be undoable as a whole.
+    The undoable subcommands will be undoable as a whole.
     """
     # We need to define a new class for each composition
     # This is because compounds have state, so each execution is in fact a creation of a
@@ -109,6 +105,5 @@ def compose(*subcommands, name, docs=''):
             if self.callback:
                 self.callback(doc)
 
-    Compound.__name__ = name
     Compound.__docs__ = docs
     return Compound

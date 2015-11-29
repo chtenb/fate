@@ -5,14 +5,54 @@ This makes sure that all code that depends on these won't have to import them ma
 
 # Initialize logger
 from . import log
-from logging import info
+from logging import info, debug
 
 
 info('Starting fate.')
 
+
+class CommandsSingleton:
+    """
+    This is a singleton which should contain all commands that are available to the user.
+    A completion engine can use this to compute completions.
+
+    The goal of a text editor is to make modifications to a text.
+    More generally, the user should also be able to modify things other
+    than text, such as options or other meta stuff.
+    We store all relevant data for editing a text in a single object,
+    and call this object a document.
+
+    To make modifications to a document, we define commands.
+    An command is callable object that can make a modification to a document.
+    An command must therefore accept a document as first argument, which must also be
+    the only required argument.
+
+    Commands must be stateless, that is why they be be shared among documents.
+    Commands have their name automatically available via __name__ after they are added
+    to this singleton.
+
+    In many cases it is useful to create commands on the fly.
+    Callable objects that create and return commands are called 'command constructors'.
+    A special type of command constructors are those that require a document as argument.
+    Let us call these 'actors'.
+    It is a convention whenever commands are executed and the returned result
+    is callable, it is treated like a command and called recursively.
+    """
+
+    def __set__(self, instance, value):
+        raise ValueError("""Trying to assign to static singleton commands.""")
+
+    def __setattr__(self, name, command):
+        if not callable(command):
+            raise ValueError("""A command must be callable.""")
+        command.__name__ = name
+        object.__setattr__(self, name, command)
+
+commands = CommandsSingleton()
+
+
 # Load modules exposing commands, to make sure the commands module contains all core
 # commands
-from . import commands
 from . import (clipboard, commandmode, commandtools, completer, document, filecommands,
                insertoperations, operators, repeat, search, selecting,
                undotree, pointer, prompt)
@@ -62,3 +102,4 @@ def run():
         doc.ui.touch()
         userinput = doc.ui.getinput()
         doc.processinput(userinput)
+

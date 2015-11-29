@@ -10,7 +10,7 @@ from ..errorchecking import checkerrors
 from ..formatting import formattext
 
 # All keys that can be entered by the user simulator
-key_space = list(
+key_list = list(
     """
     1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM
     `-=[]\\;',./~_+{}|:"<>?
@@ -19,20 +19,28 @@ key_space = list(
     """
 ) + 30 * [Document.cancelkey] + ['up', 'down', 'left', 'right']
 
-command_space = publics(commands)
-forbidden_commands = [open_file, quit_document, force_quit, quit_all, formattext, checkerrors]
+command_dict = publics(commands)
+forbidden_commands = [open_file, quit_document, force_quit, quit_all, formattext,
+                      checkerrors]
 for c in forbidden_commands:
-    command_space.pop(c.__name__)
+    command_dict.pop(c.__name__)
 
-# We have to use the name for sorting, if possible, to make sure the sorting is unique
-def name_or_str(command):
-    return command.__name__ if hasattr(command, '__name__') else str(command)
+command_list = list(command_dict.values())
 
-compound_input_space = list(command_space.values()) + key_space
 # Sorting is needed to be able to reproduce a seeded random test case
-compound_input_space.sort(key=name_or_str)
+# We have to use the name for sorting, to make sure the sorting is unique
+# Verify that the sorting will be unique
+command_space_identifiers = {x.__name__ for x in command_list}
+assert len(command_space_identifiers) == len(command_list)
 
-# print('Inputspace = ' + str(compound_input_space))
+
+def command_name(command):
+    return command.__name__
+
+command_list.sort(key=command_name)
+
+compound_input_space = command_list + key_list
+
 
 class RandomizedUserSimulator(UserInterfaceAPI):
 
@@ -84,12 +92,20 @@ class RandomizedUserSimulator(UserInterfaceAPI):
             mode = self.doc.mode
             # Save the input_space for each mode, to speed things up
             if not hasattr(mode, 'input_space'):
-                input_space = [Document.cancelkey]
-                input_space = mode.allowedcommands
-                input_space.extend(mode.keymap.values())
+                command_space = [c for c in mode.allowedcommands
+                                 if not c in forbidden_commands]
 
-                input_space = [x for x in input_space if not x in forbidden_commands]
-                input_space.sort(key=name_or_str)
+                # Verify that the sorting will be unique
+                command_space_identifiers = {command_name(x) for x in command_space}
+                assert len(command_space_identifiers) == len(command_space)
+
+                command_space.sort(key=command_name)
+
+                key_space = [Document.cancelkey]
+                key_space += [k for k in mode.keymap.keys()
+                              if not mode.keymap[k] in forbidden_commands]
+
+                input_space = command_space + key_space
                 mode.input_space = input_space
             else:
                 input_space = mode.input_space

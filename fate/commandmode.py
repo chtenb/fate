@@ -10,7 +10,7 @@ commands.commandmode = command_mode
 
 def publics(obj):
     """Return all objects in __dict__ not starting with '_' as a dict"""
-    return dict((name, obj) for name, obj in vars(obj).items() if not name.startswith('_'))
+    return {name: obj for name, obj in vars(obj).items() if not name.startswith('_')}
 
 
 def get_scope(document):

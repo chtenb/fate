@@ -39,7 +39,7 @@ def execute_search(doc):
             command(doc)
         except re.error as e:
             doc.ui.notify(str(e))
-commands.search = compose(ask_search_string, execute_search, name='search')
+commands.search = compose(ask_search_string, execute_search)
 
 
 def search_current_content(doc):
