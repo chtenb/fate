@@ -4,7 +4,7 @@ This module contains functionality for navigation/browsing through text without 
 from . import commands
 from logging import debug
 
-from covenant import pre, post
+from .contract import pre, post
 
 
 def movehalfpagedown(doc):
@@ -57,10 +57,31 @@ def count_newlines(text, interval):
     return text.count('\n', beg, end)
 
 
-@post(lambda r, text, max_line_width, start, n:
-      count_newlines(text, (r, start)) <= n)
+def move_n_wrapped_lines_up_pre(text, max_line_width, start, n):
+    assert max_line_width > 0
+    assert 0 <= start < len(text)
+    assert n >= 0
+
+def move_n_wrapped_lines_up_post(result, text, max_line_width, start, n):
+    nr_eols = count_newlines(text, (result, start))
+    assert nr_eols <= n
+    assert result == 0 or nr_eols == n
+
+@pre(move_n_wrapped_lines_up_pre)
+@post(move_n_wrapped_lines_up_post)
 def move_n_wrapped_lines_up(text, max_line_width, start, n):
-    """Return position that is n lines above start."""
+    """
+    Return the first position in the line which ends with the nth
+    wrapped end-of-line counting back from start (exclusive).
+
+    In other words, return position right after the (n+1)th wrapped end-of-line,
+    counting back from position start (exclusive).
+    If there are less than n+1 wrapped end-of-lines before start, return 0.
+
+    The reason that we do not return the position of the wrapped end-of-line itself,
+    is because the virtual eols that emerge from the wrapping do not correspond to
+    a character in the text and thus do not have a position.
+    """
     position = start
     while 1:
         # Note that for rfind, the end parameter is exclusive
@@ -73,69 +94,18 @@ def move_n_wrapped_lines_up(text, max_line_width, start, n):
         position = previousline
 
 
-# PATTERN 1
+def move_n_wrapped_lines_down_pre(text, max_line_width, start, n):
+    assert max_line_width > 0
+    assert 0 <= start < len(text)
+    assert n >= 0
 
-# def condition_gen(pre_func):
-    # def wrapper(*args, **kwargs):
-        # conditions = pre_func(*args, **kwargs)
-        # return all(conditions)
-    # return wrapper
+def move_n_wrapped_lines_down_post(result, text, max_line_width, start, n):
+    nr_eols = count_newlines(text, (start, result))
+    assert nr_eols <= n
+    assert result == len(text) or nr_eols == n
 
-# @condition_gen
-# def move_n_wrapped_lines_down_pre(text, max_line_width, start, n):
-    # yield max_line_width > 0
-    # yield 0 <= start < len(text)
-    # yield n >= 0
-
-# @condition_gen
-# def move_n_wrapped_lines_down_post(r, text, max_line_width, start, n):
-    # yield count_newlines(text, (start, r)) <= n
-    # yield r == len(text) - 1 or count_newlines(text, (r, start)) == n
-
-# @pre(move_n_wrapped_lines_down_pre)
-# @post(move_n_wrapped_lines_down_post)
-
-# PATTERN 2
-
-# def move_n_wrapped_lines_down_pre(text, max_line_width, start, n):
-    # conditions = []
-    # conditions.append(max_line_width > 0)
-    # conditions.append(0 <= start < len(text))
-    # conditions.append(n >= 0)
-    # return all(conditions)
-
-# def move_n_wrapped_lines_down_post(r, text, max_line_width, start, n):
-    # conditions = []
-    # conditions.append(count_newlines(text, (start, r)) <= n)
-    # conditions.append(r == len(text) - 1 or count_newlines(text, (r, start)) == n)
-    # return all(conditions)
-
-# @pre(move_n_wrapped_lines_down_pre)
-# @post(move_n_wrapped_lines_down_post)
-
-# PATTERN 3
-
-# @pre(lambda text, max_line_width, start, n:
-     # max_line_width > 0)
-# @pre(lambda text, max_line_width, start, n:
-     # 0 <= start < len(text))
-# @pre(lambda text, max_line_width, start, n:
-     # n >= 0)
-# @post(lambda r, text, max_line_width, start, n:
-      # count_newlines(text, (start, r)) <= n)
-# @post(lambda r, text, max_line_width, start, n:
-      # r == len(text) - 1 or count_newlines(text, (r, start)) == n)
-
-# PATTERN 4
-
-@pre(lambda text, max_line_width, start, n:
-     max_line_width > 0
-     and 0 <= start < len(text)
-     and n >= 0)
-@post(lambda r, text, max_line_width, start, n:
-      count_newlines(text, (start, r)) <= n
-      and r == len(text) - 1 or count_newlines(text, (r, start)) == n)
-
+@pre(move_n_wrapped_lines_down_pre)
+@post(move_n_wrapped_lines_down_post)
 def move_n_wrapped_lines_down(text: str, max_line_width: int, start: int, n: int):
     """
     Return position right after the nth wrapped end-of-line,
@@ -150,11 +120,11 @@ def move_n_wrapped_lines_down(text: str, max_line_width: int, start: int, n: int
     a character in the text and thus do not have a position.
     """
     position = start
-    l = len(text) - 1
+    eof = len(text)
     while 1:
         eol = text.find('\n', position)
-        if eol == -1 or eol == l:
-            return l
+        if eol == -1 or eol == eof - 1:
+            return eof
         nextline = eol + 1
         n -= int((nextline - position) / max_line_width) + 1
         if n <= 0:
