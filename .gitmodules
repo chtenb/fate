@@ -1,3 +1,0 @@
-[submodule "fate/ycm/ycmd"]
-	path = fate/ycm/ycmd
-	url = https://github.com/Valloric/ycmd
