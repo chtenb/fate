@@ -1,0 +1,3 @@
+[submodule "libs/covenant"]
+	path = libs/covenant
+	url = https://github.com/Chiel92/covenant

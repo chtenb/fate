@@ -4,6 +4,8 @@ This module contains functionality for navigation/browsing through text without 
 from . import commands
 from logging import debug
 
+from covenant import pre, post
+
 
 def movehalfpagedown(doc):
     """Move half a page down."""
@@ -50,6 +52,13 @@ def center_around_selection(doc):
     doc.ui.viewport_offset = nr_lines
 
 
+def count_newlines(text, interval):
+    beg, end = interval
+    return text.count('\n', beg, end)
+
+
+@post(lambda r, text, max_line_width, start, n:
+      count_newlines(text, (r, start)) <= n)
 def move_n_wrapped_lines_up(text, max_line_width, start, n):
     """Return position that is n lines above start."""
     position = start
@@ -64,8 +73,82 @@ def move_n_wrapped_lines_up(text, max_line_width, start, n):
         position = previousline
 
 
-def move_n_wrapped_lines_down(text, max_line_width, start, n):
-    """Return position that is n lines below start."""
+# PATTERN 1
+
+# def condition_gen(pre_func):
+    # def wrapper(*args, **kwargs):
+        # conditions = pre_func(*args, **kwargs)
+        # return all(conditions)
+    # return wrapper
+
+# @condition_gen
+# def move_n_wrapped_lines_down_pre(text, max_line_width, start, n):
+    # yield max_line_width > 0
+    # yield 0 <= start < len(text)
+    # yield n >= 0
+
+# @condition_gen
+# def move_n_wrapped_lines_down_post(r, text, max_line_width, start, n):
+    # yield count_newlines(text, (start, r)) <= n
+    # yield r == len(text) - 1 or count_newlines(text, (r, start)) == n
+
+# @pre(move_n_wrapped_lines_down_pre)
+# @post(move_n_wrapped_lines_down_post)
+
+# PATTERN 2
+
+# def move_n_wrapped_lines_down_pre(text, max_line_width, start, n):
+    # conditions = []
+    # conditions.append(max_line_width > 0)
+    # conditions.append(0 <= start < len(text))
+    # conditions.append(n >= 0)
+    # return all(conditions)
+
+# def move_n_wrapped_lines_down_post(r, text, max_line_width, start, n):
+    # conditions = []
+    # conditions.append(count_newlines(text, (start, r)) <= n)
+    # conditions.append(r == len(text) - 1 or count_newlines(text, (r, start)) == n)
+    # return all(conditions)
+
+# @pre(move_n_wrapped_lines_down_pre)
+# @post(move_n_wrapped_lines_down_post)
+
+# PATTERN 3
+
+# @pre(lambda text, max_line_width, start, n:
+     # max_line_width > 0)
+# @pre(lambda text, max_line_width, start, n:
+     # 0 <= start < len(text))
+# @pre(lambda text, max_line_width, start, n:
+     # n >= 0)
+# @post(lambda r, text, max_line_width, start, n:
+      # count_newlines(text, (start, r)) <= n)
+# @post(lambda r, text, max_line_width, start, n:
+      # r == len(text) - 1 or count_newlines(text, (r, start)) == n)
+
+# PATTERN 4
+
+@pre(lambda text, max_line_width, start, n:
+     max_line_width > 0
+     and 0 <= start < len(text)
+     and n >= 0)
+@post(lambda r, text, max_line_width, start, n:
+      count_newlines(text, (start, r)) <= n
+      and r == len(text) - 1 or count_newlines(text, (r, start)) == n)
+
+def move_n_wrapped_lines_down(text: str, max_line_width: int, start: int, n: int):
+    """
+    Return position right after the nth wrapped end-of-line,
+    counting from position start (inclusive).
+    If there are less than n wrapped end-of-lines after start,
+    return the position of the eof position.
+    So if the nth wrapped end-of-line would be the an actual eol and happed to be the last
+    character in the file, return the eof position.
+
+    The reason that we do not return the position of the wrapped end-of-line itself,
+    is because the virtual eols that emerge from the wrapping do not correspond to
+    a character in the text and thus do not have a position.
+    """
     position = start
     l = len(text) - 1
     while 1:
@@ -118,10 +201,10 @@ def position_to_coord(pos, text):
     assert pos == coord_to_position(line, column, text)
     return line, column
 
+
 def is_position_visible(doc, pos):
     """Determince whether position is visible on screen."""
     beg = doc.ui.viewport_offset
     width, height = doc.ui.viewport_size
     end = move_n_wrapped_lines_down(doc.text, width, beg, height)
     return beg <= pos < end
-

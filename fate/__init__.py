@@ -7,6 +7,11 @@ This makes sure that all code that depends on these won't have to import them ma
 from . import log
 from logging import info, debug
 
+import sys, os
+covenant_path = os.path.dirname(os.path.abspath(__file__)) + '/../libs/covenant'
+sys.path.insert(0, covenant_path)
+
+import covenant
 
 info('Starting fate.')
 

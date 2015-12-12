@@ -8,6 +8,9 @@ from .selectpattern import selectfullline, selectnextfullline, selectpreviousful
 def escape(doc):
     if doc.selectmode != SelectModes.normal:
         normalselectmode(doc)
+    elif [interval for interval in doc.selection if not interval.isempty]:
+        # If selection contains non empty intervals
+        commands.emptybefore(doc)
     else:
         commands.empty(doc)
 commands.escape = escape
