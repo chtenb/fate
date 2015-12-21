@@ -1,7 +1,7 @@
-import os
 import sys
 
 import argparse
+import fate
 from fate.test import cmdargs
 
 parser = argparse.ArgumentParser()
@@ -17,8 +17,11 @@ parser.add_argument('-v', '--verbose', help='run in verbose mode',
                     action='store_true')
 parser.add_argument('-m', '--module', help='run single module',
                     action='store')
+parser.add_argument('-p', '--print-logs', help='write log messages to stdout',
+                    action='store_true')
 args = parser.parse_args()
 cmdargs.args = args
+fate.log.LOG_TO_STDOUT = args.print_logs
 
 
 from unittest import defaultTestLoader as loader, TextTestRunner

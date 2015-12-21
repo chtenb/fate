@@ -9,12 +9,15 @@ from logging import FileHandler, Handler
 
 LOG_FILENAME = gettempdir() + '/fate.log'
 RECORDS = []
+LOG_TO_STDOUT = False
 
 
 class InternalHandler(Handler):
 
     def emit(self, record):
         RECORDS.append(record)
+        if LOG_TO_STDOUT:
+            print(record.msg)
 
 
 logging.basicConfig(level=logging.DEBUG,

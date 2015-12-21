@@ -10,16 +10,17 @@ def pre(condition):
     The `condition` must be a callable that receives the same keyword arguments
     as the function it's being applied to.
     """
-    def decorator(func, *args, **kwargs):
+    def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            try:
-                check_result = condition(*args, **kwargs)
-            except AssertionError as e:
-                raise PreconditionViolationError("Precondition check failed.") from e
+            if __debug__:
+                try:
+                    check_result = condition(*args, **kwargs)
+                except AssertionError as e:
+                    raise e from PreconditionViolationError("Precondition check failed.")
 
-            if check_result != None and not check_result:
-                raise PreconditionViolationError("Precondition check failed")
+                if check_result != None and not check_result:
+                    raise PreconditionViolationError("Precondition check failed.")
 
             return func(*args, **kwargs)
         return wrapper
@@ -34,18 +35,19 @@ def post(condition):
     function it's being applied to as its first parameter, and the keyword
     arguments of the function it's applied to as its remaining parameters.
     """
-    def decorator(func, *args, **kwargs):
+    def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
 
-            try:
-                check_result = condition(result, *args, **kwargs)
-            except AssertionError as e:
-                raise PostconditionViolationError("Precondition check failed.") from e
+            if __debug__:
+                try:
+                    check_result = condition(result, *args, **kwargs)
+                except AssertionError as e:
+                    raise e from PostconditionViolationError("Postcondition check failed.")
 
-            if check_result != None and not check_result:
-                raise PostconditionViolationError("Postcondition check failed")
+                if check_result != None and not check_result:
+                    raise PostconditionViolationError("Postcondition check failed.")
 
             return result
         return wrapper
