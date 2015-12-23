@@ -8,6 +8,8 @@ eowl: end-of-wrapped-line (last character in the wrapped line)
 bowl: beginning-of-wrapped-line (first character in the wrapped line)
 eof: end-of-file (last character in the file)
 bof: beginning-of-file, i.e. 0
+
+It is important to note that a line ending is always counted in the line it ends.
 """
 from . import commands
 from logging import debug
@@ -52,23 +54,23 @@ commands.movepageup = movepageup
 
 
 def is_position_visible(doc, pos):
-    """Determince whether position is visible on screen."""
+    """Determine whether position is visible on screen."""
     beg = doc.ui.viewport_offset
     width, height = doc.ui.viewport_size
     end = move_n_wrapped_lines_down(doc.text, width, beg, height)
+    debug("{} <= {} < {}".format(beg, pos, end))
     return beg <= pos < end
 
 
 def center_around_selection(doc):
     """Center offset around last interval of selection."""
     width, height = doc.ui.viewport_size
-    debug('Viewport height: {}, {}'.format(height, doc.selection[-1][1]))
+    pos = doc.selection[-1][1]
+    center = max(0, min(pos, len(doc.text) - 1))
+    debug('Viewport height: {}, center: {}'.format(height, center))
 
-    end = max(0, min(doc.selection[-1][1], len(doc.text) - 1))
-    target = height // 2
-
-    nr_lines = move_n_wrapped_lines_up(doc.text, width, end, target)
-    doc.ui.viewport_offset = nr_lines
+    offset = move_n_wrapped_lines_up(doc.text, width, center, height // 2)
+    doc.ui.viewport_offset = offset
 
 
 #

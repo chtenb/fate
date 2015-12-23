@@ -131,7 +131,8 @@ class Document:
         self._selection = value
 
         # Update the userinterface viewport to center around first interval
-        if not is_position_visible(self, self._selection[-1][1]):
+        if (not is_position_visible(self, self._selection[-1][1])
+                or not is_position_visible(self, self._selection[-1][0])):
             center_around_selection(self)
         self.OnSelectionChange.fire(self)
 
