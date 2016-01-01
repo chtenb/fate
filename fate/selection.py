@@ -12,6 +12,9 @@ class Interval:
     def __getitem__(self, index):
         return (self.beg, self.end)[index]
 
+    def __contains__(self, pos):
+        return self.beg <= pos < self.end
+
     def __str__(self):
         return '({},{})'.format(self.beg, self.end)
 

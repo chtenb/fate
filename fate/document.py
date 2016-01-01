@@ -128,13 +128,16 @@ class Document:
         if not isinstance(value, Selection):
             raise ValueError('Object {} is not an instance of Selection'.format(value))
         value.validate(self)
+        old = self._selection
         self._selection = value
 
-        # Update the userinterface viewport to center around first interval
-        if (not is_position_visible(self, self._selection[-1][1])
-                or not is_position_visible(self, self._selection[-1][0])):
+        self.OnSelectionChange.fire(self, old, value)
+
+        # Update the userinterface viewport to center around first interval if view
+        # selection is empty. This has to be done after the view selection has been
+        # updated.
+        if self.view.selection.isempty:
             center_around_selection(self)
-        self.OnSelectionChange.fire(self)
 
     def processinput(self, userinput):
         """This method is called when this document receives userinput."""

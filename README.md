@@ -118,10 +118,15 @@ SHORT TERM
   - Things like completion need to be disabled for this to speed up starting fate
 - Make sure the view updates fast enough to be in sync with userinterface.viewportoffset and
   viewportsize. If this is not the case, implement a viewbuffer, which is just a
-  larger version of the normal view.
+  larger version of the normal view. Alternatively, always generate the entire viewtext or
+  compute concealed from text on demand.
 
 MIDDLE TERM
 - Make fate on crash save a recovery file to prevent dataloss.
+- Create an options namespace.
+  - To separate variables that can be arbitrarily configured by the user from variables that
+    are simply part of the document state and should not be corrupted.
+  - To allow for automated testing with arbitrary configurations.
 - Make sphinx documentation up to date.
 - Different forms of wrapping left/right + word/character?
 - Tests for selectors.

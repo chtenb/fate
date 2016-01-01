@@ -19,6 +19,7 @@ from .contract import pre, post
 
 def movehalfpagedown(doc):
     """Move half a page down."""
+    # TODO: this doesn't count with viewtext
     width, height = doc.ui.viewport_size
     offset = doc.ui.viewport_offset
     new_offset = move_n_wrapped_lines_down(doc.text, width, offset, height // 2)
@@ -28,6 +29,7 @@ commands.movehalfpagedown = movehalfpagedown
 
 def movehalfpageup(doc):
     """Move half a page down."""
+    # TODO: this doesn't count with viewtext
     width, height = doc.ui.viewport_size
     offset = doc.ui.viewport_offset
     new_offset = move_n_wrapped_lines_up(doc.text, width, offset, height // 2)
@@ -37,6 +39,7 @@ commands.movehalfpageup = movehalfpageup
 
 def movepagedown(doc):
     """Move a page down."""
+    # TODO: this doesn't count with viewtext
     width, height = doc.ui.viewport_size
     offset = doc.ui.viewport_offset
     new_offset = move_n_wrapped_lines_down(doc.text, width, offset, height)
@@ -46,6 +49,7 @@ commands.movepagedown = movepagedown
 
 def movepageup(doc):
     """Move a page up."""
+    # TODO: this doesn't count with viewtext
     width, height = doc.ui.viewport_size
     offset = doc.ui.viewport_offset
     new_offset = move_n_wrapped_lines_up(doc.text, width, offset, height)
@@ -54,22 +58,22 @@ commands.movepageup = movepageup
 
 
 def is_position_visible(doc, pos):
-    """Determine whether position is visible on screen."""
-    beg = doc.ui.viewport_offset
-    width, height = doc.ui.viewport_size
-    end = move_n_wrapped_lines_down(doc.text, width, beg, height)
-    debug("{} <= {} < {}".format(beg, pos, end))
-    return beg <= pos < end
+    """
+    Determine whether position is visible on screen.
+    Uses doc.ui.viewport properties and doc.view to determine answer.
+    """
+    return pos in doc.view.visible_interval
 
 
 def center_around_selection(doc):
     """Center offset around last interval of selection."""
+    # TODO: this doesn't count with viewtext
     width, height = doc.ui.viewport_size
     pos = doc.selection[-1][1]
     center = max(0, min(pos, len(doc.text) - 1))
     debug('Viewport height: {}, center: {}'.format(height, center))
 
-    offset = move_n_wrapped_lines_up(doc.text, width, center, height // 2)
+    offset = move_n_wrapped_lines_up(doc.view.text, width, center, height // 2)
     doc.ui.viewport_offset = offset
 
 

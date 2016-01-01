@@ -97,7 +97,6 @@ def run():
     """Main input loop for fate."""
     while document.activedocument != None:
         doc = document.activedocument
-        doc.view.refresh()
         doc.ui.touch()
         userinput = doc.ui.getinput()
         doc.processinput(userinput)

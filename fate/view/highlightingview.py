@@ -1,4 +1,5 @@
 from logging import debug
+from ..document import Document
 
 def refresh_highlightingview(doc):
     # Construct highlighting view
@@ -12,3 +13,6 @@ def refresh_highlightingview(doc):
     doc.view.highlighting = highlightingview
     # debug(highlightingview)
 
+def init_refresh_highlightingview(doc):
+    doc.OnTextChanged.add(refresh_highlightingview)
+Document.OnDocumentInit.add(init_refresh_highlightingview)

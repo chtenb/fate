@@ -1,7 +1,8 @@
+from logging import debug
+
 from ..document import Document
 from ..event import Event
 
-from logging import debug
 
 # Dependencies
 from .. import filetype
@@ -12,7 +13,7 @@ def init_view(doc):
     doc.view = View(doc)
 
     # Refresh at least once to ensure a valid state
-    # Other refreshes must be done by the userinterface
+    # Other refreshes must be done when necessary
     doc.OnDocumentInit.add_for_once(doc.view.refresh)
 
 Document.OnDocumentInit.add(init_view)

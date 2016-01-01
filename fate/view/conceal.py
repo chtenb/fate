@@ -1,9 +1,17 @@
+"""
+A concealment allows to replace parts of the text for purposes of improving the view.
+Global concealments are concealments that need context, e.g. strings.
+Local conceal do not, like plain string replacements, or simple locally checkable
+regular expressions.
+"""
+from bisect import bisect_left
+from logging import debug
+
 from ..document import Document
 from ..event import Event
 from ..selection import Interval
+from ..navigation import move_n_wrapped_lines_down
 
-from bisect import bisect_left
-from logging import debug
 
 
 def init_conceal(doc):
@@ -14,6 +22,7 @@ def init_conceal(doc):
 
     doc.OnTextChanged.add(doc.view.conceal.generate_global_substitutions)
 
+    # Example concealment that does not need any context
     doc.OnGenerateLocalConceal.add(conceal_tabs)
 
     # Examples
@@ -76,7 +85,8 @@ class Conceal:
         vpos = 0  # Current position in view text, i.e. length of text builded so far
         opos = viewport_offset  # Current position in original text
         vpos_to_opos = []  # Mapping from view positions to original positions
-        opos_to_vpos = []  # Mapping from original positions (minus offset) to view positions
+        # Mapping from original positions (minus offset) to view positions
+        opos_to_vpos = []
         text = self.doc.text
 
         subst_index = 0
@@ -96,7 +106,8 @@ class Conceal:
 
             # Add non-concealed text
             if sbeg > opos:
-                length = min(sbeg - opos, max_length - vpos)  # Bound viewtext by max_length
+                # Bound viewtext by max_length
+                length = min(sbeg - opos, max_length - vpos)
                 vpos_to_opos.extend(range(opos, opos + length))
                 opos_to_vpos.extend(range(vpos, vpos + length))
                 textview_builder.append(text[opos:opos + length])
@@ -113,23 +124,24 @@ class Conceal:
                 opos += olength
                 subst_index += 1
 
-
         # Extend mappings to allow (exclusive) interval ends to be mapped
         vpos_to_opos.append(opos + 1)
         opos_to_vpos.append(vpos + 1)
 
-        textview_length = vpos
         textview = ''.join(textview_builder)
-        assert len(textview) == textview_length
 
         self.doc.view.text = textview
-        self.doc.view.text_length = textview_length
+        visible_text_length = move_n_wrapped_lines_down(textview, width, 0, height)
+        self.doc.view.visible_text_length = visible_text_length
         self.doc.view.vpos_to_opos = vpos_to_opos
         self.doc.view.opos_to_vpos = opos_to_vpos
+        self.doc.view.visible_interval = Interval(doc.ui.viewport_offset,
+                                                  doc.ui.viewport_offset
+                                                  + doc.view.visible_text_length)
 
-        #debug(vpos_to_opos)
-        #debug(opos_to_vpos)
-        assert len(vpos_to_opos) >= textview_length
+        # debug(vpos_to_opos)
+        # debug(opos_to_vpos)
+        assert len(vpos_to_opos) >= visible_text_length
         assert len(opos_to_vpos) >= viewport_offset - opos
 
 
