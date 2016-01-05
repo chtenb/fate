@@ -136,8 +136,9 @@ class Document:
         # Update the userinterface viewport to center around first interval if view
         # selection is empty. This has to be done after the view selection has been
         # updated.
-        if self.view.selection.isempty:
-            center_around_selection(self)
+        # FIXME
+        # if ?:
+            # center_around_selection(self)
 
     def processinput(self, userinput):
         """This method is called when this document receives userinput."""

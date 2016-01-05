@@ -62,7 +62,7 @@ def is_position_visible(doc, pos):
     Determine whether position is visible on screen.
     Uses doc.ui.viewport properties and doc.view to determine answer.
     """
-    return pos in doc.view.visible_interval
+    return NotImplemented
 
 
 def center_around_selection(doc):
@@ -73,7 +73,7 @@ def center_around_selection(doc):
     center = max(0, min(pos, len(doc.text) - 1))
     debug('Viewport height: {}, center: {}'.format(height, center))
 
-    offset = move_n_wrapped_lines_up(doc.view.text, width, center, height // 2)
+    offset = move_n_wrapped_lines_up(doc.text, width, center, height // 2)
     doc.ui.viewport_offset = offset
 
 

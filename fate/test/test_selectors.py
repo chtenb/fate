@@ -7,12 +7,12 @@ class SelectorTest(BaseTestCase):
         BaseTestCase.setUp(self)
 
     def test_selectall(self):
-        commands.selectall(self.document)
-        expected = Selection([Interval(0, len(self.document.text))])
-        self.assertEqual(expected, self.document.selection)
+        commands.selectall(self.doc)
+        expected = Selection([Interval(0, len(self.doc.text))])
+        self.assertEqual(expected, self.doc.selection)
 
     def test_next_word(self):
-        commands.selectnextword(self.document)
+        commands.selectnextword(self.doc)
         expected = Selection([Interval(0, 6)])
-        self.assertEqual(expected, self.document.selection)
+        self.assertEqual(expected, self.doc.selection)
 

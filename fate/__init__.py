@@ -61,7 +61,10 @@ from . import formatting
 from . import errorchecking
 from . import highlighting
 from . import filetype
-from . import view
+
+# Load view functionality
+from . import conceal, textview
+
 
 from . import normalmode
 

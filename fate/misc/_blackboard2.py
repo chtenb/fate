@@ -114,7 +114,7 @@ which is called with the userinput.
 class SetFileName:
 
     def __init__(self, document):
-        self.document = document
+        self.doc = document
         document.mode = self
         self.filename = ''
 
@@ -126,7 +126,7 @@ class SetFileName:
             if key == 'Esc':
                 return
             elif key == '\n':
-                self.document.filename = filename
+                self.doc.filename = filename
                 return
             elif key == '\b':
                 filename = filename[:-1]
