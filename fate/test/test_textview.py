@@ -8,5 +8,11 @@ class TestTextView(BaseTestCase):
         BaseTestCase.setUp(self)
 
     def test_creation(self):
-        textview = TextView(self.doc, 0, 10)
+        text='\n\n\n\n\n'
+        self.doc.text = text
+        textview = TextView(self.doc, 10, 10)
+        print(textview.text)
+        print('\n'.join(textview.text_as_lines()))
+        print(textview.selection)
+        print(textview.highlighting)
 

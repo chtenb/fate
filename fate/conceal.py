@@ -63,6 +63,7 @@ class Conceal:
         self.doc.OnGenerateGlobalConceal.fire(self.doc)
         self.global_substitutions.sort()
 
+
 def conceal_tabs(doc, start_pos, max_length):
     for i in range(start_pos, start_pos + max_length):
         if i >= len(doc.text):

@@ -10,9 +10,11 @@ eof: end-of-file (last character in the file)
 bof: beginning-of-file, i.e. 0
 
 It is important to note that a line ending is always counted in the line it ends.
+Newline character are really thought of as end-of-line characters.
 """
-from . import commands
+from math import ceil
 from logging import debug
+from . import commands
 
 from .contract import pre, post
 
@@ -82,38 +84,46 @@ def center_around_selection(doc):
 #
 
 
+def count_wrapped_lines(text, max_width, interval=None):
+    if interval:
+        beg, end = interval
+        text = text[beg:end]
+    return sum(ceil(max(1, len(line)) / max_width) for line in text.splitlines())
+
+
 def count_newlines(text, interval):
     beg, end = interval
     return text.count('\n', beg, end)
 
 
-def beg_of_wrapped_line(text, wrapped_line_length, pos):
+def beg_of_wrapped_line(text, max_width, pos):
     """
     Return the beginning of the wrapped line that pos is in.
     """
     previous_eol = text.rfind('\n', 0, pos)
     bol = previous_eol + 1
-    nr_wrapped_lines_before = (pos - bol) // wrapped_line_length
-    bowl = bol + nr_wrapped_lines_before * wrapped_line_length
+    nr_wrapped_lines_before = (pos - bol) // max_width
+    bowl = bol + nr_wrapped_lines_before * max_width
     assert count_newlines(text, (bol, bowl)) == 0
     return bowl
 
 
-def move_n_wrapped_lines_up_pre(text, wrapped_line_length, start, n):
-    assert wrapped_line_length > 0
+def move_n_wrapped_lines_up_pre(text, max_width, start, n):
+    assert max_width > 0
     assert 0 <= start < len(text)
     assert n >= 0
 
 
-def move_n_wrapped_lines_up_post(result, text, wrapped_line_length, start, n):
-    assert start - result <= n * wrapped_line_length + wrapped_line_length
+def move_n_wrapped_lines_up_post(result, text, max_width, start, n):
+    assert start - result <= n * max_width + max_width
     assert count_newlines(text, (result, start)) <= n
+    assert count_wrapped_lines(text, max_width, (result, start)) <= n + 1
     assert 0 <= result <= len(text)
 
 
 @pre(move_n_wrapped_lines_up_pre)
 @post(move_n_wrapped_lines_up_post)
-def move_n_wrapped_lines_up(text: str, wrapped_line_length: int, start: int, n: int):
+def move_n_wrapped_lines_up(text: str, max_width: int, start: int, n: int):
     """
     Return the first position in the line which ends with the nth
     wrapped end-of-line counting back from start (exclusive).
@@ -126,53 +136,55 @@ def move_n_wrapped_lines_up(text: str, wrapped_line_length: int, start: int, n: 
     is because the virtual end-of-lines that emerge from the wrapping do not correspond to
     a character in the text and thus do not have a position.
 
-    W.r.t. the wrapped_line_length we count an eol as a character belonging to the line it
+    W.r.t. the max_width we count an eol as a character belonging to the line it
     ends.
 
     Raises AssertionException if preconditions do not hold.
     Should not raise other exceptions.
     """
     # We want to start a the beginning of the current wrapped line that start is in
-    bowl = beg_of_wrapped_line(text, wrapped_line_length, start)
+    bowl = beg_of_wrapped_line(text, max_width, start)
     while n > 0 and bowl > 0:
-        bowl = beg_of_wrapped_line(text, wrapped_line_length, bowl - 1)
+        bowl = beg_of_wrapped_line(text, max_width, bowl - 1)
         n -= 1
 
     return bowl
 
-def end_of_wrapped_line(text, wrapped_line_length, pos):
+def end_of_wrapped_line(text, max_width, pos):
     """
     Return the end of the wrapped line that pos is in.
     An eol is counted in the line it ends, so if pos is an eol, the eol is returned.
     """
-    bowl = beg_of_wrapped_line(text, wrapped_line_length, pos)
+    bowl = beg_of_wrapped_line(text, max_width, pos)
     eol = text.find('\n', pos)
     if eol == -1:
         eol = len(text) - 1
 
     remaining_line_length = eol - bowl + 1 # eol inclusive
-    if remaining_line_length > wrapped_line_length:
-        return bowl + wrapped_line_length - 1 # Don't count bowl twice
+    if remaining_line_length > max_width:
+        return bowl + max_width - 1 # Don't count bowl twice
     else:
         return eol
 
-def move_n_wrapped_lines_down_pre(text, wrapped_line_length, start, n):
-    assert wrapped_line_length > 0
+def move_n_wrapped_lines_down_pre(text, max_width, start, n):
+    assert max_width > 0
     assert 0 <= start < len(text)
     assert n >= 0
 
 
-def move_n_wrapped_lines_down_post(result, text, wrapped_line_length, start, n):
-    assert result - start <= n * wrapped_line_length
+def move_n_wrapped_lines_down_post(result, text, max_width, start, n):
+    assert result - start <= n * max_width
     assert count_newlines(text, (start, result)) <= n
+    assert count_wrapped_lines(text, max_width, (start, result)) <= n + 1
     assert 0 <= result <= len(text)
 
 
 @pre(move_n_wrapped_lines_down_pre)
 @post(move_n_wrapped_lines_down_post)
-def move_n_wrapped_lines_down(text: str, wrapped_line_length: int, start: int, n: int):
+def move_n_wrapped_lines_down(text: str, max_width: int, start: int, n: int):
     """
     Return position right after the nth wrapped end-of-line,
+    i.e. the first position of the (n+1)th wrapped line,
     counting from position start (inclusive).
     If there are less than n wrapped end-of-lines after start,
     or there are no characters after the nth end-of-line,
@@ -182,20 +194,20 @@ def move_n_wrapped_lines_down(text: str, wrapped_line_length: int, start: int, n
     is because the virtual end-of-lines that emerge from the wrapping do not correspond to
     a character in the text and thus do not have a position.
 
-    W.r.t. the wrapped_line_length we count an eol as a character belonging to the line it
+    W.r.t. the max_width we count an eol as a character belonging to the line it
     ends.
 
     Raises AssertionException if preconditions do not hold.
     Should not raise other exceptions.
     """
     # We want to start at the end of the current wrapped line that start is in
-    eowl = end_of_wrapped_line(text, wrapped_line_length, start)
+    eowl = end_of_wrapped_line(text, max_width, start)
     eof = len(text) - 1
     while n > 0 and eowl < eof:
-        eowl = end_of_wrapped_line(text, wrapped_line_length, eowl + 1)
+        eowl = end_of_wrapped_line(text, max_width, eowl + 1)
         n -= 1
 
-    return beg_of_wrapped_line(text, wrapped_line_length, eowl)
+    return beg_of_wrapped_line(text, max_width, eowl)
 
 
 def coord_to_position(line, column, text, crop=False):
