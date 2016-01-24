@@ -12,7 +12,7 @@ class SelectAroundTest(BaseTestCase):
         BaseTestCase.setUp(self)
 
     def test_find_matching_pair(self):
-        doc = self.document
+        doc = self.doc
         doc.selection = Selection([Interval(0, 1)])
 
         select_next_delimiting(doc)

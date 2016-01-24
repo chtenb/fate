@@ -15,67 +15,67 @@ def deactivate(doc):
 class OperatorTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
-        commands.selectnextline(self.document)
+        commands.selectnextline(self.doc)
 
     def test_change_before(self):
-        self.document.ui.feedinput(changebefore)
+        self.doc.ui.feedinput(changebefore)
         for char in '\nasdf\b\b \n \n \n\n\b\b\n':
-            self.document.ui.feedinput(char)
-        self.document.ui.feedinput(self.document.cancelkey)
-        self.document.ui.feedinput(deactivate)
+            self.doc.ui.feedinput(char)
+        self.doc.ui.feedinput(self.doc.cancelkey)
+        self.doc.ui.feedinput(deactivate)
         run()
 
         expected = '\nas \n \n  \n  \n\nimport sys'
-        self.assertEqual(expected, self.document.text[:len(expected)])
+        self.assertEqual(expected, self.doc.text[:len(expected)])
 
-        undo(self.document)
-        self.assertEqual('import sys\n\n', self.document.text[:12])
+        undo(self.doc)
+        self.assertEqual('import sys\n\n', self.doc.text[:12])
 
     def test_change_after(self):
-        self.document.ui.feedinput(changeafter)
+        self.doc.ui.feedinput(changeafter)
         for char in '\nasdf\b\b \n \n \n\n\b\b\n':
-            self.document.ui.feedinput(char)
-        self.document.ui.feedinput(self.document.cancelkey)
-        self.document.ui.feedinput(deactivate)
+            self.doc.ui.feedinput(char)
+        self.doc.ui.feedinput(self.doc.cancelkey)
+        self.doc.ui.feedinput(deactivate)
         run()
 
         expected = 'import sys\nas \n \n  \n  \n\n'
-        self.assertEqual(expected, self.document.text[:len(expected)])
+        self.assertEqual(expected, self.doc.text[:len(expected)])
 
-        undo(self.document)
-        self.assertEqual('import sys\n\n', self.document.text[:12])
+        undo(self.doc)
+        self.assertEqual('import sys\n\n', self.doc.text[:12])
 
     def test_change_in_place(self):
-        self.document.ui.feedinput(changeinplace)
+        self.doc.ui.feedinput(changeinplace)
         for char in '\nasdf\b\b \n \n \n\n\b\b\n':
-            self.document.ui.feedinput(char)
-        self.document.ui.feedinput(self.document.cancelkey)
-        self.document.ui.feedinput(deactivate)
+            self.doc.ui.feedinput(char)
+        self.doc.ui.feedinput(self.doc.cancelkey)
+        self.doc.ui.feedinput(deactivate)
         run()
 
         expected = '\nas \n \n  \n  \n\n'
-        self.assertEqual(expected, self.document.text[:len(expected)])
+        self.assertEqual(expected, self.doc.text[:len(expected)])
 
-        undo(self.document)
-        self.assertEqual('import sys\n\n', self.document.text[:12])
+        undo(self.doc)
+        self.assertEqual('import sys\n\n', self.doc.text[:12])
 
     def test_change_around(self):
-        self.document.ui.feedinput(changeafter)
+        self.doc.ui.feedinput(changeafter)
         for char in '\n\n  (hi)':
-            self.document.ui.feedinput(char)
-        self.document.ui.feedinput(self.document.cancelkey)
-        self.document.ui.feedinput(commands.selectpreviousword)
-        self.document.ui.feedinput(changearound)
-        self.document.ui.feedinput('\n')
-        self.document.ui.feedinput(self.document.cancelkey)
+            self.doc.ui.feedinput(char)
+        self.doc.ui.feedinput(self.doc.cancelkey)
+        self.doc.ui.feedinput(commands.selectpreviousword)
+        self.doc.ui.feedinput(changearound)
+        self.doc.ui.feedinput('\n')
+        self.doc.ui.feedinput(self.doc.cancelkey)
 
-        self.document.ui.feedinput(deactivate)
+        self.doc.ui.feedinput(deactivate)
         run()
 
         expected = 'import sys\n\n  (\n  hi\n  )\n'
-        self.assertEqual(expected, self.document.text[:len(expected)])
+        self.assertEqual(expected, self.doc.text[:len(expected)])
 
-        undo(self.document)
-        undo(self.document)
-        self.assertEqual('import sys\n\n', self.document.text[:12])
+        undo(self.doc)
+        undo(self.doc)
+        self.assertEqual('import sys\n\n', self.doc.text[:12])
 

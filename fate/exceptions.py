@@ -1,6 +1,10 @@
 
+class NotInitializedException(Exception):
+    """Indicates that some critical parts are not initialized."""
+    pass
+
 class ContractViolationError(AssertionError):
-    """Base class for all covenant contract violations."""
+    """Base class for all contract violations."""
     pass
 
 

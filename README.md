@@ -19,12 +19,12 @@ Vim is a great text editor.
 However, there are several issues I felt that needed to be adressed.
 De code base is old and getting messy and is therefore hard to maintain.
 It is not very extensible, even though vim has its own scripting language.
-VimLanguage is neither easy, readable nor fast.
+VimLanguage is neither easy to master, readable nor fast.
 The architecture needs to be revised, for instance, it should not be restricted to a
 single thread.
 Another bad thing is that vim tries to be backward compatible too much (even with vi!).
-This results in all kinds of quirks that only exist for historical reasons.
-We don't want that. Once in a while, backward compatibility needs to be broken due to new
+This results in all kinds of artifacts that only exist for historical reasons.
+I don't want that. Once in a while, backward compatibility needs to be broken due to new
 developments or new insights.
 Python's transition to version 3 is a good example of this.
 Neovim tries to fix some of these problems, which is a good thing in my opinion, but it is
@@ -41,7 +41,8 @@ The language of choice is Python, because
   machinery almost for free
 - because there are several python implementations, this even potentially allows fate to
   be run in-browser
-- performance critical parts can easily be implemented as a C or C++ extension
+- performance critical parts can easily be implemented as a C or C++ extension, or using
+  Cython, when the need arises
 
 Vim has several user interfaces, due to the many platforms and user preferences.  To
 anticipate on this, we will separate the user interface from the underlying machinery.
@@ -50,7 +51,7 @@ While writing a text editor from scratch anyway, we have the opportunity to reth
 way vim works.
 There is room for improvement.
 
-Vim's visual mode removed the need for marks (kind of).
+Vim's visual mode removed the need for marks (at least for using them as motions).
 Why don't we take this one step further?
 Let's make all motions visual, such that we can select a word by pressing `w`, and then
 change it by pressing `c`.
@@ -69,6 +70,14 @@ This way things like snippet expansion can be implemented with a snippet mode.
 Thirdly, we will not invent our own regex language or scripting language like vim did, but
 stick to python and it's regex language.
 It is a good, well documented, well known engine, and we get it for free.
+
+Fourthly, since we can never always anticipate in what environments people want to use a text
+editor (terminal, gui, in-browser, visual studio plugin, etc) we leave the userinterface out of
+the project.
+This potentially also allows to use fate as a text editing library.
+If we pull this off really well, fate might even be used as glue for many editor agnostic
+feature implementations, such as completers, snippet expanders, syntax highlighters, error
+checkers, code formatters, etc.
 
 
 Documentation
@@ -107,6 +116,12 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
+- Distinguish between concealment inside and outside selections. The epsilon that replaces
+  empty intervals in tfate should be defined as a concealment. This changes how often and
+  when the concealment is computed. I.e. it is not possible to insert characters now, ony
+  substitutions are supported.
+- Make it easily possible to integrate fate into other text editors.
+- Clipboard should be shared among documents to make it possible to copy paste across.
 - Make all pure functional computations w.r.t. positions in text contract based, because they
   appear to suffer from bugs very often.
 - Implement repeat
@@ -120,9 +135,14 @@ SHORT TERM
   viewportsize. If this is not the case, implement a viewbuffer, which is just a
   larger version of the normal view. Alternatively, always generate the entire viewtext or
   compute concealed from text on demand.
+  Solution: generate a view object for a given text interval on demand. This then contains the
+  view text, highlighting and selection as should be visible to the user.
+- Rename UserInterfaceProxy to FakeUserInterface.
 
 MIDDLE TERM
-- Make fate on crash save a recovery file to prevent dataloss.
+- Use a tool that computes unit test coverage.
+- Create something that computes the internal crash probability (per input unit) based on the randomized tests? Not sure if this is feasible, since once crashes they should be fixed right away.
+- Make fate save a recovery file on crash to prevent dataloss.
 - Create an options namespace.
   - To separate variables that can be arbitrarily configured by the user from variables that
     are simply part of the document state and should not be corrupted.
@@ -152,21 +172,19 @@ MIDDLE TERM
 
 LONG TERM
 - Incorporate testing with multiple documents
-- Unittests for pattern select machinery
 - Think about how to decorate classes easily, without disabling subclassing
   - Can't decorate classes by functions: this turns them into functions
   - This means that they can't be used as parentclass
   - and that they can't be checked by issubclass
 - Think about possibility to add remap support (i.e. map keys forall modes)
   - This is a generalization of the cancelkey feature
-- Drag text operation
-- Persistent document (using a context manager?)
+- Drag text operation, i.e. visual cut & paste or swapping text
+- Persistent document (does this relate to recovery file?)
 - Switch to alternative regex engine?
-- Focus on non-atomic operations
 - Idea: jumplist of lines of changes
 - Some sort of semantic snippet recognition, e.g. two identifiers that always need to be the same.
   If one changes, the other changes with it.
-- Binary search for selections?
+- Binary search for selections? Easymotion?
 
 [docs]: http://chiel92.github.io/fate/
 [fate-tui]: http://github.com/Chiel92/fate-tui

@@ -26,9 +26,9 @@ class Foo(Bar):
         destination = gettempdir() + '/test.py'
         with open(destination, 'w') as f:
             f.write(self.sampletext)
-        self.document = document.Document(destination)
-        document.activedocument = self.document
+        self.doc = document.Document(destination)
+        document.activedocument = self.doc
 
     def tearDown(self):
-        self.document.quit()
+        self.doc.quit()
 

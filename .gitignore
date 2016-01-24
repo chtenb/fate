@@ -1,5 +1,7 @@
 pylintrc
+*.bak
 *.swp
+
 *.py[cod]
 __pycache__
 

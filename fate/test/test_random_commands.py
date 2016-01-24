@@ -68,25 +68,25 @@ class RandomizedActionTest(BaseTestCase):
     def run_test(self, seed, commands_per_run):
         """Run the test based on given seed."""
         if args.verbose:
-            print('Sample text:\n' + str(self.document.text))
-            print('Starting selection: ' + str(self.document.selection))
+            print('Sample text:\n' + str(self.doc.text))
+            print('Starting selection: ' + str(self.doc.selection))
 
         for i in range(commands_per_run):
-            userinput = self.document.ui.getinput()
+            userinput = self.doc.ui.getinput()
 
             if args.verbose:
                 try:
                     name = userinput.__name__
                 except AttributeError:
                     name = str(userinput)
-                print('{}: Input = {}, Mode = {}'.format(i + 1, name, self.document.mode))
+                print('{}: Input = {}, Mode = {}'.format(i + 1, name, self.doc.mode))
 
             try:
-                self.document.mode.processinput(self.document, userinput)
+                self.doc.mode.processinput(self.doc, userinput)
             except:
-                print('Current text:\n{}'.format(self.document.text))
-                print('Current selection: {}'.format(self.document.selection))
-                print('Current pattern: {}'.format(self.document.search_pattern))
+                print('Current text:\n{}'.format(self.doc.text))
+                print('Current selection: {}'.format(self.doc.selection))
+                print('Current pattern: {}'.format(self.doc.search_pattern))
                 raise
 
         self.successes += 1

@@ -5,14 +5,14 @@ from .basetestcase import BaseTestCase
 class OperatorTest(BaseTestCase):
     def setUp(self):
         BaseTestCase.setUp(self)
-        commands.selectnextword(self.document)
+        commands.selectnextword(self.doc)
 
     def test_insert(self):
         command = Insert('Foo ')
-        command(self.document)
+        command(self.doc)
         expected = 'Foo import sys'
-        self.assertEqual(expected, self.document.text[:14])
+        self.assertEqual(expected, self.doc.text[:14])
 
-        commands.undo(self.document)
-        self.assertEqual('import sys', self.document.text[:10])
+        commands.undo(self.doc)
+        self.assertEqual('import sys', self.doc.text[:10])
 

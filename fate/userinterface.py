@@ -14,6 +14,23 @@ class UserInterfaceAPI(ABC):
         self.doc = doc
         self.inputqueue = deque()
         self.OnUserInput = Event('OnUserInput')
+        self._textview = None
+        # TODO: update textview as needed
+        # self.doc.OnTextChange
+
+    @property
+    def textview(self):
+        """
+        Get the textview corresponding to the viewport offset/size.
+        This is used by commands like move page up/down to compute how much the offset has to move.
+        Note that this doesn't mean that the UI can't create another textview e.g. to use as a buffer
+        to allow for smooth scrolling.
+        """
+        return self._textview
+
+    @textview.setter
+    def textview(self, value):
+        self._textvalue = value
 
     @abstractproperty
     def viewport_size(self):
