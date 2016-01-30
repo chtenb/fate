@@ -145,8 +145,6 @@ class Document:
 
     def processinput(self, userinput):
         """This method is called when this document receives userinput."""
-        if userinput == 'ctrl-\\':
-            raise KeyboardInterrupt
         debug('Mode:' + repr(self.mode))
         debug('Input: ' + repr(userinput))
         self.mode.processinput(self, userinput)

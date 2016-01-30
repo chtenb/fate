@@ -116,6 +116,7 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
+- Implement insert mode preview as concealments.
 - Distinguish between concealment inside and outside selections. The epsilon that replaces
   empty intervals in tfate should be defined as a concealment. This changes how often and
   when the concealment is computed. I.e. it is not possible to insert characters now, ony

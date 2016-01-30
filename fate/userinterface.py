@@ -75,6 +75,10 @@ class UserInterfaceAPI(ABC):
         if not self.inputqueue:
             self.inputqueue.appendleft(self._getuserinput())
         result = self.inputqueue.pop()
+
+        if result == 'ctrl-\\':
+            raise KeyboardInterrupt
+
         self.OnUserInput.fire(self, result)
         return result
 

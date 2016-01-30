@@ -41,9 +41,12 @@ class TextView:
     position in the original text and in the resulting view text.
     For clarity we prepend every variable containing information relative to the original text
     with `o` and relative to the view text with `v`.
+
+    It should be noted that original positions in origpos_to_viewpos are counted from the
+    given offset, i.e. the list is zero-indexed.
     """
 
-    def __init__(self, doc, width: int, height: int):
+    def __init__(self, doc, width: int, height: int, offset: int):
         """
         Construct a textview for the given doc starting with (and relative to) position start
         with size of the given length.
@@ -51,6 +54,7 @@ class TextView:
         self.doc = doc
         self.width = width
         self.height = height
+        self.offset = offset
 
         self.text = None
         self.selection = None
@@ -90,17 +94,19 @@ class TextView:
         width, height = self.width, self.height
 
         otext = self.doc.text
-        obeg = self.doc.ui.viewport_offset
+        obeg = self.offset
         # Length of the sample of the original text that is used to compute the view text
-        olength = 1
+        o_sample_length = 1
 
         vtext, opos_to_vpos, vpos_to_opos = self.compute_text_from_orig_interval(
-            obeg, olength)
-        assert opos_to_vpos[obeg] == 0
-        while count_wrapped_lines(vtext, width) < height and obeg + olength < len(otext):
-            olength *= 2
+            obeg, o_sample_length)
+        # The mapping should have synced offsets and be non empty, as o_sample_length > 0
+        assert opos_to_vpos[0] >= 0
+        while (count_wrapped_lines(vtext, width) < height
+               and obeg + o_sample_length < len(otext)):
+            o_sample_length *= 2
             vtext, opos_to_vpos, vpos_to_opos = self.compute_text_from_orig_interval(
-                obeg, olength)
+                obeg, o_sample_length)
 
         # Everything should be snapped to exactly fit the required length.
         # This is to make textview behave as deterministic as possible, such that potential
@@ -113,7 +119,7 @@ class TextView:
         assert required_length > len(vtext) // 2
 
         # Extend mappings to allow (exclusive) interval ends to be mapped
-        vpos_to_opos.append(olength)
+        vpos_to_opos.append(o_sample_length)
         opos_to_vpos.append(len(vtext))
 
         self.text = vtext[:required_length]
@@ -125,20 +131,21 @@ class TextView:
         assert len(self.viewpos_to_origpos) == required_length + 1
         assert len(self.origpos_to_viewpos) == required_length + 1
 
-    def compute_text_from_orig_interval(self, obeg, olength):
+    def compute_text_from_orig_interval(self, obeg, o_sample_length):
         """
         Compute the concealed text and the corresponding position mapping from an interval in
         terms of the original text.
         Return the resulting text.
         """
         conceal = self.doc.conceal
-        conceal.generate_local_substitutions(obeg, olength)
+        conceal.generate_local_substitutions(obeg, o_sample_length)
 
         # Construct a sorted list of relevant substitutions
         first_global_subst = bisect_left(conceal.global_substitutions,
                                          (Interval(obeg, obeg), ''))
         last_global_subst = bisect_left(conceal.global_substitutions,
-                                        (Interval(obeg + olength, obeg + olength), ''))
+                                        (Interval(obeg + o_sample_length,
+                                                  obeg + o_sample_length), ''))
         substitutions = (conceal.local_substitutions
                          + conceal.global_substitutions[first_global_subst:last_global_subst])
         substitutions.sort()
@@ -152,10 +159,10 @@ class TextView:
         otext = self.doc.text
 
         subst_index = 0
-        while opos < olength:
+        while opos - self.offset < o_sample_length:
             # Add remaining non-concealed text
             if subst_index >= len(substitutions):
-                olength = min(olength - vpos, len(otext) - opos)
+                olength = min(o_sample_length - opos, len(otext) - opos)
                 vpos_to_opos.extend(range(opos, opos + olength))
                 opos_to_vpos.extend(range(vpos, vpos + olength))
                 vtext_builder.append(otext[opos:opos + olength])
@@ -168,8 +175,8 @@ class TextView:
 
             # Add non-concealed text
             if sbeg > opos:
-                # Bound viewtext by self.olength
-                olength = min(sbeg - opos, olength - vpos)
+                # Bound viewtext by o_sample_length
+                olength = min(sbeg - opos, o_sample_length - vpos)
                 vpos_to_opos.extend(range(opos, opos + olength))
                 opos_to_vpos.extend(range(vpos, vpos + olength))
                 vtext_builder.append(otext[opos:opos + olength])
@@ -224,13 +231,14 @@ class TextView:
         for beg, end in self.doc.selection:
             # Only add selections when they should be visible
             if (beg < o_viewend and o_viewbeg < end
-                    # Make sure empty intervals are taken into account, if they are visible
+                    # Make sure empty intervals are taken into account, if they are
+                    # visible
                     or beg == end == o_viewbeg or beg == end == o_viewend):
                 beg = max(beg, o_viewbeg)
                 end = min(o_viewend, end)
-                vbeg = opos_to_vpos[beg]
+                vbeg = opos_to_vpos[beg - self.offset]
                 # Even though end is exclusive, and may be outside the text, it is being
                 # mapped, so we can safely do this
-                vend = opos_to_vpos[end]
+                vend = opos_to_vpos[end] - self.offset
                 selectionview.add(Interval(vbeg, vend))
         self.selection = selectionview
