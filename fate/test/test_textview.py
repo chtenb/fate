@@ -1,18 +1,26 @@
-from unittest import TestCase
+from logging import debug
 from .basetestcase import BaseTestCase
 
 from ..textview import TextView
 
+
 class TestTextView(BaseTestCase):
+
     def setUp(self):
         BaseTestCase.setUp(self)
 
     def test_creation(self):
-        text='\n\n\n\n\n'
+        text = '123456789'
         self.doc.text = text
-        textview = TextView(self.doc, 10, 10)
-        print(textview.text)
-        print('\n'.join(textview.text_as_lines()))
-        print(textview.selection)
-        print(textview.highlighting)
 
+        for width in range(1, 6):
+            for height in range(1, 6):
+                TextView(self.doc, width, height)
+
+        text = '\n\n\n\n\n'
+        self.doc.text = text
+
+        for width in range(1, 6):
+            for height in range(1, 6):
+                textview = TextView(self.doc, width, height)
+                debug(textview)

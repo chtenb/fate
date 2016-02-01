@@ -11,6 +11,10 @@ bof: beginning-of-file, i.e. 0
 
 It is important to note that a line ending is always counted in the line it ends.
 Newline character are really thought of as end-of-line characters.
+Thus, when talking about end-of-wrapped-lines, it indeed makes sense to designate this to
+be the last character in the wrapped line.
+Although this goes against the normal convention that end positions are exclusive, it
+appears to have edge-case benefits to deviate from this when talking about line endings.
 """
 from math import ceil
 from logging import debug

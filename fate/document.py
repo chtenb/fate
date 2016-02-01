@@ -6,6 +6,7 @@ from .userinterface import UserInterfaceAPI
 from .navigation import center_around_selection, is_position_visible
 from .selecting import SelectModes
 from .mode import Mode
+from .exceptions import NotInitializedException
 
 from logging import error, info, debug
 
@@ -14,6 +15,7 @@ activedocument = None
 
 
 class Namespace:
+
     """
     Allow easy namespacing within attributes of an object.
     """
@@ -58,10 +60,12 @@ class Document:
         self.selectmode = SelectModes.normal
 
         if not self.create_userinterface:
-            raise Exception('No function specified in Document.create_userinterface.')
+            raise NotInitializedException(
+                'No function specified in Document.create_userinterface.')
         self.ui = self.create_userinterface(self)
         if not isinstance(self.ui, UserInterfaceAPI):
-            raise Exception('document.ui not an instance of UserInterface.')
+            raise NotInitializedException(
+                'document.ui is not an instance of UserInterface.')
 
         self.modes = Namespace()
         self.OnModeInit.fire(self)
@@ -77,7 +81,6 @@ class Document:
         self.OnQuit.fire(self)
         global activedocument
         index = documentlist.index(self)
-
 
         if len(documentlist) == 1:
             info('Closing the last document by setting activedocument to None')

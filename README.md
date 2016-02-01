@@ -116,6 +116,12 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
+- Distinguish between concealment inside and outside selections. The epsilon that replaces
+  empty intervals in tfate should be defined as a concealment. This changes how often and
+  when the concealment is computed. I.e. it is not possible to insert characters now, ony
+  substitutions are supported.
+- Make it easily possible to integrate fate into other text editors.
+- Clipboard should be shared among documents to make it possible to copy paste across.
 - Make all pure functional computations w.r.t. positions in text contract based, because they
   appear to suffer from bugs very often.
 - Implement repeat
@@ -134,6 +140,8 @@ SHORT TERM
 - Rename UserInterfaceProxy to FakeUserInterface.
 
 MIDDLE TERM
+- Use a tool that computes unit test coverage.
+- Create something that computes the internal crash probability (per input unit) based on the randomized tests? Not sure if this is feasible, since once crashes they should be fixed right away.
 - Make fate save a recovery file on crash to prevent dataloss.
 - Create an options namespace.
   - To separate variables that can be arbitrarily configured by the user from variables that
