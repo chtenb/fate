@@ -141,7 +141,7 @@ class Document:
         # updated.
         # FIXME
         # if ?:
-        # center_around_selection(self)
+            # center_around_selection(self)
 
     def processinput(self, userinput):
         """This method is called when this document receives userinput."""

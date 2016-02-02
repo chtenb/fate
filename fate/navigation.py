@@ -136,6 +136,10 @@ def move_n_wrapped_lines_up(text: str, max_width: int, start: int, n: int):
     counting back from position start (exclusive).
     If there are less than n+1 wrapped end-of-lines before start, return 0.
 
+    The reason that we do not return the position of the wrapped end-of-line itself,
+    is because the virtual end-of-lines that emerge from the wrapping do not correspond to
+    a character in the text and thus do not have a position.
+
     W.r.t. the max_width we count an eol as a character belonging to the line it
     ends.
 
@@ -189,6 +193,10 @@ def move_n_wrapped_lines_down(text: str, max_width: int, start: int, n: int):
     If there are less than n wrapped end-of-lines after start,
     or there are no characters after the nth end-of-line,
     return the first position of the last wrapped lined.
+
+    The reason that we do not return the position of the wrapped end-of-line itself,
+    is because the virtual end-of-lines that emerge from the wrapping do not correspond to
+    a character in the text and thus do not have a position.
 
     W.r.t. the max_width we count an eol as a character belonging to the line it
     ends.

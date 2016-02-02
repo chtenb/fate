@@ -151,7 +151,7 @@ class TextView:
         substitutions.sort()
 
         vtext_builder = []  # Stringbuilder for text to be displayed
-        vpos = 0  # Current position in view text, i.e. length of text builded so far
+        vpos = 0  # Current position in view text, i.e. olength of text builded so far
         opos = obeg  # Current position in original text
         vpos_to_opos = []  # Mapping from view positions to original positions
         # Mapping from original positions (minus offset) to view positions
