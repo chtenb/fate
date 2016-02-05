@@ -12,7 +12,6 @@ def _compute_selectionview_post(result, self, old=None, new=None):
     assert result is None
 
     for vbeg, vend in self.selection:
-        debug([0, vbeg, vend, len(self.text)])
         assert 0 <= vbeg <= vend <= len(self.text)
 
 # TODO: make textview thread-safe
@@ -44,6 +43,8 @@ class TextView:
 
     It should be noted that original positions in origpos_to_viewpos are counted from the
     given offset, i.e. the list is zero-indexed.
+    TODO: make this bijection a separate object which hides these ugly and confusing offset
+    differences.
     """
 
     def __init__(self, doc, width: int, height: int, offset: int):
@@ -95,12 +96,21 @@ class TextView:
 
         otext = self.doc.text
         obeg = self.offset
+        if len(otext) - obeg == 0:
+            self.text = ''
+            self.viewpos_to_origpos = [0]
+            self.origpos_to_viewpos = [0]
+            return
+        elif len(otext) - obeg < 0:
+            raise ValueError('offset is beyond length of text')
+
         # Length of the sample of the original text that is used to compute the view text
         o_sample_length = 1
 
         vtext, opos_to_vpos, vpos_to_opos = self.compute_text_from_orig_interval(
             obeg, o_sample_length)
-        # The mapping should have synced offsets and be non empty, as o_sample_length > 0
+        # The mapping should have synced offsets and be non empty, as o_sample_length > 0 and
+        # len(text) > 0
         assert opos_to_vpos[0] >= 0
         while (count_wrapped_lines(vtext, width) < height
                and obeg + o_sample_length < len(otext)):
@@ -159,10 +169,10 @@ class TextView:
         otext = self.doc.text
 
         subst_index = 0
-        while opos - self.offset < o_sample_length:
+        while opos < obeg + o_sample_length:
             # Add remaining non-concealed text
             if subst_index >= len(substitutions):
-                olength = min(o_sample_length - opos, len(otext) - opos)
+                olength = min(o_sample_length - (opos - obeg), len(otext) - (opos - obeg))
                 vpos_to_opos.extend(range(opos, opos + olength))
                 opos_to_vpos.extend(range(vpos, vpos + olength))
                 vtext_builder.append(otext[opos:opos + olength])
