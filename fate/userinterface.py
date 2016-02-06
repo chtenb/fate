@@ -36,7 +36,7 @@ class UserInterfaceAPI(ABC):
     def viewport_size(self):
         """
         Get viewport size as a tuple (width, height).
-        Must both be positive.
+        Must both be strictly positive.
         """
         pass
 
@@ -44,7 +44,7 @@ class UserInterfaceAPI(ABC):
     def viewport_offset(self):
         """
         Get and set viewport offset as a single text position.
-        Must be positive.
+        Must be positive and within text range.
         """
         pass
 

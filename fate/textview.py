@@ -9,9 +9,7 @@ from .navigation import (
 
 
 def _compute_selectionview_post(result, self, old=None, new=None):
-    assert result is None
-
-    for vbeg, vend in self.selection:
+    for vbeg, vend in result:
         assert 0 <= vbeg <= vend <= len(self.text)
 
 # TODO: make textview thread-safe
@@ -21,41 +19,34 @@ def _compute_selectionview_post(result, self, old=None, new=None):
 class TextView:
 
     """
-    Comprise the text features that are shown in the userinterface for a given text interval.
-    All the positions in the resulting text are adjusted w.r.t. the text concealments that may
-    have been done.
+    Comprise the text features that are shown in the userinterface for a given text
+    interval. All the positions in the resulting text are adjusted w.r.t. the text
+    concealments that may have been done.
 
-    How does a UI known when a new TextView should be created?
-    A TextView object consists of 3 parts w.r.t. to a text interval:
-    - the text (including concealments)
-    - selection
+    How does a UI known when a new TextView should be created? A TextView object consists
+    of 3 parts w.r.t. to a text interval: - the text (including concealments) - selection
     - highlighting
 
     So if either the, start, length, text, selection, highlighting or concealment changes,
-    the userinterface should create a new TextView object.
-    However, if jus the selection of highlighting changes, one only should have to update
-    those. This is currently possible by calling compute_highlighting or compute_highlighting.
+    the userinterface should create a new TextView object. However, if jus the selection
+    of highlighting changes, one only should have to update those. This is currently
+    possible by calling compute_highlighting or compute_highlighting.
 
-    Positional computations often have to deal with two kinds of positions:
-    position in the original text and in the resulting view text.
-    For clarity we prepend every variable containing information relative to the original text
-    with `o` and relative to the view text with `v`.
+    Positional computations often have to deal with two kinds of positions: position
+    in the original text and in the resulting view text. For clarity we prepend every
+    variable containing information relative to the original text with `o` and relative to
+    the view text with `v`.
 
     It should be noted that original positions in origpos_to_viewpos are counted from the
-    given offset, i.e. the list is zero-indexed.
-    TODO: make this bijection a separate object which hides these ugly and confusing offset
-    differences.
+    given offset, i.e. the list is zero-indexed. TODO: make this bijection a separate
+    object which hides these ugly and confusing offset differences.
     """
 
-    def __init__(self, doc, width: int, height: int, offset: int):
-        """
-        Construct a textview for the given doc starting with (and relative to) position start
-        with size of the given length.
-        """
-        self.doc = doc
-        self.width = width
-        self.height = height
-        self.offset = offset
+    def __init__(self):
+        self.doc = None
+        self.width = None
+        self.height = None
+        self.offset = None
 
         self.text = None
         self.selection = None
@@ -64,14 +55,53 @@ class TextView:
         self.viewpos_to_origpos = []
         self.origpos_to_viewpos = []
 
-        self.compute_text()
-        self.compute_selection()
-        self.compute_highlighting()
+    @staticmethod
+    def for_screen(doc, width: int, height: int, offset: int):
+        """
+        Construct a textview for the given doc starting with (and relative to) position
+        start with size of the given length.
+        """
+        if width <= 0:
+            raise ValueError('{} is an invalid width'.format(width))
+        if height <= 0:
+            raise ValueError('{} is an invalid height'.format(height))
+        if offset < 0 or offset > len(doc.text):
+            raise ValueError('{} is an invalid offset'.format(offset))
+
+        self = TextView()
+        self.doc = doc
+        self.width = width
+        self.height = height
+        self.offset = offset
+
+        self.text, self.origpos_to_viewpos, self.viewpos_to_origpos = (
+            self._compute_text_from_view_interval())
+        self.selection = self._compute_selection()
+        self.highlighting = self._compute_highlighting()
+
+        return self
+
+    @staticmethod
+    def for_entire_text(doc, width):
+        if width <= 0:
+            raise ValueError('{} is an invalid width'.format(width))
+
+        self = TextView()
+        self.doc = doc
+        self.width = width
+        self.offset = 0
+
+        self.text, self.origpos_to_viewpos, self.viewpos_to_origpos = (
+            self._compute_text_from_orig_interval(0, len(doc.text)))
+        self.selection = self._compute_selection()
+        self.highlighting = self._compute_highlighting()
+
+        return self
 
     def text_as_lines(self):
         """
-        Return the text in the textview as a list of lines, where the lines are wrapped with
-        self.width.
+        Return the text in the textview as a list of lines, where the lines are wrapped
+        with self.width.
         """
         result = [line[self.width * i: self.width * (i + 1)]
                   for line in self.text.splitlines()
@@ -79,35 +109,32 @@ class TextView:
         assert len(result) == count_wrapped_lines(self.text, self.width)
         return result
 
-    def compute_text(self):
+    def _compute_text_from_view_interval(self):
         """
         Compute the concealed text and the corresponding position mapping.
         We don't have any guarantees to the length of the viewtext in terms of the length
         of the original text whatsoever.
-        So we can only incrementally try to increase the length of th original text, until the
-        viewtext covers the required length.
-        Since normally the concealed text is not much (if any) larger, this should not lead
-        to accidentally computing a way too large textview.
+        So we can only incrementally try to increase the length of th original text, until
+        the viewtext covers the required length.
+        Since normally the concealed text is not much (if any) larger, this should not
+        lead to accidentally computing a way too large textview.
 
-        Return nothing.
-        Side effect: text is set.
+        Return text and mappings.
+        Side effect: none
         """
         width, height = self.width, self.height
 
         otext = self.doc.text
         obeg = self.offset
         if len(otext) - obeg == 0:
-            self.text = ''
-            self.viewpos_to_origpos = [0]
-            self.origpos_to_viewpos = [0]
-            return
+            return '', [0], [0]
         elif len(otext) - obeg < 0:
             raise ValueError('offset is beyond length of text')
 
         # Length of the sample of the original text that is used to compute the view text
         o_sample_length = 1
 
-        vtext, opos_to_vpos, vpos_to_opos = self.compute_text_from_orig_interval(
+        vtext, opos_to_vpos, vpos_to_opos = self._compute_text_from_orig_interval(
             obeg, o_sample_length)
         # The mapping should have synced offsets and be non empty, as o_sample_length > 0 and
         # len(text) > 0
@@ -115,7 +142,7 @@ class TextView:
         while (count_wrapped_lines(vtext, width) < height
                and obeg + o_sample_length < len(otext)):
             o_sample_length *= 2
-            vtext, opos_to_vpos, vpos_to_opos = self.compute_text_from_orig_interval(
+            vtext, opos_to_vpos, vpos_to_opos = self._compute_text_from_orig_interval(
                 obeg, o_sample_length)
 
         # Everything should be snapped to exactly fit the required length.
@@ -129,23 +156,29 @@ class TextView:
         assert required_length > len(vtext) // 2
 
         # Extend mappings to allow (exclusive) interval ends to be mapped
-        vpos_to_opos.append(o_sample_length)
         opos_to_vpos.append(len(vtext))
+        vpos_to_opos.append(o_sample_length)
 
-        self.text = vtext[:required_length]
-        self.viewpos_to_origpos = vpos_to_opos[:required_length + 1]
-        self.origpos_to_viewpos = opos_to_vpos[:required_length + 1]
+        text = vtext[:required_length]
+        origpos_to_viewpos = opos_to_vpos[:required_length + 1]
+        # FIXME: what should this be?
+        # viewpos_to_origpos = vpos_to_opos[:required_length + 1]
+        viewpos_to_origpos = vpos_to_opos
 
         # Some post conditions
-        assert len(self.text) == required_length
-        assert len(self.viewpos_to_origpos) == required_length + 1
-        assert len(self.origpos_to_viewpos) == required_length + 1
+        assert len(text) == required_length
+        assert len(origpos_to_viewpos) == required_length + 1
+        # assert len(viewpos_to_origpos) == required_length + 1
 
-    def compute_text_from_orig_interval(self, obeg, o_sample_length):
+        return text, origpos_to_viewpos, viewpos_to_origpos
+
+    def _compute_text_from_orig_interval(self, obeg, o_sample_length):
         """
-        Compute the concealed text and the corresponding position mapping from an interval in
-        terms of the original text.
-        Return the resulting text.
+        Compute the concealed text and the corresponding position mapping from an interval
+        in terms of the original text.
+
+        Return text and mappings.
+        Side effect: none
         """
         conceal = self.doc.conceal
         conceal.generate_local_substitutions(obeg, o_sample_length)
@@ -205,16 +238,25 @@ class TextView:
 
         vtext = ''.join(vtext_builder)
 
+        # Extend mappings to allow (exclusive) interval ends to be mapped
+        opos_to_vpos.append(len(vtext))
+        vpos_to_opos.append(o_sample_length)
+
+        # Some post conditions
+        # assert len(text) == required_length
+        # assert len(origpos_to_viewpos) == required_length + 1
+        # assert len(viewpos_to_origpos) == required_length + 1
+
         return vtext, opos_to_vpos, vpos_to_opos
 
-    def compute_highlighting(self):
+    def _compute_highlighting(self):
         """
         Construct highlighting view.
         The highlighting view is a mapping from each character in the text to a string.
         Since the text positions are positive integers starting from zero, we implement
         this as a list.
-        Return nothing.
-        Side effect: highlighting is set.
+        Return highlighting view
+        Side effect: None
         """
         highlightingview = []
         for i in range(len(self.text)):
@@ -223,15 +265,16 @@ class TextView:
                 highlightingview.append(self.doc.highlighting[opos])
             else:
                 highlightingview.append('')
-        self.highlighting = highlightingview
+
+        return highlightingview
 
     @post(_compute_selectionview_post)
-    def compute_selection(self, old=None, new=None):
+    def _compute_selection(self, old=None, new=None):
         """
         Construct selection view.
         Use the opos_to_vpos mapping to derive the selection intervals in the viewport.
-        Return nothing.
-        Side effect: selection is set.
+        Return selection view
+        Side effect: None
         """
         opos_to_vpos = self.origpos_to_viewpos
         o_viewbeg = self.viewpos_to_origpos[0]
@@ -251,4 +294,5 @@ class TextView:
                 # mapped, so we can safely do this
                 vend = opos_to_vpos[end] - self.offset
                 selectionview.add(Interval(vbeg, vend))
-        self.selection = selectionview
+
+        return selectionview
