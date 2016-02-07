@@ -40,8 +40,13 @@ class TestNavigation(TestCase):
 
     def test_end_of_wrapped_line(self):
         f = end_of_wrapped_line
-        text = '123\n123\n123\n'
+        # Parameters: f(text, max_width, start)
 
+        text = ''
+        assert f(text, 100, 0) == 0
+        assert f(text, 1, 0) == 0
+
+        text = '123\n123\n123\n'
         for start in range(12):
             assert f(text, 8, start) == 4 * (start // 4) + 3
             assert f(text, 4, start) == 4 * (start // 4) + 3
@@ -62,8 +67,13 @@ class TestNavigation(TestCase):
 
     def test_beg_of_wrapped_line(self):
         f = beg_of_wrapped_line
-        text = '123\n123\n123\n'
+        # Parameters: f(text, max_width, start)
 
+        text = ''
+        assert f(text, 100, 0) == 0
+        assert f(text, 1, 0) == 0
+
+        text = '123\n123\n123\n'
         for start in range(12):
             assert f(text, 8, start) == 4 * (start // 4)
             assert f(text, 4, start) == 4 * (start // 4)
@@ -80,6 +90,13 @@ class TestNavigation(TestCase):
 
     def test_move_n_wrapped_lines_down(self):
         f = move_n_wrapped_lines_down
+        # Parameters: f(text, max_width, start, n)
+
+        text = ''
+        assert f(text, 100, 0, 1) == 0
+        assert f(text, 1, 0, 1) == 0
+        assert f(text, 100, 0, 100) == 0
+        assert f(text, 1, 0, 100) == 0
 
         text = '123\n123\n123\n'
         for start in range(12):
@@ -101,6 +118,13 @@ class TestNavigation(TestCase):
 
     def test_move_n_wrapped_lines_up(self):
         f = move_n_wrapped_lines_up
+        # Parameters: f(text, max_width, start, n)
+
+        text = ''
+        assert f(text, 100, 0, 1) == 0
+        assert f(text, 1, 0, 1) == 0
+        assert f(text, 100, 0, 100) == 0
+        assert f(text, 1, 0, 100) == 0
 
         text = '123\n123\n123\n'
         for start in range(12):

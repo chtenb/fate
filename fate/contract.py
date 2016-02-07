@@ -17,14 +17,23 @@ def pre(condition):
                 try:
                     check_result = condition(*args, **kwargs)
                 except AssertionError as e:
-                    raise e from PreconditionViolationError("Precondition check failed.")
+                    raise e from PreconditionViolationError(
+                        *get_context_message_pre(func, args, kwargs))
 
                 if check_result != None and not check_result:
-                    raise PreconditionViolationError("Precondition check failed.")
+                    raise PreconditionViolationError(
+                        *get_context_message_pre(func, args, kwargs))
 
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
+
+def get_context_message_pre(func, args, kwargs):
+    repr_values = [repr(item) for item in
+                   list(args) + list(kwargs.values())]
+    return (func.__code__.co_name,
+            zip(list(func.__code__.co_varnames), repr_values))
 
 
 def post(condition):
@@ -44,11 +53,20 @@ def post(condition):
                 try:
                     check_result = condition(result, *args, **kwargs)
                 except AssertionError as e:
-                    raise e from PostconditionViolationError("Postcondition check failed.")
+                    raise e from PostconditionViolationError(
+                        *get_context_message_post(func, result, args, kwargs))
 
                 if check_result != None and not check_result:
-                    raise PostconditionViolationError("Postcondition check failed.")
+                    raise PostconditionViolationError(
+                        *get_context_message_post(func, result, args, kwargs))
 
             return result
         return wrapper
     return decorator
+
+
+def get_context_message_post(func, result, args, kwargs):
+    repr_values = [repr(item) for item in
+                   [result] + list(args) + list(kwargs.values())]
+    return (func.__code__.co_name,
+            zip(['result'] + list(func.__code__.co_varnames), repr_values))

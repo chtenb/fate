@@ -27,7 +27,7 @@ def movehalfpagedown(doc):
     """Move half a page down."""
     # TODO: this doesn't count with viewtext
     width, height = doc.ui.viewport_size
-    offset = doc.ui.viewport_offset
+    offset = min(len(doc.text), doc.ui.viewport_offset)
     new_offset = move_n_wrapped_lines_down(doc.text, width, offset, height // 2)
     doc.ui.viewport_offset = new_offset
 commands.movehalfpagedown = movehalfpagedown
@@ -37,7 +37,7 @@ def movehalfpageup(doc):
     """Move half a page down."""
     # TODO: this doesn't count with viewtext
     width, height = doc.ui.viewport_size
-    offset = doc.ui.viewport_offset
+    offset = min(len(doc.text), doc.ui.viewport_offset)
     new_offset = move_n_wrapped_lines_up(doc.text, width, offset, height // 2)
     doc.ui.viewport_offset = new_offset
 commands.movehalfpageup = movehalfpageup
@@ -47,7 +47,7 @@ def movepagedown(doc):
     """Move a page down."""
     # TODO: this doesn't count with viewtext
     width, height = doc.ui.viewport_size
-    offset = doc.ui.viewport_offset
+    offset = min(len(doc.text), doc.ui.viewport_offset)
     new_offset = move_n_wrapped_lines_down(doc.text, width, offset, height)
     doc.ui.viewport_offset = new_offset
 commands.movepagedown = movepagedown
@@ -57,7 +57,7 @@ def movepageup(doc):
     """Move a page up."""
     # TODO: this doesn't count with viewtext
     width, height = doc.ui.viewport_size
-    offset = doc.ui.viewport_offset
+    offset = min(len(doc.text), doc.ui.viewport_offset)
     new_offset = move_n_wrapped_lines_up(doc.text, width, offset, height)
     doc.ui.viewport_offset = new_offset
 commands.movepageup = movepageup
@@ -113,9 +113,9 @@ def beg_of_wrapped_line(text, max_width, pos):
 
 
 def move_n_wrapped_lines_up_pre(text, max_width, start, n):
-    assert max_width > 0
-    assert 0 <= start < len(text)
-    assert n >= 0
+    assert max_width > 0, '{} > 0'.format(max_width)
+    assert 0 <= start <= len(text), '0 <= {} <= {}'.format(start, len(text))
+    assert n >= 0, '{} >= 0'.format(n)
 
 
 def move_n_wrapped_lines_up_post(result, text, max_width, start, n):
@@ -172,7 +172,7 @@ def end_of_wrapped_line(text, max_width, pos):
 
 def move_n_wrapped_lines_down_pre(text, max_width, start, n):
     assert max_width > 0
-    assert 0 <= start < len(text)
+    assert 0 <= start <= len(text)
     assert n >= 0
 
 
@@ -180,7 +180,7 @@ def move_n_wrapped_lines_down_post(result, text, max_width, start, n):
     assert result - start <= n * max_width
     assert count_newlines(text, (start, result)) <= n
     assert count_wrapped_lines(text, max_width, (start, result)) <= n + 1
-    assert 0 <= result <= len(text)
+    assert 0 <= result <= len(text), '0 <= {} <= {}'.format(result, len(text))
 
 
 @pre(move_n_wrapped_lines_down_pre)
