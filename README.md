@@ -116,7 +116,22 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
-- Implement insert mode preview as concealments.
+- Make running testcases from input possible.
+  - We can drop the requirement for everything to be deterministic.
+  - This transits better across commits.
+  - We could integrate this with the concept of macros.
+  - So macros are gonna have to be encoded/decoded in json.
+    Since macros are just sequences of input, it suffices to export a list of input objects.
+    These can be strings, commands/functions or any other object.
+  - Macros are/should be similar to compositions. The only distinction to be made is that
+    currently composition firing up a mode are interrupted for user input. Macros should not do
+    that. So Compositions should be extended to allow macro behaviour and be able to process
+    all kind of input.
+- Implement repeat
+  - Record input of user
+  - next_document should also be recorded: this just makes repeat more powerful
+  - Be able to save these macros, and be able to construct macros via literal input.
+    This makes it easy to record a macro and use it for bulk editing
 - Distinguish between concealment inside and outside selections. The epsilon that replaces
   empty intervals in tfate should be defined as a concealment. This changes how often and
   when the concealment is computed. I.e. it is not possible to insert characters now, ony
@@ -125,11 +140,6 @@ SHORT TERM
 - Clipboard should be shared among documents to make it possible to copy paste across.
 - Make all pure functional computations w.r.t. positions in text contract based, because they
   appear to suffer from bugs very often.
-- Implement repeat
-  - Record input of user
-  - next_document should also be recorded: this just makes repeat more powerful
-  - Be able to save these macros, and be able to construct macros via literal input.
-    This makes it easy to record a macro and use it for bulk editing
 - Allow fate to be used for bulk file editing according to some given script
   - Things like completion need to be disabled for this to speed up starting fate
 - Make sure the view updates fast enough to be in sync with userinterface.viewportoffset and
@@ -138,11 +148,9 @@ SHORT TERM
   compute concealed from text on demand.
   Solution: generate a view object for a given text interval on demand. This then contains the
   view text, highlighting and selection as should be visible to the user.
-- Rename UserInterfaceProxy to FakeUserInterface.
 
 MIDDLE TERM
-- Use a tool that computes unit test coverage.
-- Create something that computes the internal crash probability (per input unit) based on the randomized tests? Not sure if this is feasible, since once crashes they should be fixed right away.
+- Implement insert mode preview as concealments.
 - Make fate save a recovery file on crash to prevent dataloss.
 - Create an options namespace.
   - To separate variables that can be arbitrarily configured by the user from variables that
@@ -169,9 +177,12 @@ MIDDLE TERM
   - Maybe it helps to only match regex per line in some cases
 - Snippet technology
   - Expand and surround/refactoring
-- Easier file opening
+- Easier file opening. We may want to use external tools for this, as we only want to expand
+  strings to full paths.
 
 LONG TERM
+- Use a tool that computes unit test coverage.
+- Create something that computes the internal crash probability (per input unit) based on the randomized tests? Not sure if this is feasible, since once crashes they should be fixed right away.
 - Incorporate testing with multiple documents
 - Think about how to decorate classes easily, without disabling subclassing
   - Can't decorate classes by functions: this turns them into functions
