@@ -108,7 +108,9 @@ def beg_of_wrapped_line(text, max_width, pos):
     bol = previous_eol + 1
     nr_wrapped_lines_before = (pos - bol) // max_width
     bowl = bol + nr_wrapped_lines_before * max_width
+
     assert count_newlines(text, (bol, bowl)) == 0
+    assert 0 <= bowl <= len(text), '0 <= {} <= {}'.format(bowl, len(text))
     return bowl
 
 
@@ -166,9 +168,12 @@ def end_of_wrapped_line(text, max_width, pos):
 
     remaining_line_length = eol - bowl + 1 # eol inclusive
     if remaining_line_length > max_width:
-        return bowl + max_width - 1 # Don't count bowl twice
+        result = bowl + max_width - 1 # Don't count bowl twice
     else:
-        return eol
+        result = eol
+
+    assert 0 <= result <= len(text), '0 <= {} <= {}'.format(result, len(text))
+    return result
 
 def move_n_wrapped_lines_down_pre(text, max_width, start, n):
     assert max_width > 0
