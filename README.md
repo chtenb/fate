@@ -121,10 +121,7 @@ SHORT TERM
   empty intervals in tfate should be defined as a concealment. This changes how often and
   when the concealment is computed. I.e. it is not possible to insert characters now, ony
   substitutions are supported.
-- Make it easily possible to integrate fate into other text editors.
 - Clipboard should be shared among documents to make it possible to copy paste across.
-- Make all pure functional computations w.r.t. positions in text contract based, because they
-  appear to suffer from bugs very often.
 - Implement repeat
   - Record input of user
   - next_document should also be recorded: this just makes repeat more powerful
@@ -132,24 +129,17 @@ SHORT TERM
     This makes it easy to record a macro and use it for bulk editing
 - Allow fate to be used for bulk file editing according to some given script
   - Things like completion need to be disabled for this to speed up starting fate
-- Make sure the view updates fast enough to be in sync with userinterface.viewportoffset and
-  viewportsize. If this is not the case, implement a viewbuffer, which is just a
-  larger version of the normal view. Alternatively, always generate the entire viewtext or
-  compute concealed from text on demand.
-  Solution: generate a view object for a given text interval on demand. This then contains the
-  view text, highlighting and selection as should be visible to the user.
 - Rename UserInterfaceProxy to FakeUserInterface.
+- Create a check_types precondition.
 
 MIDDLE TERM
-- Use a tool that computes unit test coverage.
-- Create something that computes the internal crash probability (per input unit) based on the randomized tests? Not sure if this is feasible, since once crashes they should be fixed right away.
+- Make it easily possible to integrate fate into other text editors.
 - Make fate save a recovery file on crash to prevent dataloss.
 - Create an options namespace.
   - To separate variables that can be arbitrarily configured by the user from variables that
     are simply part of the document state and should not be corrupted.
   - To allow for automated testing with arbitrary configurations.
 - Make sphinx documentation up to date.
-- Different forms of wrapping left/right + word/character?
 - Tests for selectors.
 - Make labeling generation asynchronous
 - Fix unnecessary pylint complains
@@ -172,6 +162,10 @@ MIDDLE TERM
 - Easier file opening
 
 LONG TERM
+- Different forms of wrapping left/right + word/character?
+- Use a tool that computes unit test coverage.
+- Create something that computes the internal crash probability (per input unit) based on the randomized tests? Not sure if this is feasible, since once crashes they should be fixed right away.
+- Think about to what extent we can have static type checking.
 - Incorporate testing with multiple documents
 - Think about how to decorate classes easily, without disabling subclassing
   - Can't decorate classes by functions: this turns them into functions

@@ -5,7 +5,7 @@ from logging import debug
 from .selection import Interval, Selection
 from .contract import post
 from .navigation import (
-    move_n_wrapped_lines_down, count_wrapped_lines, end_of_wrapped_line)
+    move_n_wrapped_lines_down, count_wrapped_lines, next_beg_of_wrapped_line)
 
 
 def _compute_selectionview_post(result, self, old=None, new=None):
@@ -148,8 +148,13 @@ class TextView:
         # Everything should be snapped to exactly fit the required length.
         # This is to make textview behave as deterministic as possible, such that potential
         # indexing errors are identified soon.
-        last_line = move_n_wrapped_lines_down(vtext, width, 0, height - 1)
-        required_length = end_of_wrapped_line(vtext, width, last_line) + 1
+        beg_last_line = move_n_wrapped_lines_down(vtext, width, 0, height - 1)
+        required_length = next_beg_of_wrapped_line(vtext, width, beg_last_line)
+        # If the last line is not wrapped and has no eol character, it is the last line in the
+        # file, so the next_beg_of_wrapped_line will fail and the required_length should equal
+        # the length of vtext
+        if required_length == beg_last_line:
+            required_length = len(vtext)
 
         # Assert that we do not have to snap no more then half,
         # otherwise we did too much work
@@ -166,7 +171,7 @@ class TextView:
         viewpos_to_origpos = vpos_to_opos
 
         # Some post conditions
-        assert len(text) == required_length
+        assert len(text) == required_length, '{} != {}'.format(len(text), required_length)
         assert len(origpos_to_viewpos) == required_length + 1
         # assert len(viewpos_to_origpos) == required_length + 1
 
