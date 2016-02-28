@@ -40,7 +40,7 @@ else:
 if args.debug:
     suite.debug()
 else:
-    runner = TextTestRunner(buffer=True, failfast=args.failfast, tb_locals=args.verbose)
+    runner = TextTestRunner(failfast=args.failfast, tb_locals=args.verbose)
     test_result = runner.run(suite)
 
     success = test_result.wasSuccessful()
