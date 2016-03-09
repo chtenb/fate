@@ -1,5 +1,4 @@
 language: python
 python:
-    - "3.4"
-install: "pip install -r requirements.txt"
+    - "3.5"
 script: python runtest.py -l
