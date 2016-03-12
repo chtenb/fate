@@ -134,10 +134,21 @@ just apply the same code with different substitutions.
 How would you define and hook into these layers? Currently there are conceal events, and the
 remaining applications were done on the fly in the userinterface.
 Some possibilities.
-1. Define a space of a ordering, such that some function can hook into a number. All functions
-are then executed in the order of their numbers.
+1. Define a ordering space of doubles, such that some function can hook into a number.
+All functions are then executed in the order of their numbers.
 2. Predefine a set of events. For each new application a patch would be needed.
 3. Create a list of "events". This list could be modified by plugins.
+
+
+Abstraction
+-----------
+
+We can view all these replacements as text operations/transformations.
+The only addition here is that we have to be able to specify more information as to how
+intervals are mapped across the transformations.
+
+The other enhancement we need is that we can do proper transformations on just a part of
+the text, for performance reasons.
 """
 from math import ceil
 from bisect import bisect_left
