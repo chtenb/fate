@@ -183,6 +183,302 @@ LONG TERM
   If one changes, the other changes with it.
 - Binary search for selections? Easymotion?
 
+
+
+
+
+
+
+
+
+
+
+API Philosophy
+--------------
+This is a brief introduction in how the extensibility of fate is designed by explaining some of
+the core constructions.
+
+The goal of a text editor is to make modifications to a text.  More generally, the user should
+also be able to modify things other than text, such as options or other meta stuff.  We store
+all relevant data for editing a text in a single object, and call this object a document.
+
+To make modifications to a document, we define commands.  An command is an abstract object that
+can make a modification to a document. An command must therefore be executable (read: callable)
+and accept a document as argument.  For instance, consider an command that changes the
+selection mode of a document to EXTEND. This command could be implemented as follows.
+
+For instance, consider a very simple implementation of a command that
+saves the text of the document to a file.
+
+```python
+def save(document):
+    Save document text to file.
+    if document.filename:
+        try:
+            with open(filename, 'w') as fd:
+                fd.write(document.text)
+        except (FileNotFoundError, PermissionError) as e:
+            logging.error(str(e))
+    else:
+        logging.error('No filename')
+```
+
+Can we also make commands which are incrementally constructed by the
+user while getting feedback, like an insertion operation?
+
+```python
+def set_tail_mode(document):
+    document.selection_mode = selecting.tail_mode
+```
+
+Another equivalent way, using a class, would be:
+
+```python
+class SetExtendMode:
+
+    def __call__(self, document):
+        document.selection_mode = selecting.tail_mode
+
+set_tail_mode = SetExtendMode()  # create command
+set_tail_mode(mydocument)  # execute the command on a document
+```
+
+Commands like this can easily be composed, by putting them into a container command.
+
+```python
+def my_container_command(document):
+    set_tail_mode(document)
+    set_tail_mode(document)
+    # etc
+```
+
+Let us take a simple example command which lets the user set the filename.
+One way to do this would be as follows.
+Suppose that we can get a character from the user by calling document.ui.getkey().
+
+```python
+def setfilename(document):
+    filename = ''
+    while 1:
+        key = document.ui.getkey()
+        if key == 'Esc':
+            break
+        elif key == '\n':
+            document.filename = filename
+            return
+        elif key == '\b':
+            filename = filename[:-1]
+        else:
+            filename += key
+```
+
+One good thing about this definition is that it's easy to write and understand.
+But there are several major drawbacks.
+
+Most importantly it blocks the entire thread and as such doesn't allow the user
+to do something else, like switching to another document, until this command is finished.
+A possible solution to this would be to give each document its own command thread.
+But this is complicated, likely to give lots of crossthreading bugs, and removes
+the possibility to write commands that operate on multiple documents.
+An example of such a command could be a search/replace command over all documents.
+
+Another approach to implemented these kind of commands is by making them stateful.
+Such a stateful command is then stored somewhere in the document object,
+and is somehow called when there is input to process.
+Let us call a stateful commands a 'mode' and assume it is stored in document.mode.
+Assume that a mode needs to have a method 'processinput'
+which is called with the userinput.
+
+```python
+class SetFileName:
+
+    def __init__(self, document):
+        self.doc = document
+        document.mode = self
+        self.filename = ''
+
+    def processinput(self, userinput):
+        if type(userinput) == str:
+            # User input is a string
+            # Maybe a single character
+            key = userinput
+            if key == 'Esc':
+                return
+            elif key == '\n':
+                self.doc.filename = filename
+                return
+            elif key == '\b':
+                filename = filename[:-1]
+            else:
+                filename += key
+        if isinstance(userinput, MouseEvent):
+            # The userinput appears to be a mouse event type
+            # Cancel upon mouse click
+            return
+        else:
+            # Userinput is maybe a command, like next_document or delete
+            # Type not supported
+            pass
+```
+
+This command is truly stateful as it can be interrupted anytime without being corrupted.
+
+Anything that a user can do is captured by a command.
+Doing a Selection, performing a text Operation, etcetera.
+
+For some commands, we want to be able to undo them.
+Let us define the class Undoable for that.
+
+Note that, all commands can be made trivially undoable,
+by storing the document before and after applying the command.
+This is however not desirable for reasons of space.
+Therefore we leave the specific implementation
+of the undo method to the concrete subclasses.
+
+```python
+class Undoable:
+
+    def __call__(self, document):
+        document.undotree.add(self)
+        self._call(document)
+
+    def undo(self, document):
+        document.undotree.undo()
+        self._undo(document)
+
+    def _call(self, document):
+        raise Exception("An abstract method is not callable.")
+
+    def _undo(self, document):
+        raise Exception("An abstract method is not callable.")
+```
+
+Consider again the previous example. We will now make it undoable
+by storing the relevant information in the command object and inherit
+from Undoable.
+
+```python
+class UndoableSetExtendMode(Undoable):
+
+    def _call(self, document):
+        self.previous_mode = document.selection_mode
+        document.selection_mode = selecting.tail_mode
+
+    def _undo(self, document):
+        document.selection_mode = self.previous_mode
+
+set_tail_mode = UndoableSetExtendMode()  # create command
+set_tail_mode(mydocument)  # execute the command on a document
+set_tail_mode.undo(mydocument)  # undo the command on a document
+```
+
+Can we also create commands that perform differently depending
+on the context? Let us try to implement a 'select everything'.
+
+```python
+def select_everything(document):
+    interval = (0, len(document.text))
+    document.selection = Selection([interval])
+```
+
+Instead of the above, we may want to have it return a command,
+such that we can split the creation of the selection (by __init__)
+and the execution of the selection (by __call__).
+This way we can create selections, and inspect them, without
+having to actually apply them to the document.
+If we wouldn't care about that, we might as well use the above.
+
+Two alternatives. Looks like there are usecases for both of them,
+so we might want to leave this choice open.
+Generalizing this a bit further, we can have commands that return other commands, which we
+call higher order commands.
+
+```python
+def SelectEverything(document, selection=None, selection_mode=None):
+
+        Good: - short and clear
+        Bad: - cannot derive from Interactive etc
+
+    selection = selection or document.selection
+    selection_mode = selection_mode or document.selection_mode
+    interval = (0, len(document.text))
+    return Selection([interval])
+
+class SelectEverything2(Selection):
+
+        Good: - in case of updateable commands, we may need to be stored as
+            a whole, in order to be able to undo and redo ourselves only
+        Bad: - needs more knowledge of Selection's inner working
+             - compound actors that are only partly undoable are stored completely
+
+    def __init__(self, document, selection=None, selection_mode=None):
+        selection = selection or document.selection
+        selection_mode = selection_mode or document.selection_mode
+        interval = (0, len(document.text))
+        Selection.__init__(self, [interval])
+
+my_select_everything = SelectEverything2(mydocument)  # create selection
+my_select_everything(mydocument)  # execute the selection on a document
+my_select_everything.undo(mydocument)  # undo the selection on a document
+```
+
+Can we also create selections that are based on more input than
+only the document, like for instance regex patterns?
+
+```python
+class SelectPattern(Selection):
+
+    def __init__(self, pattern, document, selection=None, selection_mode=None, reverse=False, group=0):
+        selection = selection or document.selection
+        selection_mode = selection_mode or document.selection_mode
+        # do pattern logic here
+
+# make sure we only have to pass a document at runtime
+from functools import partial
+SelectIndent = partial(SelectPattern, r'(?m)^([ \t]*)', reverse=True, group=1)
+
+my_indent = SelectIndent(mydocument)  # create selection
+my_indent(mydocument)  # execute the selection on a document
+my_indent.undo(mydocument)  # undo the selection on a document
+```
+
+Now we can call any function that takes a document and returns an
+command an 'actor'. So in the above, select_somepattern is an actor,
+which resulted from partially applying SelectPattern.
+Note that Selection and Operation are not actors.
+
+To improve selection/interval arithmetic, we should override basic operators
+for the classes Selection and Interval.
+(a,b)+(c,d)=(min(a,b),max(c,d))
+s+t=s.tail(t)
+Note that interval selector behaviour follows from these definitions.
+
+Can we also make commands which are incrementally constructed by the
+user while getting feedback, like an insertion operation?
+
+- Nested modes or not?
+
+Snippet expansion should be trivial due to our modal command machinery.
+There are several possibilities.
+Do we want to make it a single command, or do we want to have an command for each placeholder?
+In the first case we have to make it a CompoundCommand.
+In the second case we can either store the commands in advance (annoying to implement)
+or store a snippet object in the document which is updateable and subsequently stores
+placeholder commands in the undotree.
+This requires a seperate field for updateable commands.
+Updateable commands are then no longer determined from the last command in the history,
+but have a separate field.
+
+Generally speaking, we want to interact with a general object/command.
+In this case, a snippet object.
+While interacting with the snippet object, we get multiple other interactions with ChangeInPlace operations.
+
+So we need to think about how to implement interaction in the most general way.
+We can introduce an interaction stack, such that we can nest interactions.
+If we then finish an interaction, we are dropped into the previous interaction.
+
+
+
 [docs]: http://chiel92.github.io/fate/
 [fate-tui]: http://github.com/Chiel92/fate-tui
 
