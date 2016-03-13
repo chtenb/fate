@@ -6,7 +6,7 @@ from .randomized_userinterface import RandomizedUserSimulator
 from .cmdargs import args
 
 
-class RandomizedActionTest(BaseTestCase):
+class RandomizedCommandTest(BaseTestCase):
 
     def setUp(self):
         self.create_userinterface = RandomizedUserSimulator

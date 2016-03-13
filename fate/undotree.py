@@ -1,5 +1,5 @@
 """
-This module contains the classes ActionTree and Node, to store
+This module contains the classes CommandTree and Node, to store
 the command history.
 """
 from . import commands
@@ -105,7 +105,7 @@ class UndoTree:
 class Node:
 
     """
-    Node of an ActionTree.
+    Node of an CommandTree.
     Each node can have a single parent, a list of commands and a list of children.
     """
 

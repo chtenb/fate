@@ -56,7 +56,7 @@ commands.repeat = repeat
 
 
 def repeatable(command):
-    """Action decorator which stores command in last_command field in document."""
+    """Command decorator which stores command in last_command field in document."""
     @wraps(command)
     def wrapper(document):
         document.ui.repeat_data.current_command = command

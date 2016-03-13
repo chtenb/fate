@@ -36,6 +36,18 @@ class Undoable:
         raise NotImplementedError("An abstract method is not callable.")
 
 
+
+# To be able to do sequences of commands as a whole, we introduce the Compound class.
+# When an interaction is composed into an undoable sequence, we want the tail of the
+# sequence to wait until an earlier interaction has finished.  A compound command should be
+# transparent to classes such as Completeable, Interactive, Undoable, etc such that
+# arbitrary commands can be composed together.
+#
+# If a new command class is written that needs explicit support from Compound to be able to
+# be composed, you have to subclass Compound, modify it to your needs, and use that subclass
+# for your stuff.
+
+
 # PROBLEM:
 # Suppose we want to create a compound selection which involves a the mode
 # of the document to change to extend mode at some point.
