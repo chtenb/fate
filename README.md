@@ -196,7 +196,8 @@ LONG TERM
 API Philosophy
 --------------
 This is a brief introduction in how the extensibility of fate is designed by explaining some of
-the core constructions.
+the core constructions. For the actual implementations you're gonna have to dig into the code,
+which shouldn't be too hard, since the codebase is relatively small.
 
 The goal of a text editor is to make modifications to a text.  More generally, the user should
 also be able to modify things other than text, such as options or other meta stuff.  We store
