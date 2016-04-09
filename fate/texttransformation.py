@@ -137,17 +137,115 @@ also be mapped to two other positions, and be treated special as well.
 
 The way the ambiguous position mappings are treated should be specified at creation time.
 Potentially, regardless of whether this is useful, this specified behaviour can be
-overriden at application time.
+overridden at application time.
 
-There are 4 sane behaviours to be disinghuished. Suppose position x is mapped to [a,b].
+There are 4 sane behaviours to be distinghuished. Suppose we want to map interval [x,y] and
+position x happens to be mapped to (a,b) using a map f.
 
 1. Position a is always used.
 2. Position b is always used.
-3. The one that is closest by is used.
-4. The one that is furthest away is used.
+3. The one that is closest to (either of) f(y) is used.
+4. The one that is furthest from (either of) f(y) is used.
 
 For cases 1 and 2 a mapping to a single positions should be used instead. So that leaves
 us with two possible behaviours. So a flag indicating which behaviour should be used must
 be specified along with the pair of positions.
 
+
+### Transforming parts of a text
+It should be easy to only transform a part of a text. Restrict all substitutions to one
+interval in the text. For the mapping this means that all positions before that interval are
+mapped to them selves and all positions after the interval are compensated for the difference
+in size of the transformed part of the text.
+
 """
+
+from enum import Enum
+from typing import Iterable, List
+
+from .selection import Interval
+
+
+class MappingBehaviour:
+    closest = 1
+    furthest = 2
+
+
+class IntervalSubstitution:
+
+    def __init__(self, interval: Interval, new_length: int, behaviour:
+            MappingBehaviour=MappingBehaviour.furthest):
+        """
+        :interval: the interval that is substituted.
+        :new_length: the length of the resulting interval, after the substitution.
+        :behaviour: how intervals should be mapped in the face of ambiguity. Only relevant when
+        """
+        self.interval = interval
+        self.new_length = new_length
+        self.behaviour = behaviour
+
+
+class IntervalMapping:
+
+    """Maps intervals accross a text transformation."""
+
+    def __init__(self, textlength: int, mapping_start: int, mapping_end: int, substitutions:
+            List[IntervalSubstitution]):
+        """
+        textlength: length of the text before the transformation.
+        mapping_start/mappping_end: interval to which the transformation is restricted.
+        substitutions: sorted (ascending by interval) list of IntervalSubstitutions. Interval
+        are not allowed to overlap. Intervals are allowed to be adjacent.
+        """
+        self._textlength = textlength
+        self._mapping_start = mapping_start
+        self._mapping_end = mapping_end
+        self._substitutions = substitutions
+
+        assert mapping_start <= mapping_end
+        # TODO: check sortedness of substitutions
+        # TODO: check mutual exclusiveness of substitutions
+
+        mapping = []
+        # The last position that was mapped
+        # NOTE: since adjacency is handled well in the code below, we acutally don't have to subtract 1
+        orig_pos = mapping_start - 1 # can be -1
+        # The last position that was being mapped to
+        imag_pos = mapping_start - 1 # can be -1
+        for substitution in substitutions:
+            beg, end = substitution.interval
+
+            if beg - orig_pos == 0:
+                # Current substitution is adjacent to the previous
+                pass
+            else:
+                orig_pos += 1
+                imag_pos += 1
+
+                # NOTE: From here, orig_pos and imag_pos are the next positions to be mapped
+
+                # Map the untouched positions until the substitution
+                nr_untouched_positions = beg - orig_pos # Including orig_pos, exluding beg
+                mapping.extend(range(imag_pos, imag_pos + nr_untouched_positions)) # Exluding beg
+                orig_pos += nr_untouched_positions # orig_pos is now at beg
+                imag_pos += nr_untouched_positions # imag_pos is now at the position which will
+                                                   # correspond to beg
+
+            # Map the positions in the substitution
+            old_length = end - beg
+            new_length = substitution.new_length
+            if old_length == 0:
+                mapping.append((imag_pos, imag_pos + new_length, substitution.behaviour))
+                imag_pos += new_length
+            else:
+                mapping.extend([imag_pos] * (old_length - 1))
+                imag_pos += new_length
+                mapping.append(imag_pos)
+
+            # NOTE: From here, orig_pos and imag_pos are the last positions that were mapped
+
+        # Map the remaining part
+        nr_remaining_positions = mapping_end - orig_pos
+        mapping.extend(range(imag_pos, imag_pos + nr_remaining_positions))
+
+
