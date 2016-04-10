@@ -55,7 +55,7 @@ class Interval:
 
     @property
     def isempty(self):
-        return self.end - self.beg == 0
+        return self.beg == self.end
 
     def content(self, doc):
         return doc.text[max(0, self.beg):min(len(doc.text), self.end)]

@@ -48,6 +48,12 @@ mapped and evident that out approach is exhaustive.
     [x+1,a] => [x+1,a]
     and so [x,x+1] => [x,x+1]
 
+IMPORTANT:
+In case 2, for some applications we might want to map
+    [a,b] => { [a,x], [x+1,b] }
+But since this is quite a specific use case and complicates everything even more, we want to
+leave this for now, and implement it in a dedicated type of transformation.
+
 For case 2, a choice must be made for all kind of affected intervals.  Note that for the
 inverse, the deletion becomes an insertion, and as such, again a choice must be made.  This
 choice should be made at creation time, since at execution time the context and semantics of a
@@ -91,16 +97,26 @@ substitution operands. If some substitution wanted to expose such information, t
 substitution should be chopped down into finer substitutions such that related characters
 or substrings are exactly mapped onto each other.
 
+Again we see that choice has to be made in some situations. Let's do it.
+For insertions we want to map
+[x,x] => [x,x+s]
+[a,x] => [a,x]
+[x,a] => [x+s,a+s]
+since otherwise intervals can end up being overlapping each other, which we want to avoid.
+For substitutions we want to map
+[a,x+y] => [a,x], for all 1 <= y <= s-1
+[x+y,a] => [x+t,a-s+t], for all 1 <= y <= s-1
+for the same reason.
 
-### Multiple non-adjacent substitutions.
+
+### Multiple substitutions.
 All intervals should compensate for the intervals difference in size of the interval before
 them. Adjacent substitutions shouldn't complicate this much. The position that the two
-substitutions have in common should be mapped to the same image anyway.
-
-
-### Overlapping substitutions.
-If there are overlapping substitutions available on the same text, it is unclear what the
-textual result should be. So we pick the biggest.
+substitutions have in common should be mapped to the same image anyway.  If there are
+overlapping substitutions available on the same text, it is unclear what the textual result
+should be. So we pick the biggest or we just forbid it.  What if multiple insertions are done
+at the same position? It is not really clear if this falls under overlapping substitutions. We
+can either merge them to be a single insertion or forbid them.
 
 
 ### Composition of transformations.
@@ -135,23 +151,6 @@ straight away. The position at an insertion should be mapped to two other positi
 should be treated special. The inner positions of a substitutions of length > 1 should
 also be mapped to two other positions, and be treated special as well.
 
-The way the ambiguous position mappings are treated should be specified at creation time.
-Potentially, regardless of whether this is useful, this specified behaviour can be
-overridden at application time.
-
-There are 4 sane behaviours to be distinghuished. Suppose we want to map interval [x,y] and
-position x happens to be mapped to (a,b) using a map f.
-
-1. Position a is always used.
-2. Position b is always used.
-3. The one that is closest to (either of) f(y) is used.
-4. The one that is furthest from (either of) f(y) is used.
-
-For cases 1 and 2 a mapping to a single positions should be used instead. So that leaves
-us with two possible behaviours. So a flag indicating which behaviour should be used must
-be specified along with the pair of positions.
-
-
 ### Transforming parts of a text
 It should be easy to only transform a part of a text. Restrict all substitutions to one
 interval in the text. For the mapping this means that all positions before that interval are
@@ -160,92 +159,136 @@ in size of the transformed part of the text.
 
 """
 
-from enum import Enum
-from typing import Iterable, List
+from typing import List
 
 from .selection import Interval
 
 
-class MappingBehaviour:
-    closest = 1
-    furthest = 2
-
 
 class IntervalSubstitution:
 
-    def __init__(self, interval: Interval, new_length: int, behaviour:
-            MappingBehaviour=MappingBehaviour.furthest):
+    def __init__(self, interval: Interval, new_length: int):
         """
         :interval: the interval that is substituted.
-        :new_length: the length of the resulting interval, after the substitution.
-        :behaviour: how intervals should be mapped in the face of ambiguity. Only relevant when
+        :new_length: the length of the resulting interval, i.e. end - beg, after the substitution.
         """
         self.interval = interval
         self.new_length = new_length
-        self.behaviour = behaviour
+
+    @property
+    def is_insertion(self):
+        return self.interval.isempty
 
 
 class IntervalMapping:
 
     """Maps intervals accross a text transformation."""
 
-    def __init__(self, textlength: int, mapping_start: int, mapping_end: int, substitutions:
-            List[IntervalSubstitution]):
+    def __init__(self, substitutions: List[IntervalSubstitution]):
         """
-        textlength: length of the text before the transformation.
-        mapping_start/mappping_end: interval to which the transformation is restricted.
         substitutions: sorted (ascending by interval) list of IntervalSubstitutions. Interval
-        are not allowed to overlap. Intervals are allowed to be adjacent.
+        are not allowed to overlap. Intervals are allowed to be adjacent. It is not allowed to
+        have multiple insertions at the same position.
         """
-        self._textlength = textlength
+        # Remove insertions of length 0
+        substitutions = [s for s in substitutions if not (s.is_insertion and s.new_length == 0)]
+
+
+        # Deduce mapping_start/mapping_end from the substitutions. If something must be
+        # restricted for reasons of speed, the substitutions themselves must be restricted.
+        # Also, this method is already complex enough. We don't have to replace the
+        # mappingstart/end arguments with a single length argument, since we can just treat any
+        # position larger than the last substitution the same way.
+
+        # mapping_start: inclusive lower bound to which the transformation is restricted.
+        # mappping_end: inclusive upper bound to which the transformation is restricted.
+        if not substitutions:
+            mapping_start = 0
+            mapping_end = 0
+        else:
+            mapping_start = substitutions[0].interval[0]
+            mapping_end = substitutions[-1].interval[1]
+
         self._mapping_start = mapping_start
         self._mapping_end = mapping_end
         self._substitutions = substitutions
 
         assert mapping_start <= mapping_end
-        # TODO: check sortedness of substitutions
-        # TODO: check mutual exclusiveness of substitutions
 
-        mapping = []
+        # PROBLEM:
+        # If we map the first position of the next substitution already, we can't do
+        # insertions. If we don't map the first position of the next substitution, we have an
+        # extra case for when substitutions are adjacent, since in that case the first position
+        # of the next substitution is part of the substitution before that.
+        # SOLUTION:
+        # Map the first position of the next substitution, and insertions always replace the
+        # last element in the mapping.
+
+        # The mapping from original positions to their image.
+        mapping = [mapping_start]
         # The last position that was mapped
-        # NOTE: since adjacency is handled well in the code below, we acutally don't have to subtract 1
-        orig_pos = mapping_start - 1 # can be -1
-        # The last position that was being mapped to
-        imag_pos = mapping_start - 1 # can be -1
+        orig_pos = mapping_start
+        # The last position that was mapped to
+        imag_pos = mapping_start
+        previous_substitution = None
         for substitution in substitutions:
             beg, end = substitution.interval
+
+            # Check sortedness of substitutions and mutual exclusiveness of substitutions
+            if previous_substitution != None:
+                assert previous_substitution.interval[1] <= beg
 
             if beg - orig_pos == 0:
                 # Current substitution is adjacent to the previous
                 pass
             else:
-                orig_pos += 1
-                imag_pos += 1
+                # Map the untouched positions until the substitution.  We want map the first
+                # position of the current substitution as well to make sure that we end up in
+                # the same case as when current substitution is adjacent to the previous.
 
-                # NOTE: From here, orig_pos and imag_pos are the next positions to be mapped
+                # Don't count orig_pos (already been mapped) and count beg
+                nr_untouched_positions = beg - orig_pos
+                # Map imag_pos up to (and including) beg
+                mapping.extend(range(imag_pos + 1,
+                                     imag_pos + 1 + nr_untouched_positions))
+                # Let orig_pos be at beg + 1
+                orig_pos += nr_untouched_positions
+                # Let imag_pos be at the position which beg is going to be mapped to
+                imag_pos += nr_untouched_positions
 
-                # Map the untouched positions until the substitution
-                nr_untouched_positions = beg - orig_pos # Including orig_pos, exluding beg
-                mapping.extend(range(imag_pos, imag_pos + nr_untouched_positions)) # Exluding beg
-                orig_pos += nr_untouched_positions # orig_pos is now at beg
-                imag_pos += nr_untouched_positions # imag_pos is now at the position which will
-                                                   # correspond to beg
+            # NOTE: the first position of our substitution is already mapped
+            assert orig_pos == beg
 
             # Map the positions in the substitution
+            # Don't count beg (already been mapped) and count end
             old_length = end - beg
             new_length = substitution.new_length
             if old_length == 0:
-                mapping.append((imag_pos, imag_pos + new_length, substitution.behaviour))
-                imag_pos += new_length
+                # We replace the last value
+                if mapping and isinstance(mapping[-1], tuple):
+                    # If previous substitution was an insertion as well, merge with it
+                    try:
+                        mapping[-1] = (mapping[-1][0], imag_pos + new_length)
+                    except:
+                        from pprint import pprint
+                        pprint(vars())
+                        raise
+                else:
+                    mapping[-1] = (imag_pos, imag_pos + new_length)
             else:
                 mapping.extend([imag_pos] * (old_length - 1))
-                imag_pos += new_length
-                mapping.append(imag_pos)
+                mapping.append(imag_pos + new_length)
 
-            # NOTE: From here, orig_pos and imag_pos are the last positions that were mapped
+            orig_pos += old_length # we mapped up to and including (orig_pos + old_length)
+            imag_pos += new_length # we mapped up to and including (imag_pos + new_length)
+            previous_substitution = substitution
 
         # Map the remaining part
         nr_remaining_positions = mapping_end - orig_pos
-        mapping.extend(range(imag_pos, imag_pos + nr_remaining_positions))
+        mapping.extend(range(imag_pos + 1, imag_pos + 1 + nr_remaining_positions))
 
+        assert mapping_end - mapping_start + 1 == len(mapping), '{} - {} != len({})'.format(
+                mapping_end, mapping_start, mapping)
+
+        self._innermapping = mapping
 

@@ -9,6 +9,11 @@ from ..filecommands import open_file, quit_document, force_quit, quit_all
 from ..errorchecking import checkerrors
 from ..formatting import formattext
 
+# TODO: to remove the requirement of complete determinism of fate w.r.t. a randomizer seed
+# we could generate a large enough pool of random numbers on beforehand based on a
+# given/generated seed, and feed this to the random number generator when choosing the commands
+# during testing.
+
 # All keys that can be entered by the user simulator
 key_list = list(
     """

@@ -40,6 +40,8 @@ else:
 if args.debug:
     suite.debug()
 else:
+    # TODO: tb_locals is not always supported. Find out when it is supported and make that a
+    # requirements.
     runner = TextTestRunner(failfast=args.failfast, tb_locals=args.verbose)
     test_result = runner.run(suite)
 
