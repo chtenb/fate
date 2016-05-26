@@ -66,7 +66,16 @@ class Interval:
 
 class Selection:
 
-    """Sorted list of disjoint non-adjacent intervals."""
+    """
+    Sorted list of disjoint non-adjacent intervals.
+
+    TODO: allow adjacentness in selections?
+    What about empty intervals?
+    For users this stuff doesn't make sense, but for arbitrary substitutions used by
+    e.g. plugins this may make sense.
+    Proposal: allow it, but after each change in the user selection, call a function that
+    merges adjacent things.
+    """
 
     def __init__(self, intervals=None):
         self._intervals = []

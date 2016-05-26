@@ -103,9 +103,12 @@ For insertions we want to map
 [a,x] => [a,x]
 [x,a] => [x+s,a+s]
 since otherwise intervals can end up being overlapping each other, which we want to avoid.
+I.e. we want intervals that are disjoint to remain disjoint after being taken accross the
+mapping.
 For substitutions we want to map
-[a,x+y] => [a,x], for all 1 <= y <= s-1
-[x+y,a] => [x+t,a-s+t], for all 1 <= y <= s-1
+[a,x+y] => [a,x], for all 1 <= y <= s-1, a <= x
+[x+y,a] => [x+t,a-s+t], for all 1 <= y <= s-1, x <= a
+[x+y,x+z] => [x,x], for all 1 <= y <= z <= s-1
 for the same reason.
 
 
@@ -161,8 +164,7 @@ in size of the transformed part of the text.
 
 from typing import List
 
-from .selection import Interval
-
+from .selection import Interval, Selection
 
 
 class IntervalSubstitution:
@@ -174,6 +176,9 @@ class IntervalSubstitution:
         """
         self.interval = interval
         self.new_length = new_length
+
+    def __repr__(self):
+        return '{}: {}'.format(self.interval, self.new_length)
 
     @property
     def is_insertion(self):
@@ -191,8 +196,8 @@ class IntervalMapping:
         have multiple insertions at the same position.
         """
         # Remove insertions of length 0
-        substitutions = [s for s in substitutions if not (s.is_insertion and s.new_length == 0)]
-
+        substitutions = [s for s in substitutions if not (
+            s.is_insertion and s.new_length == 0)]
 
         # Deduce mapping_start/mapping_end from the substitutions. If something must be
         # restricted for reasons of speed, the substitutions themselves must be restricted.
@@ -267,20 +272,15 @@ class IntervalMapping:
                 # We replace the last value
                 if mapping and isinstance(mapping[-1], tuple):
                     # If previous substitution was an insertion as well, merge with it
-                    try:
-                        mapping[-1] = (mapping[-1][0], imag_pos + new_length)
-                    except:
-                        from pprint import pprint
-                        pprint(vars())
-                        raise
+                    mapping[-1] = (mapping[-1][0], imag_pos + new_length)
                 else:
                     mapping[-1] = (imag_pos, imag_pos + new_length)
             else:
                 mapping.extend([imag_pos] * (old_length - 1))
                 mapping.append(imag_pos + new_length)
 
-            orig_pos += old_length # we mapped up to and including (orig_pos + old_length)
-            imag_pos += new_length # we mapped up to and including (imag_pos + new_length)
+            orig_pos += old_length  # we mapped up to and including (orig_pos + old_length)
+            imag_pos += new_length  # we mapped up to and including (imag_pos + new_length)
             previous_substitution = substitution
 
         # Map the remaining part
@@ -288,7 +288,71 @@ class IntervalMapping:
         mapping.extend(range(imag_pos + 1, imag_pos + 1 + nr_remaining_positions))
 
         assert mapping_end - mapping_start + 1 == len(mapping), '{} - {} != len({})'.format(
-                mapping_end, mapping_start, mapping)
+            mapping_end, mapping_start, mapping)
 
         self._innermapping = mapping
 
+    def __getitem__(self, item: (int, Interval, Selection)) -> (int, Interval, Selection):
+        """
+        :item: position, interval or selection to map.
+        """
+        mapping = self._innermapping
+        mapping_start = self._mapping_start
+        mapping_end = self._mapping_end
+
+        if isinstance(item, Selection):
+            selection = item
+            result = Selection()
+            for interval in selection:
+                result.add(self[interval])
+            return result
+
+        if isinstance(item, Interval):
+            interval = item
+            beg, end = interval
+            if (interval.isempty and mapping_start <= beg <= mapping_end
+                    and isinstance(mapping[beg - mapping_start], tuple)):
+                return Interval(*mapping[beg - mapping_start])
+            else:
+                return Interval(self._map_position(beg, False), self._map_position(end, True))
+
+        return self._map_position(item, True)
+
+    def _map_position(self, position: int, snap_down: bool) -> int:
+        """
+        :position: position to map.
+        :snap_down: if True, return the lowest candidate position, otherwise the highest.
+        """
+        mapping = self._innermapping
+        mapping_start = self._mapping_start
+        mapping_end = self._mapping_end
+        print(1)
+
+        if position < self._mapping_start:
+            print(2)
+            return position
+        elif position > self._mapping_end:
+            print(3)
+            codomain_start = mapping[0] if isinstance(mapping[0], int) else mapping[0][0]
+            codomain_end = mapping[-1] if isinstance(mapping[-1], int) else mapping[-1][1]
+            len_codomain = codomain_end - codomain_start + 1
+            len_diff = len_codomain - len(mapping)
+            result = position + len_diff
+            assert result >= 0
+            return result
+
+        assert mapping_start <= position <= mapping_end
+        result = mapping[position - mapping_start]
+        if isinstance(result, tuple):
+            print(4)
+            if snap_down:
+                print(5)
+                return result[0]
+            else:
+                print(6)
+                return result[1]
+        print(7)
+        return result
+
+    def __repr__(self):
+        return repr(self._innermapping)

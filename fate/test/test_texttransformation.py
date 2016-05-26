@@ -1,9 +1,100 @@
 from unittest import TestCase
 from ..texttransformation import IntervalMapping, IntervalSubstitution
-from ..selection import Interval
+from ..selection import Interval, Selection
+from random import randint
 
 
-class TestNavigation(TestCase):
+class TestTextTransformation(TestCase):
+
+    def test_death(self):
+        # Test random sets of substitutions and intervals to check for exceptions
+        for test_nr in range(0, 1000):
+            substitutions = []
+            lowerbound = 0
+            for _ in range(randint(0, 5)):
+                beg = randint(lowerbound, 10)
+                end = randint(beg, 10)
+                length = randint(0, 3)
+                s = IntervalSubstitution(Interval(beg, end), length)
+                substitutions.append(s)
+                lowerbound = end
+
+            mapping = IntervalMapping(substitutions)
+            lowerbound = 0
+            selection = Selection()
+            for _ in range(randint(0, 5)):
+                beg = randint(lowerbound, 10)
+                end = randint(beg, 10)
+                selection.add(Interval(beg, end))
+                lowerbound = end
+
+            mapping[selection]
+
+            new_intervals = [mapping[interval] for interval in selection]
+
+            # Test for disjointness and order preservingness
+            last_end = 0
+            for beg, end in new_intervals:
+                self.assertTrue(last_end <= beg)
+
+
+    def test_intervalmapping_getitem(self):
+        # Test positions before and after substitutions
+        mapping = IntervalMapping([])
+        for beg in range(3):
+            for end in range(beg, 3):
+                interval = Interval(beg, end)
+                self.assertEqual(interval, mapping[interval])
+
+        a = IntervalSubstitution(Interval(1, 3), 3)
+        mapping = IntervalMapping([a])
+        self.assertEqual(Interval(0, 1), mapping[Interval(0, 1)])
+        self.assertEqual(Interval(4, 6), mapping[Interval(3, 5)])
+
+        # Test positions inside substitutions
+        a = IntervalSubstitution(Interval(0, 2), 3)
+        mapping = IntervalMapping([a])
+        self.assertEqual(0, mapping[0])
+        self.assertEqual(0, mapping[1])
+        self.assertEqual(3, mapping[2])
+
+        # Test positions inbetween substitutions
+        a = IntervalSubstitution(Interval(0, 2), 3)
+        b = IntervalSubstitution(Interval(6, 6), 3)
+        mapping = IntervalMapping([a, b])
+        self.assertEqual(3, mapping[2])
+        self.assertEqual(4, mapping[3])
+        self.assertEqual(5, mapping[4])
+        self.assertEqual(6, mapping[5])
+        self.assertEqual(7, mapping[6])
+
+        # Test some intervals
+        a = IntervalSubstitution(Interval(0, 2), 3)
+        b = IntervalSubstitution(Interval(4, 4), 3)
+        c = IntervalSubstitution(Interval(4, 6), 0)
+        mapping = IntervalMapping([a, b, c])
+
+        self.assertEqual(Interval(0, 3), mapping[Interval(0, 2)])
+        self.assertEqual(Interval(0, 0), mapping[Interval(1, 1)])
+        self.assertEqual(Interval(0, 0), mapping[Interval(0, 0)])
+
+        # Test interval snapping w.r.t. insertions
+        self.assertEqual(Interval(0, 5), mapping[Interval(1, 4)])
+        self.assertEqual(Interval(5, 8), mapping[Interval(4, 4)])
+        self.assertEqual(Interval(3, 4), mapping[Interval(1, 3)])
+
+        # TODO:
+        # Our inner mapping representation is wrong
+        # We have to preserve the substitutions as some kind of tuples, to do the snapping
+        # correct. Now we are always snapping down, which is wrong.
+        # Possibilities:
+        # - represent positions inside a substitution by a None value
+        #   Cons: need to iterate to obtain values
+        # - represent positions inside a substitution by a tuple
+        #   Cons: confusion with insertions
+        # - represent positions inside a substitution by a 3-tuple containing a None value
+        #   Cons: ugly
+        # 
 
     def test_intervalmapping_creation(self):
         # Test no substitutions at all
@@ -112,6 +203,7 @@ class TestNavigation(TestCase):
         b = IntervalSubstitution(Interval(1, 2), 1)
         c = IntervalSubstitution(Interval(0, 3), 1)
         d = IntervalSubstitution(Interval(3, 3), 1)
+
         self.assertRaises(AssertionError, lambda: IntervalMapping([a, b]))
         self.assertRaises(AssertionError, lambda: IntervalMapping([a, c]))
         self.assertRaises(AssertionError, lambda: IntervalMapping([d, a]))
