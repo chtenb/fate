@@ -1,11 +1,11 @@
 from unittest import TestCase
 from .. import document
 from tempfile import gettempdir
-from .proxy_userinterface import ProxyUserInterface
+from .proxy_userinterface import FakeUserInterface
 
 class BaseTestCase(TestCase):
 
-    create_userinterface = ProxyUserInterface
+    create_userinterface = FakeUserInterface
     sampletext = """import sys
 
 class Foo(Bar):

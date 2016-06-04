@@ -132,10 +132,9 @@ SHORT TERM
   - next_document should also be recorded: this just makes repeat more powerful
   - Be able to save these macros, and be able to construct macros via literal input.
     This makes it easy to record a macro and use it for bulk editing
-- Rename UserInterfaceProxy to FakeUserInterface.
-- Create a check_types precondition.
 
 MIDDLE TERM
+- Create a check_types precondition.
 - Navigation mode.
 - Make it easily possible to integrate fate into other text editors.
 - Make fate save a recovery file on crash to prevent dataloss.

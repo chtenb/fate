@@ -3,7 +3,7 @@ from ..filecommands import quit_document
 from ..userinterface import UserInterfaceAPI
 
 
-class ProxyUserInterface(UserInterfaceAPI):
+class FakeUserInterface(UserInterfaceAPI):
 
     """UserInterface which simulates some random behaviour for testing purposes."""
 
