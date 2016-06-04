@@ -116,25 +116,27 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
-- Navigation mode.
+- Add CLI interface for batch processing. Only allowing key input here is fine for now.
+  - Things like completion need to be disabled for this to speed up starting fate
+- Integrate TextTransformation in place of Operation.
+    - Implement insert mode preview as concealments.
+    - Distinguish between concealment inside and outside selections. The epsilon that replaces
+      empty intervals in tfate should be defined as a concealment. This changes how often and
+      when the concealment is computed. I.e. it is not possible to insert characters now, ony
+      substitutions are supported.
+- Fix interval mapping.
 - Add textview creation to randomized userinterface.
-- Implement insert mode preview as concealments.
-- Distinguish between concealment inside and outside selections. The epsilon that replaces
-  empty intervals in tfate should be defined as a concealment. This changes how often and
-  when the concealment is computed. I.e. it is not possible to insert characters now, ony
-  substitutions are supported.
 - Clipboard should be shared among documents to make it possible to copy paste across.
 - Implement repeat
   - Record input of user
   - next_document should also be recorded: this just makes repeat more powerful
   - Be able to save these macros, and be able to construct macros via literal input.
     This makes it easy to record a macro and use it for bulk editing
-- Allow fate to be used for bulk file editing according to some given script
-  - Things like completion need to be disabled for this to speed up starting fate
 - Rename UserInterfaceProxy to FakeUserInterface.
 - Create a check_types precondition.
 
 MIDDLE TERM
+- Navigation mode.
 - Make it easily possible to integrate fate into other text editors.
 - Make fate save a recovery file on crash to prevent dataloss.
 - Create an options namespace.
