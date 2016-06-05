@@ -64,7 +64,7 @@ commands.open_file = compose(ask_filename, open_file)
 
 # TODO: make pressing esc work
 def quit_document(doc):
-    """Close current document."""
+    """Close current document and ask user for permission if there are unsaved changes."""
     def check_answer(doc):
         answer = doc.modes.prompt.inputstring
         if answer == 'y':

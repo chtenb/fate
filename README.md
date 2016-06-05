@@ -116,14 +116,15 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
+- Integrate TextTransformation in place of Operation.
+  - Implement insert mode preview as concealments.
+  - Distinguish between concealment inside and outside selections. The epsilon that replaces
+    empty intervals in tfate should be defined as a concealment. This changes how often and
+    when the concealment is computed. I.e. it is not possible to insert characters now, ony
+    substitutions are supported.
+  - Make textview a container of pre mapped stuff, like selection view.
 - Add CLI interface for batch processing. Only allowing key input here is fine for now.
   - Things like completion need to be disabled for this to speed up starting fate
-- Integrate TextTransformation in place of Operation.
-    - Implement insert mode preview as concealments.
-    - Distinguish between concealment inside and outside selections. The epsilon that replaces
-      empty intervals in tfate should be defined as a concealment. This changes how often and
-      when the concealment is computed. I.e. it is not possible to insert characters now, ony
-      substitutions are supported.
 - Fix interval mapping.
 - Add textview creation to randomized userinterface.
 - Clipboard should be shared among documents to make it possible to copy paste across.

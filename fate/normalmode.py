@@ -122,8 +122,12 @@ class NormalMode(Mode):
             self.process_pointerinput(userinput)
         else:
             command = input_to_command(self.doc, userinput)
+            success = False
             while callable(command):
                 command = command(self.doc)
+                success = True
+
+        return success
 
     def process_pointerinput(self, userinput):
         assert isinstance(userinput, pointer.PointerInput)

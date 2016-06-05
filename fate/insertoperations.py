@@ -33,8 +33,13 @@ class InsertMode(Mode):
         self.update_operation(doc)
 
     def processinput(self, doc, userinput):
-        if not Mode.processinput(self, doc, userinput):
-            self.insert_and_update(doc, userinput)
+        if Mode.processinput(self, doc, userinput):
+            return True
+        if not isinstance(userinput, str):
+            return False
+
+        self.insert_and_update(doc, userinput)
+        return True
 
     def insert_and_update(self, doc, userinput):
         self.insert(doc, userinput)

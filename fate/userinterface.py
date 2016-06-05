@@ -6,6 +6,8 @@ from collections import deque
 from .event import Event
 from abc import ABC, abstractmethod, abstractproperty
 
+from logging import debug
+
 class UserInterfaceAPI(ABC):
 
     """Abstract base class for userinterace APIs."""
@@ -74,6 +76,7 @@ class UserInterfaceAPI(ABC):
         """Pop and return the first object from the input queue. """
         if not self.inputqueue:
             self.inputqueue.appendleft(self._getuserinput())
+
         result = self.inputqueue.pop()
 
         if result == 'ctrl-\\':
@@ -97,7 +100,7 @@ class UserInterfaceAPI(ABC):
     def getkey(self):
         """
         Get character typed by user.
-        Returns cancelkey if interrupted by a command.
+        Returns self.doc.cancelkey if interrupted by a command.
         """
         userinput = self.peekinput()
         if type(userinput) == str:

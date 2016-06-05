@@ -10,7 +10,9 @@ from .exceptions import NotInitializedException
 
 from logging import error, info, debug
 
+# This should not be modified manually. Create and quit documents instead.
 documentlist = []
+# This should not be set manually. Use doc.activate() instead.
 activedocument = None
 
 
@@ -144,10 +146,15 @@ class Document:
             # center_around_selection(self)
 
     def processinput(self, userinput):
-        """This method is called when this document receives userinput."""
+        """
+        This method is called when this document receives userinput.
+        """
         debug('Mode:' + repr(self.mode))
         debug('Input: ' + repr(userinput))
-        self.mode.processinput(self, userinput)
+        success = self.mode.processinput(self, userinput)
+        if not success:
+            error('Input {} has been declined by mode {}'.format(repr(userinput),
+                repr(self.mode)))
 
 
 def next_document(doc):

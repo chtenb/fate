@@ -1,7 +1,7 @@
 from unittest import TestCase
 from .. import document
 from tempfile import gettempdir
-from .proxy_userinterface import FakeUserInterface
+from .fake_userinterface import FakeUserInterface
 
 class BaseTestCase(TestCase):
 
