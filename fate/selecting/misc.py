@@ -1,6 +1,7 @@
-from logging import debug
+from logging import debug, error
 from ..selection import Selection, Interval
 from .. import commands
+from ..commandtools import compose
 from . import SelectModes, normalselectmode
 from .decorators import selector, intervalselector, intervalselector_withmode
 from .selectpattern import selectfullline, selectnextfullline, selectpreviousfullline
@@ -14,6 +15,40 @@ def escape(doc):
     else:
         commands.empty(doc)
 commands.escape = escape
+
+
+def get_line_position(text, linenumber):
+    """
+    :linenumber: count from zero
+    :return: position right after last new line character of the line before linenumber
+    """
+    currentline = 0
+    pos_after_last_newline = 0
+    while currentline < linenumber:
+        try:
+            pos_after_last_newline = text.index('\n', pos_after_last_newline) + 1
+            currentline += 1
+        except ValueError:
+            break
+    return pos_after_last_newline
+
+def ask_linenumber(doc):
+    doc.modes.prompt.promptstring = '/'
+    return doc.modes.prompt
+
+def selectline(doc):
+    try:
+        linenumber = int(doc.modes.prompt.inputstring)
+    except ValueError as e:
+        error(str(e))
+        doc.ui.notify(str(e))
+        return
+
+    line_beg = get_line_position(doc.text, linenumber)
+    Selection([Interval(line_beg, line_beg)])(doc)
+    commands.selectfullline(doc)
+commands.selectline = compose(ask_linenumber, selectline)
+
 
 
 def selectall(doc, selection, selectmode=None):

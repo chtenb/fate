@@ -18,8 +18,10 @@ class Prompt(Mode):
                 debug('Search key {} not supported.'.format(key))
             else:
                 self.inputstring += key
+            return True
         else:
             error('Prompt can not process non-string input')
+            return False
 
     def start(self, doc, promptstring='>', callback=None):
         self.inputstring = ''

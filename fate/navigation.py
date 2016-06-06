@@ -33,7 +33,6 @@ from . import commands
 
 from .contract import pre, post
 
-
 def movehalfpagedown(doc):
     """Move half a page down."""
     # TODO: this doesn't count with viewtext

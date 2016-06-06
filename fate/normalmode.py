@@ -37,7 +37,7 @@ default_keymap = {
     '*': commands.search_current_content,
     'n': commands.search_next,
     'N': commands.search_previous,
-    ':': commands.commandmode,
+    ':': commands.selectline,
     'j': commands.movedown,
     'k': commands.moveup,
     'down': commands.selectnextline,

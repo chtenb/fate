@@ -2,7 +2,7 @@
 Contains functions for using fate as batch processing text tool.
 """
 import re
-from logging import debug, info, critical
+from logging import debug, error
 from typing import List
 
 from fate import document, run
@@ -49,7 +49,7 @@ def batch(filenames: list, inputstring: bytes):
     """
     # Create all documents
     if not filenames:
-        info('No filenames given')
+        error('No filenames given')
         return
 
     Document.create_userinterface = FakeUserInterface

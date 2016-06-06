@@ -39,11 +39,11 @@ class CommandsSingleton:
     """
 
     def __set__(self, instance, value):
-        raise ValueError("""Trying to assign to static singleton commands.""")
+        raise ValueError("Trying to assign to static singleton commands.")
 
     def __setattr__(self, name, command):
         if not callable(command):
-            raise ValueError("""A command must be callable.""")
+            raise ValueError("A command must be callable.")
         command.__name__ = name
         object.__setattr__(self, name, command)
 
