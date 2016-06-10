@@ -113,19 +113,29 @@ class Selection:
         """Check if we have intervals."""
         return not bool(self._intervals)
 
-    def validate(self, doc):
+    def validate(self, doc_or_text):
         """Raise exception if selection is not valid."""
+        if isinstance(doc_or_text, str):
+            text = doc_or_text
+        else:
+            text = doc_or_text.text
+
         if self.isempty:
             raise Exception('Selection is empty.')
-        if not self._intervals[-1][1] <= len(doc.text):
+        if not self._intervals[-1][1] <= len(text):
             raise Exception(
                 'Selection {} is not valid for a text with length {}.'
-                .format(self, len(doc.text))
+                .format(self, len(text))
             )
 
-    def content(self, doc):
+    def content(self, doc_or_text):
         """Return the content of self."""
-        return [doc.text[max(0, beg):min(len(doc.text), end)]
+        if isinstance(doc_or_text, str):
+            text = doc_or_text
+        else:
+            text = doc_or_text.text
+
+        return [text[max(0, beg):min(len(text), end)]
                 for beg, end in self]
 
     def index(self, interval):
@@ -186,6 +196,52 @@ class Selection:
             result.append(Interval(nbeg, nend))
 
         self._intervals = result
+    def complement(self, doc_or_text):
+        """Return the complementary selection of self."""
+        intervals = [interval for in_selection, interval in self.partition(doc_or_text)
+                     if not in_selection]
+        return Selection(intervals)
+
+    def bound(self, lower_bound, upper_bound):
+        """Return the selection obtained by bounding self."""
+        result = Selection()
+        for beg, end in self:
+            beg = max(beg, lower_bound)
+            end = min(end, upper_bound)
+            if not beg > end:
+                result.add(Interval(beg, end))
+        return result
+
+    def partition(self, doc_or_text):
+        """
+        Return a sorted list containing all intervals in self
+        together with all complementary intervals.
+        """
+        if isinstance(doc_or_text, str):
+            text = doc_or_text
+        else:
+            text = doc_or_text.text
+
+        positions = [pos for interval in self for pos in interval]
+        positions.insert(0, 0)
+        positions.append(len(text))
+        in_selection = False
+
+        result = []
+        for i in range(1, len(positions)):
+            interval = Interval(positions[i - 1], positions[i])
+            result.append((in_selection, interval))
+            in_selection = not in_selection
+
+        return result
+
+    def intersects(self, interval):
+        """Check if interval intersects with self."""
+        beg, end = interval
+        for i in self:
+            if beg <= i[0] < end or beg < i[1] <= end or i[0] < beg and end < i[1]:
+                return True
+        return False
 
     def __add__(self, obj):
         """
@@ -243,44 +299,3 @@ class Selection:
     def __rsub__(self, obj):
         return self - obj
 
-    def complement(self, doc):
-        """Return the complementary selection of self."""
-        intervals = [interval for in_selection, interval in self.partition(doc)
-                     if not in_selection]
-        return Selection(intervals)
-
-    def bound(self, lower_bound, upper_bound):
-        """Return the selection obtained by bounding self."""
-        result = Selection()
-        for beg, end in self:
-            beg = max(beg, lower_bound)
-            end = min(end, upper_bound)
-            if not beg > end:
-                result.add(Interval(beg, end))
-        return result
-
-    def partition(self, doc):
-        """
-        Return a sorted list containing all intervals in self
-        together with all complementary intervals.
-        """
-        positions = [pos for interval in self for pos in interval]
-        positions.insert(0, 0)
-        positions.append(len(doc.text))
-        in_selection = False
-
-        result = []
-        for i in range(1, len(positions)):
-            interval = Interval(positions[i - 1], positions[i])
-            result.append((in_selection, interval))
-            in_selection = not in_selection
-
-        return result
-
-    def intersects(self, interval):
-        """Check if interval intersects with self."""
-        beg, end = interval
-        for i in self:
-            if beg <= i[0] < end or beg < i[1] <= end or i[0] < beg and end < i[1]:
-                return True
-        return False

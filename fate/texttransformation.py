@@ -326,13 +326,10 @@ class IntervalMapping:
         mapping = self._innermapping
         mapping_start = self._mapping_start
         mapping_end = self._mapping_end
-        print(1)
 
         if position < self._mapping_start:
-            print(2)
             return position
         elif position > self._mapping_end:
-            print(3)
             codomain_start = mapping[0] if isinstance(mapping[0], int) else mapping[0][0]
             codomain_end = mapping[-1] if isinstance(mapping[-1], int) else mapping[-1][1]
             len_codomain = codomain_end - codomain_start + 1
@@ -344,15 +341,68 @@ class IntervalMapping:
         assert mapping_start <= position <= mapping_end
         result = mapping[position - mapping_start]
         if isinstance(result, tuple):
-            print(4)
             if snap_down:
-                print(5)
                 return result[0]
             else:
-                print(6)
                 return result[1]
-        print(7)
         return result
 
     def __repr__(self):
         return repr(self._innermapping)
+
+
+class TextTransformation:
+
+    """Transforms a text and maps positions accross this transformation."""
+
+    def __init__(self, selection: Selection, replacements: List[str]):
+        """
+        :selection: selection for which the intervals get new content.
+        :replacements: sorted (ascending by interval) list of strings representing the new
+        content of the intervals in the selection.
+
+        Interval are not allowed to overlap. Intervals are allowed to be adjacent. It is
+        allowed to have multiple insertions at the same position.
+        """
+        self.selection = selection
+        self.replacements = replacements
+
+        substitutions = [IntervalSubstitution(selection[i], len(replacements[i]))
+                         for i in range(len(selection))]
+        self.interval_mapping = IntervalMapping(substitutions)
+
+    def compute_newselection(self):
+        """The selection containing the potential result of the operation."""
+        return Selection([self.interval_mapping[interval] for interval in self.selection])
+
+    def apply(self, text):
+        """Apply self to the text. Return the resulting text."""
+        oldselection = self.selection
+        newselection = self.compute_newselection()
+        content = self.selection.content(text)
+        replacements = self.replacements
+
+        # Make sure the application of this operation is valid at this moment
+        self.selection.validate(text)
+        assert len(newselection) == len(oldselection)
+        assert len(replacements) == len(content)
+
+        partition = oldselection.partition(text)
+        partition_content = [(in_selection, text[beg:end])
+                             for in_selection, (beg, end) in partition]
+
+        count = 0
+        result = []
+        for in_selection, string in partition_content:
+            if in_selection:
+                result.append(replacements[count])
+                count += 1
+            else:
+                result.append(string)
+
+        return ''.join(result)
+
+    def inverse(self):
+        # NOTE: make sure everything is deep copied
+        ...
+

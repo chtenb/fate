@@ -116,13 +116,16 @@ How can we represent non-injective relationships?
 Todo
 ====
 SHORT TERM
-- Integrate TextTransformation in place of Operation.
+- Integrate TextTransformation
+  - Make Operation a subclass of TextTransformation and Undoable.
   - Implement insert mode preview as concealments.
   - Distinguish between concealment inside and outside selections. The epsilon that replaces
     empty intervals in tfate should be defined as a concealment. This changes how often and
     when the concealment is computed. I.e. it is not possible to insert characters now, ony
     substitutions are supported.
   - Make textview a container of pre mapped stuff, like selection view.
+  - Make selection accept adjacent intervals. If this is not preferable for user selections
+    introduce a class UserSelection with the restriction.
 - Add CLI interface for batch processing. Only allowing key input here is fine for now.
   - Things like completion need to be disabled for this to speed up starting fate
 - Fix interval mapping.
