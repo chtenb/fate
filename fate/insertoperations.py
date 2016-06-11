@@ -16,7 +16,7 @@ from . import document
 from .document import Document
 from abc import abstractmethod
 from logging import debug
-from copy import deepcopy
+from copy import copy
 
 
 class InsertMode(Mode):
@@ -93,7 +93,7 @@ class ChangeInPlace(InsertMode):
 
     def start(self, doc, *args, **kwargs):
         self.newcontent = ['' for _ in doc.selection]
-        self.oldselection = deepcopy(doc.selection)
+        self.oldselection = copy(doc.selection)
         InsertMode.start(self, doc, *args, **kwargs)
 
     def insert(self, doc, string):
@@ -134,7 +134,7 @@ class ChangeInPlace(InsertMode):
         newcontent = [doc.selection.content(doc)[i % l][:-self.deletions[i % l] or None]
                        + self.insertions[i % l] for i in range(len(doc.selection))]
         """
-        return Operation(doc, self.newcontent[:], deepcopy(self.oldselection))
+        return Operation(doc, self.newcontent[:], copy(self.oldselection))
 
 
 def init_changeinplace(doc):

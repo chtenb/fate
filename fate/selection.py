@@ -1,16 +1,22 @@
 """This module contains the Interval and the Selection class."""
 from logging import debug
+import operator
 
-class Interval:
+class Interval(tuple):
 
-    def __init__(self, beg, end):
+    """
+    Immutable pair of positive integers beg and end with the constraint that beg <= end.
+    """
+
+    __slots__ = []
+
+    def __new__(cls, beg, end):
         if not 0 <= beg <= end:
             raise ValueError('({}, {}) is not a valid interval'.format(beg, end))
-        self.beg = beg
-        self.end = end
+        return tuple.__new__(Interval, (beg, end))
 
-    def __getitem__(self, index):
-        return (self.beg, self.end)[index]
+    beg = property(operator.itemgetter(0))
+    end = property(operator.itemgetter(1))
 
     def __contains__(self, pos):
         return self.beg <= pos < self.end
@@ -73,8 +79,7 @@ class Selection:
     What about empty intervals?
     For users this stuff doesn't make sense, but for arbitrary substitutions used by
     e.g. plugins this may make sense.
-    Proposal: allow it, but after each change in the user selection, call a function that
-    merges adjacent things.
+    Proposal: allow it. For user selections a subclass with restrictions could be made.
     """
 
     def __init__(self, intervals=None):

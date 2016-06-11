@@ -163,6 +163,7 @@ in size of the transformed part of the text.
 """
 
 from typing import List
+from copy import copy
 
 from .selection import Interval, Selection
 
@@ -355,7 +356,7 @@ class TextTransformation:
 
     """Transforms a text and maps positions accross this transformation."""
 
-    def __init__(self, selection: Selection, replacements: List[str]):
+    def __init__(self, selection: Selection, replacements: List[str], text: str):
         """
         :selection: selection for which the intervals get new content.
         :replacements: sorted (ascending by interval) list of strings representing the new
@@ -371,21 +372,34 @@ class TextTransformation:
                          for i in range(len(selection))]
         self.interval_mapping = IntervalMapping(substitutions)
 
+        # Store some information to be able to construct an inverse
+        self.validate(text)
+        self.original_content = self.selection.content(text)
+
     def compute_newselection(self):
         """The selection containing the potential result of the operation."""
         return Selection([self.interval_mapping[interval] for interval in self.selection])
+
+    def validate(self, text):
+        """
+        Make sure the application of this operation is valid at this moment
+        """
+        self.selection.validate(text)
+        newselection = self.compute_newselection()
+        content = self.selection.content(text)
+        assert len(newselection) == len(self.selection)
+        assert len(self.replacements) == len(content)
 
     def apply(self, text):
         """Apply self to the text. Return the resulting text."""
         oldselection = self.selection
         newselection = self.compute_newselection()
         content = self.selection.content(text)
+        original_content = self.original_content
+        assert content == original_content, "Transformation applied on wrong text"
         replacements = self.replacements
 
-        # Make sure the application of this operation is valid at this moment
-        self.selection.validate(text)
-        assert len(newselection) == len(oldselection)
-        assert len(replacements) == len(content)
+        self.validate(text)
 
         partition = oldselection.partition(text)
         partition_content = [(in_selection, text[beg:end])
@@ -402,7 +416,13 @@ class TextTransformation:
 
         return ''.join(result)
 
-    def inverse(self):
-        # NOTE: make sure everything is deep copied
-        ...
+    def inverse(self, text):
+        """
+        Return the inverse transformation.  The selection of the inverse is the selection of
+        the result of the current transformation.  The replacements of the inverse are simply
+        the contents of the selection of the current transformation.
+        """
+        inverse_selection = self.compute_newselection()
+        inverse_replacements = copy(self.original_content)
+        return TextTransformation(inverse_selection, inverse_replacements, text)
 

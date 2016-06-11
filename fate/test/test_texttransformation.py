@@ -10,12 +10,14 @@ class TestTextTransformation(TestCase):
         text = '12345'
         selection = Selection([Interval(0, 1), Interval(2, 2), Interval(3, 4)])
         replacements = ['x', 'y', '']
-        transformation = TextTransformation(selection, replacements)
+        transformation = TextTransformation(selection, replacements, text)
         result = transformation.apply(text)
         self.assertEqual('x2y35', result)
 
-    def test_inverse(self):
-        ...
+        # Test inverse
+        inverse = transformation.inverse(result)
+        inverse_result = inverse.apply(result)
+        self.assertEqual(text, inverse_result)
 
 
 class TestIntervalMapping(TestCase):
