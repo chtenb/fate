@@ -139,7 +139,7 @@ def move_n_wrapped_lines_up_post(result, text, max_width, start, n):
 
 @pre(move_n_wrapped_lines_up_pre)
 @post(move_n_wrapped_lines_up_post)
-def move_n_wrapped_lines_up(text: str, max_width: int, start: int, n: int):
+def move_n_wrapped_lines_up(text, max_width: int, start: int, n: int):
     """
     Return the first position in the line which ends with the nth
     wrapped end-of-line counting back from start (exclusive).
@@ -204,7 +204,7 @@ def move_n_wrapped_lines_down_post(result, text, max_width, start, n):
 
 @pre(move_n_wrapped_lines_down_pre)
 @post(move_n_wrapped_lines_down_post)
-def move_n_wrapped_lines_down(text: str, max_width: int, start: int, n: int):
+def move_n_wrapped_lines_down(text, max_width: int, start: int, n: int):
     """
     Return position right after the nth wrapped end-of-line,
     i.e. the first position of the (n+1)th wrapped line,

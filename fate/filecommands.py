@@ -7,6 +7,7 @@ from .operation import Operation
 from . import document
 from .commandtools import compose
 from .selection import Selection, Interval
+from .text import StringText
 import selectors  # Depend on selectors to be loaded
 
 
@@ -35,7 +36,7 @@ def load(doc, filename=None):
     if filename:
         try:
             with open(filename, 'r') as fd:
-                newtext = fd.read()
+                newtext = StringText(fd.read())
         except (FileNotFoundError, PermissionError) as e:
             logging.error(str(e))
         else:

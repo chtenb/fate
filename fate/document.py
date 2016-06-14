@@ -1,5 +1,6 @@
 """A document represents the state of an editing document."""
 from .selection import Selection, Interval
+from .text import StringText
 from .event import Event
 from . import commands
 from .userinterface import UserInterfaceAPI
@@ -31,7 +32,6 @@ class Document:
     OnModeInit = Event('OnModeInit')
     create_userinterface = None
 
-    _text = ''
     _mode = None
 
     expandtab = False
@@ -42,6 +42,8 @@ class Document:
     saved = True
 
     def __init__(self, filename=''):
+        _text = StringText('')
+
         documentlist.append(self)
         self.OnTextChanged = Event('OnTextChanged')
         self.OnRead = Event('OnRead')
@@ -54,7 +56,7 @@ class Document:
         if filename:
             try:
                 with open(filename, 'r') as fd:
-                    self._text = fd.read()
+                    self._text = StringText(fd.read())
             except (FileNotFoundError, PermissionError) as e:
                 error(str(e))
 

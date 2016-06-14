@@ -168,6 +168,13 @@ def _compute_selectionview_post(result, self, old=None, new=None):
 # TODO: find a way to statically prevent thread errors
 
 
+# TODO: rewrite this. Don't need the partial position mappings anymore, since we have the
+# intervalmapping, which has an output sensitive running time. We want to store the resulting
+# viewable text as a string. How to construct this text? Create a class that views a part of
+# a text. I.e. it stores the part as a string and translates the positions automatically. It
+# should raise an exception if a part of the text is accessed outside the range of this view.
+# This class should behave as a normal text though. That way it can be passed to a
+# TextTransformation which constructs a derived text from this.
 class TextView:
 
     """

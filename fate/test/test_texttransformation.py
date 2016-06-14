@@ -1,22 +1,23 @@
 from unittest import TestCase
 from ..texttransformation import IntervalMapping, IntervalSubstitution, TextTransformation
 from ..selection import Interval, Selection
+from ..text import StringText
 from random import randint
 
 
 class TestTextTransformation(TestCase):
 
     def test_apply(self):
-        text = '12345'
+        text = StringText('12345')
         selection = Selection([Interval(0, 1), Interval(2, 2), Interval(3, 4)])
         replacements = ['x', 'y', '']
         transformation = TextTransformation(selection, replacements, text)
-        result = transformation.apply(text)
-        self.assertEqual('x2y35', result)
+        result = text.transform(transformation)
+        self.assertEqual(StringText('x2y35'), result)
 
         # Test inverse
         inverse = transformation.inverse(result)
-        inverse_result = inverse.apply(result)
+        inverse_result = result.transform(inverse)
         self.assertEqual(text, inverse_result)
 
 

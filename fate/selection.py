@@ -63,8 +63,9 @@ class Interval(tuple):
     def isempty(self):
         return self.beg == self.end
 
+    # DEPRECATED
     def content(self, doc):
-        return doc.text[max(0, self.beg):min(len(doc.text), self.end)]
+        return doc.text[self]
 
     def __hash__(self):
         return hash((self.beg, self.end))
@@ -120,10 +121,10 @@ class Selection:
 
     def validate(self, doc_or_text):
         """Raise exception if selection is not valid."""
-        if isinstance(doc_or_text, str):
-            text = doc_or_text
-        else:
+        try:
             text = doc_or_text.text
+        except AttributeError:
+            text = doc_or_text
 
         if self.isempty:
             raise Exception('Selection is empty.')
@@ -133,15 +134,15 @@ class Selection:
                 .format(self, len(text))
             )
 
+    # DEPRECATED
     def content(self, doc_or_text):
         """Return the content of self."""
-        if isinstance(doc_or_text, str):
-            text = doc_or_text
-        else:
+        try:
             text = doc_or_text.text
+        except AttributeError:
+            text = doc_or_text
 
-        return [text[max(0, beg):min(len(text), end)]
-                for beg, end in self]
+        return text[self]
 
     def index(self, interval):
         """Return the index of given interval."""
@@ -222,10 +223,10 @@ class Selection:
         Return a sorted list containing all intervals in self
         together with all complementary intervals.
         """
-        if isinstance(doc_or_text, str):
-            text = doc_or_text
-        else:
+        try:
             text = doc_or_text.text
+        except AttributeError:
+            text = doc_or_text
 
         positions = [pos for interval in self for pos in interval]
         positions.insert(0, 0)

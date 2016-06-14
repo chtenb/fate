@@ -1,10 +1,9 @@
 """This module defines the class Operation."""
 from .commandtools import Undoable
-from .selection import Selection, Interval
-from .texttransformation import TextTransformation
+from . import texttransformation
 
 
-class Operation(Undoable, TextTransformation):
+class Operation(Undoable, texttransformation.TextTransformation):
 
     """
     A container of modified content of a selection.
@@ -13,10 +12,10 @@ class Operation(Undoable, TextTransformation):
 
     def __init__(self, doc, newcontent, selection=None):
         selection = selection or doc.selection
-        TextTransformation.__init__(self, selection, newcontent, doc.text)
+        texttransformation.TextTransformation.__init__(self, selection, newcontent, doc.text)
 
     def __str__(self):
-        attributes = [('old selection', oldselection),
+        attributes = [('old selection', self.selection),
                       ('computed newselection', self.compute_newselection()),
                       ('old content', self.original_content),
                       ('new content', self.replacements)]
@@ -24,7 +23,7 @@ class Operation(Undoable, TextTransformation):
 
     def do(self, doc):
         """Execute operation."""
-        new_text = self.apply(doc.text)
+        new_text = doc.text.transform(self)
         doc.text = new_text
         doc.selection = self.compute_newselection()
 

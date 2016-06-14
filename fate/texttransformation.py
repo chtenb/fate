@@ -160,6 +160,10 @@ interval in the text. For the mapping this means that all positions before that 
 mapped to them selves and all positions after the interval are compensated for the difference
 in size of the transformed part of the text.
 
+###TODO
+Be able to apply text trasnformations on part of texts (i.e. just the part the is on the
+screen) for performance reasons. This is closely related to implementing a faster text
+datastructure for large texts.
 """
 
 from typing import List
@@ -356,7 +360,7 @@ class TextTransformation:
 
     """Transforms a text and maps positions accross this transformation."""
 
-    def __init__(self, selection: Selection, replacements: List[str], text: str):
+    def __init__(self, selection: Selection, replacements: List[str], text):
         """
         :selection: selection for which the intervals get new content.
         :replacements: sorted (ascending by interval) list of strings representing the new
@@ -389,32 +393,6 @@ class TextTransformation:
         content = self.selection.content(text)
         assert len(newselection) == len(self.selection)
         assert len(self.replacements) == len(content)
-
-    def apply(self, text):
-        """Apply self to the text. Return the resulting text."""
-        oldselection = self.selection
-        newselection = self.compute_newselection()
-        content = self.selection.content(text)
-        original_content = self.original_content
-        assert content == original_content, "Transformation applied on wrong text"
-        replacements = self.replacements
-
-        self.validate(text)
-
-        partition = oldselection.partition(text)
-        partition_content = [(in_selection, text[beg:end])
-                             for in_selection, (beg, end) in partition]
-
-        count = 0
-        result = []
-        for in_selection, string in partition_content:
-            if in_selection:
-                result.append(replacements[count])
-                count += 1
-            else:
-                result.append(string)
-
-        return ''.join(result)
 
     def inverse(self, text):
         """
