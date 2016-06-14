@@ -69,11 +69,22 @@ class PartialText(StringText):
     in a fast and cheap manner.
     """
 
-    def __init__(self, text: Text, beg: int, end: int):
-        StringText.__init__(self, text[Interval(beg, end)])
-        self.origin = text
+    def __new__(cls, inner_string: str, original_len: int, beg: int, end: int):
+        return StringText.__new__(cls, inner_string)
+
+    def __init__(self, inner_string: str, original_len: int, beg: int, end: int):
+        self.original_len = original_len
         self.beg = beg
         self.end = end
+
+    @staticmethod
+    def from_text(text: Text, beg: int, end: int):
+        inner_string = text[Interval(beg, end)]
+        return PartialText(inner_string, len(text), beg, end)
+
+    def __len__(self):
+        # Pretend we are as long as the original text.
+        return self.original_len
 
     def __contains__(self, item: (int, Interval)):
         if isinstance(item, int):
@@ -111,4 +122,6 @@ class PartialText(StringText):
                 raise IndexError('item ({},{}) is out of range ({},{})'.format(beg, end, self.beg,
                                                                                self.end))
 
-        StringText.transform(self, transformation)
+        new_inner_text = StringText.transform(self, transformation)
+        new_len = len(self) - str.__len__(self) + str.__len__(new_inner_text)
+        return PartialText(new_inner_text, new_len, self.beg, self.beg + len(new_inner_text))

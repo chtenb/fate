@@ -158,18 +158,18 @@ class Selection:
             if beg <= pos < end:
                 return interval
 
-    def add(self, obj):
+    def add(self, item):
         """
         Add one or more intervals to the selection. If interval is overlapping
         with or adjacent to some existing interval, they are merged.
-        obj must be an interval or a sequence of intervals.
+        item must be an interval or a sequence of intervals.
         """
-        if not isinstance(obj, Interval):
-            for interval in obj:
+        if not isinstance(item, Interval):
+            for interval in item:
                 self.add(interval)
             return
 
-        nbeg, nend = obj
+        nbeg, nend = item
         assert nbeg <= nend
 
         # First merge overlapping or adjacent existing intervals into the new interval

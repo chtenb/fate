@@ -1,19 +1,38 @@
 from unittest import TestCase
-from ..texttransformation import IntervalMapping, IntervalSubstitution, TextTransformation
+from ..texttransformation import (IntervalMapping, IntervalSubstitution, TextTransformation,
+                                  PartialTextTransformation)
 from ..selection import Interval, Selection
-from ..text import StringText
+from ..text import StringText, PartialText
 from random import randint
+
+
+class TestPartialTextTransformation(TestCase):
+
+    def test_transform(self):
+        text = StringText('12345')
+        partial_text = PartialText.from_text(text, 2, 5)
+        selection = Selection([Interval(0, 1), Interval(2, 2), Interval(3, 4)])
+        replacements = ['x', 'y', '']
+        transformation = TextTransformation(selection, replacements, text)
+        partial_transformation = PartialTextTransformation(transformation, 2, 4, partial_text)
+        result = partial_text.transform(partial_transformation)
+        self.assertEqual('y35', result)
+
+        # Test inverse
+        inverse = partial_transformation.inverse(result)
+        inverse_result = result.transform(inverse)
+        self.assertEqual('345', inverse_result)
 
 
 class TestTextTransformation(TestCase):
 
-    def test_apply(self):
+    def test_transform(self):
         text = StringText('12345')
         selection = Selection([Interval(0, 1), Interval(2, 2), Interval(3, 4)])
         replacements = ['x', 'y', '']
         transformation = TextTransformation(selection, replacements, text)
         result = text.transform(transformation)
-        self.assertEqual(StringText('x2y35'), result)
+        self.assertEqual('x2y35', result)
 
         # Test inverse
         inverse = transformation.inverse(result)

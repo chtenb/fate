@@ -419,9 +419,10 @@ class PartialTextTransformation(TextTransformation):
         self.end = end
         self.interval = Interval(beg, end)
 
+        # Exclude substitutions that are not within our range
         intervals = []
         replacements = []
-        for i, interval in original_transformation.selection:
+        for i, interval in enumerate(original_transformation.selection):
             if interval in self.interval:
                 intervals.append(interval)
                 replacements.append(original_transformation.replacements[i])
