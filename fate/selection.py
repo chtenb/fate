@@ -18,8 +18,11 @@ class Interval(tuple):
     beg = property(operator.itemgetter(0))
     end = property(operator.itemgetter(1))
 
-    def __contains__(self, pos):
-        return self.beg <= pos < self.end
+    def __contains__(self, item):
+        if isinstance(item, Interval):
+            beg, end = item
+            return self.beg <= beg <= end <= self.end
+        return self.beg <= item < self.end
 
     def __str__(self):
         return '({},{})'.format(self.beg, self.end)

@@ -404,3 +404,28 @@ class TextTransformation:
         inverse_replacements = copy(self.original_content)
         return TextTransformation(inverse_selection, inverse_replacements, text)
 
+
+class PartialTextTransformation(TextTransformation):
+
+    """
+    Text transformation which limits the substitutions being done to a certain interval.
+    Can be used in conjunction with PartialText for performance reasons to compute the text
+    that is viewed on the screen by the user.
+    """
+
+    def __init__(self, original_transformation: TextTransformation, beg: int, end: int, text):
+        self.origin = original_transformation
+        self.beg = beg
+        self.end = end
+        self.interval = Interval(beg, end)
+
+        intervals = []
+        replacements = []
+        for i, interval in original_transformation.selection:
+            if interval in self.interval:
+                intervals.append(interval)
+                replacements.append(original_transformation.replacements[i])
+        selection = Selection(intervals)
+
+        TextTransformation.__init__(self, selection, replacements, text)
+
