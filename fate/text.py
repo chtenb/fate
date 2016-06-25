@@ -17,6 +17,14 @@ class Text:
     def transform(self, transformation):
         pass
 
+    @abstractmethod
+    def finditer(self, regex, beg=None, end=None):
+        """
+        Find occurences of regex in the text by yielding corresponding intervals.
+        The argument regex is a regex object, as returned by re.compile.
+        """
+        pass
+
 
 class StringText(Text, str):
 
@@ -60,6 +68,9 @@ class StringText(Text, str):
 
         return StringText(''.join(result))
 
+    def finditer(self, regex, beg=None, end=None):
+        for match in regex.finditer(self, beg, end):
+            yield Interval(match.start(), match.end())
 
 class PartialText(StringText):
 
@@ -125,3 +136,13 @@ class PartialText(StringText):
         new_inner_text = StringText.transform(self, transformation)
         new_len = len(self) - str.__len__(self) + str.__len__(new_inner_text)
         return PartialText(new_inner_text, new_len, self.beg, self.beg + len(new_inner_text))
+
+    def finditer(self, regex, beg=None, end=None):
+        beg = beg or self.beg
+        end = end or self.end
+        beg = max(beg, self.beg)
+        end = min(end, self.end)
+
+        for match in regex.finditer(self, beg, end):
+            yield Interval(match.start() + beg, match.end() + beg)
+

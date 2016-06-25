@@ -6,10 +6,10 @@ keywords = ['TODO']
 re_keyword = re.compile(r'\b({})\b'.format('|'.join(keywords)))
 
 
-def init(document):
-    document.OnGenerateGlobalHighlighting.add(main)
+def init(doc):
+    doc.OnGenerateGlobalHighlighting.add(main)
 
 
-def main(document):
+def main(highlighting, text, beg, end):
     regex_list = [(re_keyword, 'keyword'), (re_number, 'number'), (re_string, 'string')]
-    regex_labels(document, regex_list)
+    regex_labels(highlighting, text, beg, end, regex_list)

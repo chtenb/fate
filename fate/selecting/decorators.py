@@ -2,6 +2,7 @@ from functools import wraps
 from ..selection import Selection, Interval
 from . import SelectModes
 
+
 def partial(func, *args, docs='', **keywords):
     """Pragmatic solution for being able to set a metadata for a partial function"""
     @wraps(func)
@@ -23,8 +24,7 @@ def selector(function):
         selection = selection or doc.selection
         selectmode = selectmode or doc.selectmode
 
-        result = function(
-            doc, *args, selection=selection, selectmode=selectmode, **kwargs)
+        result = function(doc, *args, selection=selection, selectmode=selectmode, **kwargs)
 
         if preview:
             return result
@@ -86,5 +86,3 @@ def intervalselector_withmode(function):
         else:
             return new_interval
     return wrapper
-
-

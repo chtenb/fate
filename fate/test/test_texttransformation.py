@@ -44,7 +44,7 @@ class TestIntervalMapping(TestCase):
 
     def test_death(self):
         # Test random sets of substitutions and intervals to check for exceptions
-        for test_nr in range(0, 1000):
+        for _ in range(0, 1000):
             substitutions = []
             lowerbound = 0
             for _ in range(randint(0, 5)):

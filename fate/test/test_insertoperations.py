@@ -17,6 +17,20 @@ class OperatorTest(BaseTestCase):
         BaseTestCase.setUp(self)
         commands.selectnextline(self.doc)
 
+    def test_change_in_place(self):
+        self.doc.ui.feedinput(changeinplace)
+        for char in '\nasdf\b\b \n \n \n\n\b\b\n':
+            self.doc.ui.feedinput(char)
+        self.doc.ui.feedinput(self.doc.cancelkey)
+        self.doc.ui.feedinput(deactivate)
+        run()
+
+        expected = '\nas \n \n  \n  \n\n'
+        self.assertEqual(expected, self.doc.text[:len(expected)])
+
+        undo(self.doc)
+        self.assertEqual('import sys\n\n', self.doc.text[:12])
+
     def test_change_before(self):
         self.doc.ui.feedinput(changebefore)
         for char in '\nasdf\b\b \n \n \n\n\b\b\n':
@@ -40,20 +54,6 @@ class OperatorTest(BaseTestCase):
         run()
 
         expected = 'import sys\nas \n \n  \n  \n\n'
-        self.assertEqual(expected, self.doc.text[:len(expected)])
-
-        undo(self.doc)
-        self.assertEqual('import sys\n\n', self.doc.text[:12])
-
-    def test_change_in_place(self):
-        self.doc.ui.feedinput(changeinplace)
-        for char in '\nasdf\b\b \n \n \n\n\b\b\n':
-            self.doc.ui.feedinput(char)
-        self.doc.ui.feedinput(self.doc.cancelkey)
-        self.doc.ui.feedinput(deactivate)
-        run()
-
-        expected = '\nas \n \n  \n  \n\n'
         self.assertEqual(expected, self.doc.text[:len(expected)])
 
         undo(self.doc)

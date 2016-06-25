@@ -125,7 +125,7 @@ which it is very unlikely that one would want to deviate from.
 For the difference between application 3 and 5 and the rest in case of insertions, we should
 provide a distinguishing flag or seperate method.
 
-TODO: how do we implement this? Mapping interval positions is not sufficient.
+Multiple Stages
 
 What if we would have different phases/stages of replacements? I.e. insertions would come later
 than substitutions. Ideally we wouldn't have to do any work to add a new phase, since we would
@@ -155,9 +155,12 @@ from bisect import bisect_left
 from logging import debug
 
 from .selection import Interval, Selection
+from .text import PartialText
+from .texttransformation import TextTransformation, PartialTextTransformation
 from .contract import post
 from .navigation import (
     move_n_wrapped_lines_down, count_wrapped_lines, next_beg_of_wrapped_line)
+from .highlighting import Highlighting
 
 
 def _compute_selectionview_post(result, self, old=None, new=None):
@@ -168,13 +171,6 @@ def _compute_selectionview_post(result, self, old=None, new=None):
 # TODO: find a way to statically prevent thread errors
 
 
-# TODO: rewrite this. Don't need the partial position mappings anymore, since we have the
-# intervalmapping, which has an output sensitive running time. We want to store the resulting
-# viewable text as a string. How to construct this text? Create a class that views a part of
-# a text. I.e. it stores the part as a string and translates the positions automatically. It
-# should raise an exception if a part of the text is accessed outside the range of this view.
-# This class should behave as a normal text though. That way it can be passed to a
-# TextTransformation which constructs a derived text from this.
 class TextView:
 
     """
@@ -201,18 +197,19 @@ class TextView:
     object which hides these ugly and confusing offset differences.
     """
 
-    def __init__(self):
-        self.doc = None
-        self.width = None
-        self.height = None
-        self.offset = None
+    def __init__(self, doc, width, height, offset):
+        self.doc = doc
+        self.width = width
+        self.height = height
+        self.offset = offset
 
-        self.text = None
+        # These results are set after everything is computed
+        self.partial_user_operation_transformation = None
+        self.text_after_user_operation = None
+        self.partial_conceal_transformation = None
+        self.text_after_conceal = None
         self.selection = None
         self.highlighting = None
-
-        self.viewpos_to_origpos = []
-        self.origpos_to_viewpos = []
 
     @staticmethod
     def for_screen(doc, width: int, height: int, offset: int):
@@ -227,14 +224,9 @@ class TextView:
         if offset < 0 or offset > len(doc.text):
             raise ValueError('{} is an invalid offset'.format(offset))
 
-        self = TextView()
-        self.doc = doc
-        self.width = width
-        self.height = height
-        self.offset = offset
+        self = TextView(doc, width, height, offset)
 
-        self.text, self.origpos_to_viewpos, self.viewpos_to_origpos = (
-            self._compute_text_from_view_interval())
+        self._compute_text_from_view_interval()
         self.selection = self._compute_selection()
         self.highlighting = self._compute_highlighting()
 
@@ -245,13 +237,9 @@ class TextView:
         if width <= 0:
             raise ValueError('{} is an invalid width'.format(width))
 
-        self = TextView()
-        self.doc = doc
-        self.width = width
-        self.offset = 0
+        self = TextView(doc, width, None, 0)
 
-        self.text, self.origpos_to_viewpos, self.viewpos_to_origpos = (
-            self._compute_text_from_orig_interval(0, len(doc.text)))
+        self._compute_text_from_orig_interval(0, len(doc.text))
         self.selection = self._compute_selection()
         self.highlighting = self._compute_highlighting()
 
@@ -261,6 +249,7 @@ class TextView:
         """
         Return the text in the textview as a list of lines, where the lines are wrapped
         with self.width.
+        Side effect: none
         """
         result = [line[self.width * i: self.width * (i + 1)]
                   for line in self.text.splitlines()
@@ -278,8 +267,10 @@ class TextView:
         Since normally the concealed text is not much (if any) larger, this should not
         lead to accidentally computing a way too large textview.
 
-        Return text and mappings.
-        Side effect: none
+        Return: None
+        Side effect: sets
+        self.partial_user_operation_transformation, self.text_after_user_operation,
+        self.partial_conceal_transformation, self.text_after_conceal
         """
         width, height = self.width, self.height
 
@@ -293,17 +284,13 @@ class TextView:
         # Length of the sample of the original text that is used to compute the view text
         o_sample_length = 1
 
-        vtext, opos_to_vpos, vpos_to_opos = self._compute_text_from_orig_interval(
-            obeg, o_sample_length)
-        # The mapping should have synced offsets and be non empty, as o_sample_length > 0 and
-        # len(text) > 0
-        assert opos_to_vpos[0] >= 0
-        while (count_wrapped_lines(vtext, width) < height
+        self._compute_text_from_orig_interval(obeg, o_sample_length)
+        while (count_wrapped_lines(str(self.text_after_conceal), width) < height
                and obeg + o_sample_length < len(otext)):
             o_sample_length *= 2
-            vtext, opos_to_vpos, vpos_to_opos = self._compute_text_from_orig_interval(
-                obeg, o_sample_length)
+            self._compute_text_from_orig_interval(obeg, o_sample_length)
 
+        vtext = str(self.text_after_conceal)
         # Everything should be snapped to exactly fit the required length.
         # This is to make textview behave as deterministic as possible, such that potential
         # indexing errors are identified soon.
@@ -319,99 +306,50 @@ class TextView:
         # otherwise we did too much work
         assert required_length > len(vtext) // 2
 
-        # Extend mappings to allow (exclusive) interval ends to be mapped
-        opos_to_vpos.append(len(vtext))
-        vpos_to_opos.append(o_sample_length)
-
-        text = vtext[:required_length]
-        origpos_to_viewpos = opos_to_vpos[:required_length + 1]
-        # FIXME: what should this be?
-        # viewpos_to_origpos = vpos_to_opos[:required_length + 1]
-        viewpos_to_origpos = vpos_to_opos
-
-        # Some post conditions
-        assert len(text) == required_length, '{} != {}'.format(len(text), required_length)
-        assert len(origpos_to_viewpos) == required_length + 1
-        # assert len(viewpos_to_origpos) == required_length + 1
-
-        return text, origpos_to_viewpos, viewpos_to_origpos
 
     def _compute_text_from_orig_interval(self, obeg, o_sample_length):
         """
         Compute the concealed text and the corresponding position mapping from an interval
         in terms of the original text.
+        Return: None
+        Side effect: sets
+        self.partial_user_operation_transformation, self.text_after_user_operation,
+        self.partial_conceal_transformation, self.text_after_conceal
 
-        Return text and mappings.
-        Side effect: none
         """
+        beg = obeg
+        end = obeg + o_sample_length
+
+        # 1. Apply user operation
+        # 2. Generate local highlighting
+        # 3. Apply conceal operations (which are hookable/extendable)
+        # After that:
+        # - Map selection using both transformations
+        # - Map highlighting using second transformation only
+        partial_text = PartialText.from_text(self.doc.text, beg, end)
+
+        user_operation_transformation = self.doc.mode.operation
+        self.partial_user_operation_transformation = PartialTextTransformation(
+            user_operation_transformation, beg, end, len(partial_text))
+        self.text_after_user_operation = partial_text.transform(
+            self.partial_user_operation_transformation)
+
+        end_after_user_operation = self.partial_user_operation_transformation[end]
+        text_length_after_user_operation = self.partial_user_operation_transformation[
+            len(partial_text)]
+
         conceal = self.doc.conceal
-        conceal.generate_local_substitutions(obeg, o_sample_length)
+        conceal.generate_local_substitutions(self.text_after_user_operation)
+        substitutions = conceal.local_substitutions
 
-        # Construct a sorted list of relevant substitutions
-        first_global_subst = bisect_left(conceal.global_substitutions,
-                                         (Interval(obeg, obeg), ''))
-        last_global_subst = bisect_left(conceal.global_substitutions,
-                                        (Interval(obeg + o_sample_length,
-                                                  obeg + o_sample_length), ''))
-        substitutions = (conceal.local_substitutions
-                         + conceal.global_substitutions[first_global_subst:last_global_subst])
-        substitutions.sort()
-
-        vtext_builder = []  # Stringbuilder for text to be displayed
-        vpos = 0  # Current position in view text, i.e. olength of text builded so far
-        opos = obeg  # Current position in original text
-        vpos_to_opos = []  # Mapping from view positions to original positions
-        # Mapping from original positions (minus offset) to view positions
-        opos_to_vpos = []
-        otext = self.doc.text
-
-        subst_index = 0
-        while opos < obeg + o_sample_length:
-            # Add remaining non-concealed text
-            if subst_index >= len(substitutions):
-                olength = min(o_sample_length - (opos - obeg), len(otext) - (opos - obeg))
-                vpos_to_opos.extend(range(opos, opos + olength))
-                opos_to_vpos.extend(range(vpos, vpos + olength))
-                vtext_builder.append(otext[opos:opos + olength])
-                opos += olength
-                vpos += olength
-                break
-
-            # sbeg and send are in terms of original positions
-            (sbeg, send), replacement = substitutions[subst_index]
-
-            # Add non-concealed text
-            if sbeg > opos:
-                # Bound viewtext by o_sample_length
-                olength = min(sbeg - opos, o_sample_length - vpos)
-                vpos_to_opos.extend(range(opos, opos + olength))
-                opos_to_vpos.extend(range(vpos, vpos + olength))
-                vtext_builder.append(otext[opos:opos + olength])
-                vpos += olength
-                opos += olength
-            # Add concealed text
-            else:
-                vlength = len(replacement)
-                olength = send - sbeg
-                vpos_to_opos.extend(vlength * [opos])
-                opos_to_vpos.extend(olength * [vpos])
-                vtext_builder.append(replacement)
-                vpos += vlength
-                opos += olength
-                subst_index += 1
-
-        vtext = ''.join(vtext_builder)
-
-        # Extend mappings to allow (exclusive) interval ends to be mapped
-        opos_to_vpos.append(len(vtext))
-        vpos_to_opos.append(o_sample_length)
-
-        # Some post conditions
-        # assert len(text) == required_length
-        # assert len(origpos_to_viewpos) == required_length + 1
-        # assert len(viewpos_to_origpos) == required_length + 1
-
-        return vtext, opos_to_vpos, vpos_to_opos
+        selection = Selection([interval for interval, _ in substitutions])
+        replacements = [replacement for _, replacement in substitutions]
+        conceal_transformation = TextTransformation(selection, replacements,
+                                                    self.text_after_user_operation)
+        self.partial_conceal_transformation = PartialTextTransformation(
+            conceal_transformation, beg, end_after_user_operation,
+            text_length_after_user_operation)
+        self.text_after_conceal = self.text_after_user_operation.transform(conceal_transformation)
 
     def _compute_highlighting(self):
         """
@@ -419,46 +357,39 @@ class TextView:
         The highlighting view is a mapping from each character in the text to a string.
         Since the text positions are positive integers starting from zero, we implement
         this as a list.
-        Return highlighting view
-        Side effect: None
+        Return: None
+        Side effect: set self.highlighting
         """
-        highlightingview = []
-        for i in range(len(self.text)):
-            opos = self.viewpos_to_origpos[i]
-            if opos in self.doc.highlighting:
-                highlightingview.append(self.doc.highlighting[opos])
-            else:
-                highlightingview.append('')
+        # TODO: rewrite to use intervalmapping. It seems that an inverse intervalmapping would
+        # be convenient for this...
+        return
+        self.highlighting = []
 
-        return highlightingview
+        inverse_transformation = self.partial_conceal_transformation.intervalmapping.inverse()
+        highlighting = Highlighting()
+        for i in range(len(self.text_after_conceal)):
+            opos = inverse_transformation[i]
+            if opos in self.doc.highlighting:
+                self.highlighting.append(self.doc.highlighting[opos])
+            else:
+                self.highlighting.append('')
+
+        return self.highlighting
 
     @post(_compute_selectionview_post)
     def _compute_selection(self, old=None, new=None):
         """
         Construct selection view.
         Use the opos_to_vpos mapping to derive the selection intervals in the viewport.
-        Return selection view
-        Side effect: None
+        Return: None
+        Side effect: set self.selection
         """
-        opos_to_vpos = self.origpos_to_viewpos
-        assert len(opos_to_vpos) == len(self.text) + 1
-        o_viewbeg = self.viewpos_to_origpos[0]
-        o_viewend = self.viewpos_to_origpos[-1] #[len(self.text)]
-
-        selectionview = Selection()
+        mapping1 = self.partial_user_operation_transformation.intervalmapping
+        mapping2 = self.partial_conceal_transformation.intervalmapping
+        result = Selection()
         for beg, end in self.doc.selection:
             # Only add selections when they are in the TextView range
-            if (beg < o_viewend and o_viewbeg < end
-                    # Make sure empty intervals are taken into account
-                    or beg == end == o_viewbeg or beg == end == o_viewend):
-                beg = max(beg, o_viewbeg)
-                end = min(o_viewend, end)
-                assert beg <= end
-                offset = self.offset
-                vbeg = opos_to_vpos[beg - self.offset]
-                # Even though end is exclusive, and may be outside the text, it is being
-                # mapped, so we can safely do this
-                vend = opos_to_vpos[end - self.offset]
-                selectionview.add(Interval(vbeg, vend))
+            if beg <= self.end and self.beg <= end:
+                result.add(mapping2[mapping1[Interval(beg, end)]])
 
-        return selectionview
+        return result

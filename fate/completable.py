@@ -1,7 +1,7 @@
 from . import selecting # Dependency
 from abc import abstractmethod
 from logging import debug
-from copy import deepcopy
+from copy import copy
 
 from .insertoperations import InsertMode, get_indent
 from .operation import Operation
@@ -86,7 +86,7 @@ class ExampleCompletable(Completable):
 
     def __init__(self, doc, callback=None):
         self.newcontent = ['' for _ in doc.selection]
-        self.oldselection = deepcopy(doc.selection)
+        self.oldselection = copy(doc.selection)
         Completable.__init__(self, doc, callback)
         self.update_operation(doc)
 

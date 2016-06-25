@@ -46,13 +46,13 @@ class Conceal:
     def global_substitute(self, interval, newcontent):
         self.global_substitutions.append((interval, newcontent))
 
-    def generate_local_substitutions(self, viewport_offset, max_length):
+    def generate_local_substitutions(self, partial_text):
         """
         This method is executed on-the-fly when the textview is generated, so it should
         never have to be called from any other place.
         """
         self.local_substitutions = []
-        self.doc.OnGenerateLocalConceal.fire(self.doc, viewport_offset, max_length)
+        self.doc.OnGenerateLocalConceal.fire(self.doc, partial_text)
         self.local_substitutions.sort()
 
     def generate_global_substitutions(self, doc):

@@ -5,9 +5,8 @@ re_number = re.compile(r'\d')
 #"[^"]*"|'[^']*'
 re_string = re.compile(r'"[^"]*"|\'[^\']*\'')
 
-def regex_labels(document, l):
-    """ Add a list of (regex, label) to the labeling of document """
+def regex_labels(highlighting, text, beg, end, l):
+    """ Add a list l of (regex, label) to the labeling of doc """
     for regex, label in l:
-        matches = regex.finditer(document.text)
-        for match in matches:
-            document.highlighting.highlight((match.start(), match.end()), label)
+        for match in text.finditer(regex):
+            highlighting.highlight(match, label)

@@ -2,6 +2,10 @@
 Module containing insertmode implementations.
 """
 import re
+from abc import abstractmethod
+from logging import debug
+from copy import copy
+
 from . import commands
 from .operation import Operation
 from .operators import Append, Insert
@@ -10,13 +14,10 @@ from .commandtools import compose
 from . import selecting  # Dependency
 from .selecting.selectpattern import selectfullline
 from . import commands
-from .clipboard import copy, clear, paste_before, cut
+from .clipboard import copy as copycommand, clear, paste_before, cut
 from .mode import Mode
 from . import document
 from .document import Document
-from abc import abstractmethod
-from logging import debug
-from copy import copy
 
 
 class InsertMode(Mode):
@@ -28,37 +29,26 @@ class InsertMode(Mode):
         self.allowedcommands.extend([document.next_document, document.previous_document])
 
     def start(self, doc, *args, **kwargs):
-        self.preview_operation = None
         Mode.start(self, doc, *args, **kwargs)
         self.update_operation(doc)
 
     def processinput(self, doc, userinput):
         if Mode.processinput(self, doc, userinput):
             return True
-        if not isinstance(userinput, str):
-            return False
+        if isinstance(userinput, str):
+            self.insert(doc, userinput)
+            self.update_operation(doc)
+            return True
 
-        self.insert_and_update(doc, userinput)
-        return True
-
-    def insert_and_update(self, doc, userinput):
-        self.insert(doc, userinput)
-        self.update_operation(doc)
+        return False
 
     def stop(self, doc):
-        if self.preview_operation != None:
-            self.preview_operation.undo(doc)
-            self.preview_operation(doc)
+        if self.operation != None:
+            self.operation(doc)
         Mode.stop(self, doc)
 
     def update_operation(self, doc):
-        # TODO: this is gonna be easier if text allows preview operations
-        if self.preview_operation != None:
-            self.preview_operation.undo(doc)
-
-        # Execute the operation (excludes adding it to the undotree)
-        self.preview_operation = self.compute_operation(doc)
-        self.preview_operation.do(doc)
+        self.operation = self.compute_operation(doc)
 
     @abstractmethod
     def compute_operation(self, doc):
@@ -73,8 +63,8 @@ class InsertMode(Mode):
         pass
 
 
-def get_indent(doc, pos):
-    """Get the indentation of the line containing position pos."""
+def get_indent(text, pos):
+    """Get a string containing the indentation of the line containing position pos."""
     line = selectfullline(doc, interval=Interval(pos, pos))
     string = line.content(doc)
     match = re.search(r'^[ \t]*', string)
@@ -115,9 +105,15 @@ class ChangeInPlace(InsertMode):
                 self.oldselection[i] = Interval(beg, min(len(doc.text), end + 1))
             elif string == '\n' and doc.autoindent:
                 # Add indent after \n
-                newselection = self.preview_operation.compute_newselection()
+                newselection = self.operation.compute_newselection()
                 cursor_pos = newselection[i][1]
-                indent = get_indent(doc, cursor_pos)
+                # If the insertions contain a newline character we have to search the inserted
+                # text for the current indentation, other wise the original text
+                insertions = self.newcontent[i]
+                if '\n' in insertions:
+                    indent = get_indent(insertions, len(insertions))
+                else:
+                    indent = get_indent(doc.text, cursor_pos)
                 self.newcontent[i] += string + indent
             elif string == '\t' and doc.expandtab:
                 # Increase indent
@@ -189,7 +185,7 @@ class ChangeAround(InsertMode):
                     self.deletions[i] += 1
             elif string == '\n' and doc.autoindent:
                 # add indent after \n
-                newselection = self.preview_operation.compute_newselection()
+                newselection = self.operation.compute_newselection()
                 cursor_pos_before = newselection[i][0]
                 cursor_pos_after = newselection[i][1]
                 indent_before = get_indent(doc, cursor_pos_before)
@@ -235,14 +231,14 @@ def changearound(doc):
 commands.changearound = changearound
 
 
-openlineafter = compose(commands.selectfullline, commands.selectindent, copy,
+openlineafter = compose(commands.selectfullline, commands.selectindent, copycommand,
                         commands.selectnextfullline, Append('\n'),
                         commands.selectpreviouschar, commands.emptybefore,
                         paste_before, clear, changeafter,
                         docs='Open a line after interval')
 commands.openlineafter = openlineafter
 
-openlinebefore = compose(commands.selectfullline, commands.selectindent, copy,
+openlinebefore = compose(commands.selectfullline, commands.selectindent, copycommand,
                          commands.selectnextfullline, Insert('\n'),
                          commands.selectnextchar, commands.emptybefore,
                          paste_before, clear, changeafter,

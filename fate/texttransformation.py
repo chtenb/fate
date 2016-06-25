@@ -374,7 +374,7 @@ class TextTransformation:
 
         substitutions = [IntervalSubstitution(selection[i], len(replacements[i]))
                          for i in range(len(selection))]
-        self.interval_mapping = IntervalMapping(substitutions)
+        self.intervalmapping = IntervalMapping(substitutions)
 
         # Store some information to be able to construct an inverse
         self.validate(text)
@@ -382,7 +382,7 @@ class TextTransformation:
 
     def compute_newselection(self):
         """The selection containing the potential result of the operation."""
-        return Selection([self.interval_mapping[interval] for interval in self.selection])
+        return Selection([self.intervalmapping[interval] for interval in self.selection])
 
     def validate(self, text):
         """

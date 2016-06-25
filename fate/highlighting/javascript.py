@@ -15,7 +15,7 @@ def init(document):
     document.OnGenerateGlobalHighlighting.add(main)
 
 
-def main(document):
+def main(highlighting, text, beg, end):
     regex_list = [(re_keyword, 'keyword'), (re_number, 'number'), (re_string, 'string'),
                   (re_comment, 'comment')]
-    regex_labels(document, regex_list)
+    regex_labels(highlighting, text, beg, end, regex_list)
