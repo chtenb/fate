@@ -3,6 +3,7 @@ from ..selection import Selection, Interval
 from .decorators import intervalselector_withmode, partial
 from .. import commands
 
+
 def findpattern(text, pattern, reverse=False, group=0):
     """Find intervals that match given pattern."""
     matches = re.finditer(pattern, text)
@@ -47,10 +48,10 @@ def selectpattern(pattern, doc, selection, reverse=False, group=0):
     return newselection
 
 
-def select_local_pattern(pattern, doc, interval, reverse=False,
+def select_local_pattern(pattern, text, interval, reverse=False,
                          group=0, only_within=False, allow_same_interval=False):
 
-    match_intervals = findpattern(doc.text, pattern, reverse, group)
+    match_intervals = findpattern(text, pattern, reverse, group)
 
     beg, end = interval
     new_interval = None
@@ -74,8 +75,12 @@ def select_local_pattern(pattern, doc, interval, reverse=False,
             return new_interval
 
 
-selectindent = partial(select_local_pattern, r'(?m)^([ \t]*)', reverse=True, group=1,
-                       allow_same_interval=True)
+def selectindent(text, interval):
+    pattern = r'(?m)^([ \t]*)'
+    # To avoid edge cases, we first select the entire line
+    fullline = selectfullline(text, interval)
+    return select_local_pattern(pattern, text, fullline, allow_same_interval=True,
+                                reverse=True, only_within=True, group=1)
 commands.selectindent = intervalselector_withmode(selectindent)
 
 
@@ -84,8 +89,14 @@ selectline = partial(select_local_pattern, r'(?m)^[ \t]*([^\n]*)', group=1,
 commands.selectline = intervalselector_withmode(selectline)
 
 
-selectfullline = partial(select_local_pattern, r'[^\n]*\n?',
-                         allow_same_interval=True)
+def selectfullline(text, interval):
+    pattern = r'(?m)^[^\n]*\n?'
+    result1 = select_local_pattern(pattern, text, interval, allow_same_interval=True)
+    # If we have an empty interval at the end of the text, result1 will we none;
+    # we have to match backward.
+    result2 = select_local_pattern(pattern, text, interval, allow_same_interval=True,
+                                   reverse=True)
+    return result1 or result2
 commands.selectfullline = intervalselector_withmode(selectfullline)
 
 

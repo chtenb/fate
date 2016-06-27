@@ -3,19 +3,30 @@ This module provides testcases for insertoperations.
 Auto indentation is covered.
 """
 from .. import commands
-from ..insertoperations import changeafter, changebefore, changeinplace, changearound
+from ..insertoperations import (changeafter, changebefore, changeinplace, changearound,
+                                get_indent)
 from ..undotree import undo
 from .basetestcase import BaseTestCase
 from .. import document
 from .. import run
+from ..text import StringText
+
 
 def deactivate(doc):
     document.activedocument = None
 
+
 class OperatorTest(BaseTestCase):
+
     def setUp(self):
         BaseTestCase.setUp(self)
         commands.selectnextline(self.doc)
+
+    def test_get_indent(self):
+        text = StringText('  test')
+        self.assertEqual('  ', get_indent(text, 0))
+        self.assertEqual('  ', get_indent(text, 5))
+        self.assertEqual('  ', get_indent(text, len(text)))
 
     def test_change_in_place(self):
         self.doc.ui.feedinput(changeinplace)
@@ -78,4 +89,3 @@ class OperatorTest(BaseTestCase):
         undo(self.doc)
         undo(self.doc)
         self.assertEqual('import sys\n\n', self.doc.text[:12])
-

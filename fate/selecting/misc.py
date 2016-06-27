@@ -51,63 +51,63 @@ commands.selectline = compose(ask_linenumber, selectline)
 
 
 
-def selectall(doc, selection, selectmode=None):
+def selectall(text, selection, selectmode=None):
     """Select the entire text."""
-    return Selection(Interval(0, len(doc.text)))
+    return Selection(Interval(0, len(text)))
 commands.selectall = selector(selectall)
 
 
-def select_single_interval(doc, selection, selectmode=None):
+def select_single_interval(text, selection, selectmode=None):
     """Reduce the selection to the single uppermost interval."""
     return Selection(selection[0])
 commands.select_single_interval = selector(select_single_interval)
 
 
-def empty(doc, selection, selectmode=None):
+def empty(text, selection, selectmode=None):
     """Reduce the selection to a single uppermost empty interval."""
     beg = selection[0][0]
     return Selection(Interval(beg, beg))
 commands.empty = selector(empty)
 
 
-def join(doc, selection, selectmode=None):
+def join(text, selection, selectmode=None):
     """Join all intervals together."""
     return Selection(Interval(selection[0][0], selection[-1][1]))
 commands.join = selector(join)
 
 
-def complement(doc, selection, selectmode=None):
+def complement(text, selection, selectmode=None):
     """Return the complement."""
-    return Selection(selection.complement(doc))
+    return Selection(selection.complement(text))
 commands.complement = selector(complement)
 
 
-def emptybefore(doc, interval, selectmode=None):
+def emptybefore(text, interval, selectmode=None):
     """Return the empty interval before each interval."""
     beg, _ = interval
     return Interval(beg, beg)
 commands.emptybefore = intervalselector(emptybefore)
 
 
-def emptyafter(doc, interval, selectmode=None):
+def emptyafter(text, interval, selectmode=None):
     """Return the empty interval after each interval."""
     _, end = interval
     return Interval(end, end)
 commands.emptyafter = intervalselector(emptyafter)
 
 
-def movedown(doc, interval, reverse=False):
+def movedown(text, interval, reverse=False):
     """Move each interval one line down. Preserve fully selected lines."""
     beg, end = interval
     if end - beg > 0:
-        currentline = selectfullline(doc, Interval(end - 1, end))
+        currentline = selectfullline(text, Interval(end - 1, end))
     else:
-        currentline = selectfullline(doc, Interval(end, end))
+        currentline = selectfullline(text, Interval(end, end))
 
     if not reverse:
-        nextline = selectnextfullline(doc, currentline)
+        nextline = selectnextfullline(text, currentline)
     else:
-        nextline = selectpreviousfullline(doc, currentline)
+        nextline = selectpreviousfullline(text, currentline)
 
     if nextline == None:
         return
@@ -116,7 +116,7 @@ def movedown(doc, interval, reverse=False):
     cbeg, cend = Interval(max(currentline[0], beg), min(currentline[1], end))
 
     # Embed interval in next line
-    if nextline[1] == len(doc.text):
+    if nextline[1] == len(text):
         # Exceptional case for the last line which has no eol character
         nbeg = min(nextline[0] + cbeg - currentline[0], nextline[1])
         nend = min(nextline[0] + cend - currentline[0], nextline[1])
@@ -134,9 +134,9 @@ def movedown(doc, interval, reverse=False):
 commands.movedown = intervalselector_withmode(movedown)
 
 
-def moveup(doc, interval):
+def moveup(text, interval):
     """Move each interval one line up. Preserve fully selected lines."""
-    return movedown(doc, interval, reverse=True)
+    return movedown(text, interval, reverse=True)
 commands.moveup = intervalselector_withmode(moveup)
 
 

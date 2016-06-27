@@ -1,5 +1,6 @@
 from functools import wraps
 from ..selection import Selection, Interval
+from ..text import Text
 from . import SelectModes
 
 
@@ -20,11 +21,14 @@ def partial(func, *args, docs='', **keywords):
 def selector(function):
     """Turn given selector in a command that takes a document."""
     @wraps(function)
-    def wrapper(doc, *args, selection=None, selectmode=None, preview=False, **kwargs):
+    def wrapper(doc, *args, selection=None, text=None, selectmode=None, preview=False, **kwargs):
+        text = text or doc.text
         selection = selection or doc.selection
         selectmode = selectmode or doc.selectmode
+        assert isinstance(text, Text)
+        assert isinstance(selection, Selection)
 
-        result = function(doc, *args, selection=selection, selectmode=selectmode, **kwargs)
+        result = function(text, *args, selection=selection, selectmode=selectmode, **kwargs)
 
         if preview:
             return result
@@ -37,10 +41,10 @@ def intervalselector(function):
     """Turn given intervalselector in a command that takes a document."""
     @wraps(function)
     @selector
-    def wrapper(doc, selection, *args, selectmode=None, **kwargs):
+    def wrapper(text, selection, *args, selectmode=None, **kwargs):
         new_intervals = []
         for interval in selection:
-            new_interval = function(doc, interval, *args, selectmode=selectmode, **kwargs)
+            new_interval = function(text, interval, *args, selectmode=selectmode, **kwargs)
             if new_interval == None:
                 return
             new_intervals.append(new_interval)
@@ -55,7 +59,7 @@ def intervalselector_withmode(function):
     """
     @wraps(function)
     @intervalselector
-    def wrapper(doc, interval, *args, selectmode=None, **kwargs):
+    def wrapper(text, interval, *args, selectmode=None, **kwargs):
         # Give different interval based on selectmode
         beg, end = interval
         if selectmode == SelectModes.head:
@@ -65,7 +69,7 @@ def intervalselector_withmode(function):
         else:
             proxy_interval = interval
 
-        new_interval = function(doc, proxy_interval, *args, **kwargs)
+        new_interval = function(text, proxy_interval, *args, **kwargs)
         if new_interval == None:
             return
 

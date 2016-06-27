@@ -12,12 +12,13 @@ from .operators import Append, Insert
 from .selection import Interval
 from .commandtools import compose
 from . import selecting  # Dependency
-from .selecting.selectpattern import selectfullline
+from .selecting.selectpattern import selectfullline, selectindent
 from . import commands
 from .clipboard import copy as copycommand, clear, paste_before, cut
 from .mode import Mode
 from . import document
 from .document import Document
+from .text import StringText, Text
 
 
 class InsertMode(Mode):
@@ -65,11 +66,15 @@ class InsertMode(Mode):
 
 def get_indent(text, pos):
     """Get a string containing the indentation of the line containing position pos."""
-    line = selectfullline(doc, interval=Interval(pos, pos))
-    string = line.content(doc)
+    # return text[selectindent(text, interval=Interval(pos, pos))]
+    assert isinstance(text, Text)
+    interval = selectfullline(text, interval=Interval(pos, pos))
+    assert interval
+    string = text[interval]
     match = re.search(r'^[ \t]*', string)
     assert match.start() == 0
-    return string[match.start(): match.end()]
+    result = string[match.start(): match.end()]
+    return result
 
 
 class ChangeInPlace(InsertMode):
@@ -105,14 +110,13 @@ class ChangeInPlace(InsertMode):
                 self.oldselection[i] = Interval(beg, min(len(doc.text), end + 1))
             elif string == '\n' and doc.autoindent:
                 # Add indent after \n
-                newselection = self.operation.compute_newselection()
-                cursor_pos = newselection[i][1]
                 # If the insertions contain a newline character we have to search the inserted
                 # text for the current indentation, other wise the original text
-                insertions = self.newcontent[i]
+                insertions = StringText(self.newcontent[i])
                 if '\n' in insertions:
                     indent = get_indent(insertions, len(insertions))
                 else:
+                    cursor_pos = self.oldselection[i][1]
                     indent = get_indent(doc.text, cursor_pos)
                 self.newcontent[i] += string + indent
             elif string == '\t' and doc.expandtab:
@@ -166,6 +170,7 @@ class ChangeAround(InsertMode):
         self.insertions_before = [''] * len(doc.selection)
         self.insertions_after = [''] * len(doc.selection)
         self.deletions = [0] * len(doc.selection)
+        self.oldselection = copy(doc.selection)
         InsertMode.start(self, doc, *args, **kwargs)
 
     def cursor_position(self, doc):
@@ -186,10 +191,23 @@ class ChangeAround(InsertMode):
             elif string == '\n' and doc.autoindent:
                 # add indent after \n
                 newselection = self.operation.compute_newselection()
-                cursor_pos_before = newselection[i][0]
-                cursor_pos_after = newselection[i][1]
-                indent_before = get_indent(doc, cursor_pos_before)
-                indent_after = get_indent(doc, cursor_pos_after)
+
+                # If the insertions contain a newline character we have to search the inserted
+                # text for the current indentation, other wise the original text
+                if '\n' in self.insertions_before[i]:
+                    indent_before = get_indent(self.insertions_before[i],
+                                               len(self.insertions_before[i]))
+                else:
+                    cursor_pos_before = self.oldselection[i][0]
+                    indent_before = get_indent(doc.text, cursor_pos_before)
+
+                if '\n' in self.insertions_after[i]:
+                    indent_after = get_indent(self.insertions_after[i],
+                                              len(self.insertions_after[i]))
+                else:
+                    cursor_pos_after = self.oldselection[i][1]
+                    indent_after = get_indent(doc.text, cursor_pos_after)
+
                 self.insertions_before[i] += indent_before + string
                 self.insertions_after[i] += string + indent_after
             elif string == '\t' and doc.expandtab:

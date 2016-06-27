@@ -41,7 +41,7 @@ class StringText(Text, str):
             return str.__getitem__(self, slice(beg, end))
         if isinstance(item, Selection):
             return [self[interval] for interval in item]
-        raise ValueError
+        raise ValueError('{} is not a valid item'.format(repr(item)))
 
     def transform(self, transformation):
         """Apply the transformation to self."""

@@ -13,7 +13,7 @@ from .decorators import intervalselector_withmode
 from . import commands
 
 
-def select_delimiting_char(doc, interval, char=None, backward=False):
+def select_delimiting_char(text, interval, char=None, backward=False):
     """
     Select around given character.
     Return None if not all intervals are surrounded.
@@ -31,8 +31,8 @@ def select_delimiting_char(doc, interval, char=None, backward=False):
     # For each interval find the smallest surrounding pair
     if not backward:
         try:
-            match_beg = doc.text.index(beg_delim, beg)
-            match_end = doc.text.index(end_delim, match_beg + 1) + 1
+            match_beg = text.index(beg_delim, beg)
+            match_end = text.index(end_delim, match_beg + 1) + 1
         except ValueError:
             return
 
@@ -44,8 +44,8 @@ def select_delimiting_char(doc, interval, char=None, backward=False):
             return Interval(match_beg, match_end)
     else:
         try:
-            match_beg = doc.text.rindex(beg_delim, 0, beg)
-            match_end = doc.text.index(end_delim, match_beg + 1) + 1
+            match_beg = text.rindex(beg_delim, 0, beg)
+            match_end = text.index(end_delim, match_beg + 1) + 1
         except ValueError:
             return
 

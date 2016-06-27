@@ -1,12 +1,13 @@
 from unittest import TestCase
-from .. import document
 from tempfile import gettempdir
+from .. import document
 from .fake_userinterface import FakeUserInterface
+from ..text import StringText
 
 class BaseTestCase(TestCase):
 
     create_userinterface = FakeUserInterface
-    sampletext = """import sys
+    sampletext = StringText("""import sys
 
 class Foo(Bar):
     def __init__(self):
@@ -17,7 +18,7 @@ class Foo(Bar):
         print('Start!')
         return 1
 
-"""
+""")
 
     def setUp(self, sampletext=None):
         if sampletext != None:
