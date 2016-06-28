@@ -3,9 +3,7 @@ from abc import abstractmethod
 from .selection import Interval, Selection
 
 
-class Text:
-
-    # TODO: somehow add sequence and buffer interface to this
+class Text(str):
 
     """Interface for text objects."""
 
@@ -26,7 +24,7 @@ class Text:
         pass
 
 
-class StringText(Text, str):
+class StringText(Text):
 
     """Implementation of a Text using a simple string."""
 
@@ -84,6 +82,7 @@ class PartialText(StringText):
         return StringText.__new__(cls, inner_string)
 
     def __init__(self, inner_string: str, original_len: int, beg: int, end: int):
+        StringText.__init__(self)
         self.original_len = original_len
         self.beg = beg
         self.end = end

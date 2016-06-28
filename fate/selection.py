@@ -129,9 +129,10 @@ class Selection:
         except AttributeError:
             text = doc_or_text
 
-        if self.isempty:
-            raise Exception('Selection is empty.')
-        if not self._intervals[-1][1] <= len(text):
+        # FIXME: introduce UserSelection for this or something
+        # if self.isempty:
+            # raise Exception('Selection is empty.')
+        if not self.isempty and not self._intervals[-1][1] <= len(text):
             raise Exception(
                 'Selection {} is not valid for a text with length {}.'
                 .format(self, len(text))

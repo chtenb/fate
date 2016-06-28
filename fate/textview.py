@@ -154,18 +154,19 @@ from math import ceil
 from bisect import bisect_left
 from logging import debug
 
+# from typedecorator import typed
+from typedecorator import typed
+
 from .selection import Interval, Selection
-from .text import PartialText
+from .operation import Operation
+from .insertoperations import InsertMode
+from .text import PartialText, Text
 from .texttransformation import TextTransformation, PartialTextTransformation
 from .contract import post
 from .navigation import (
     move_n_wrapped_lines_down, count_wrapped_lines, next_beg_of_wrapped_line)
 from .highlighting import Highlighting
 
-
-def _compute_selectionview_post(result, self, old=None, new=None):
-    for vbeg, vend in result:
-        assert 0 <= vbeg <= vend <= len(self.text)
 
 # TODO: make textview thread-safe
 # TODO: find a way to statically prevent thread errors
@@ -198,6 +199,7 @@ class TextView:
     """
 
     def __init__(self, doc, width, height, offset):
+        assert isinstance(doc.text, Text)
         self.doc = doc
         self.width = width
         self.height = height
@@ -277,8 +279,9 @@ class TextView:
         otext = self.doc.text
         obeg = self.offset
         if len(otext) - obeg == 0:
-            return '', [0], [0]
-        elif len(otext) - obeg < 0:
+            self._compute_text_from_orig_interval(obeg, 0)
+            return
+        if len(otext) - obeg < 0:
             raise ValueError('offset is beyond length of text')
 
         # Length of the sample of the original text that is used to compute the view text
@@ -306,7 +309,6 @@ class TextView:
         # otherwise we did too much work
         assert required_length > len(vtext) // 2
 
-
     def _compute_text_from_orig_interval(self, obeg, o_sample_length):
         """
         Compute the concealed text and the corresponding position mapping from an interval
@@ -328,15 +330,20 @@ class TextView:
         # - Map highlighting using second transformation only
         partial_text = PartialText.from_text(self.doc.text, beg, end)
 
-        user_operation_transformation = self.doc.mode.operation
+        if isinstance(self.doc.mode, InsertMode):
+            user_operation_transformation = self.doc.mode.operation
+        else:
+            # Insert some random trivial operation, to keep things simple
+            user_operation_transformation = Operation(self.doc, [''],
+                                                      Selection([Interval(0, 0)]))
+
         self.partial_user_operation_transformation = PartialTextTransformation(
-            user_operation_transformation, beg, end, len(partial_text))
+            user_operation_transformation, beg, end, partial_text)
         self.text_after_user_operation = partial_text.transform(
             self.partial_user_operation_transformation)
 
-        end_after_user_operation = self.partial_user_operation_transformation[end]
-        text_length_after_user_operation = self.partial_user_operation_transformation[
-            len(partial_text)]
+        end_after_user_operation = self.partial_user_operation_transformation.intervalmapping[
+            end]
 
         conceal = self.doc.conceal
         conceal.generate_local_substitutions(self.text_after_user_operation)
@@ -348,8 +355,9 @@ class TextView:
                                                     self.text_after_user_operation)
         self.partial_conceal_transformation = PartialTextTransformation(
             conceal_transformation, beg, end_after_user_operation,
-            text_length_after_user_operation)
-        self.text_after_conceal = self.text_after_user_operation.transform(conceal_transformation)
+            self.text_after_user_operation)
+        self.text_after_conceal = self.text_after_user_operation.transform(
+            conceal_transformation)
 
     def _compute_highlighting(self):
         """
@@ -376,11 +384,9 @@ class TextView:
 
         return self.highlighting
 
-    @post(_compute_selectionview_post)
     def _compute_selection(self, old=None, new=None):
         """
-        Construct selection view.
-        Use the opos_to_vpos mapping to derive the selection intervals in the viewport.
+        Construct selection in terms of view positions.
         Return: None
         Side effect: set self.selection
         """
@@ -388,8 +394,6 @@ class TextView:
         mapping2 = self.partial_conceal_transformation.intervalmapping
         result = Selection()
         for beg, end in self.doc.selection:
-            # Only add selections when they are in the TextView range
-            if beg <= self.end and self.beg <= end:
-                result.add(mapping2[mapping1[Interval(beg, end)]])
+            result.add(mapping2[mapping1[Interval(beg, end)]])
 
-        return result
+        self.selection = result

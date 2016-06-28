@@ -9,6 +9,17 @@ from logging import info, debug
 
 info('Starting fate.')
 
+import os
+import sys
+
+# Make sure packages from submodules can be imported
+typedecorator_path = (os.path.dirname(os.path.abspath(__file__))
+                      + os.sep + '..' + os.sep + 'typedecorator')
+debug('Adding {} to path'.format(typedecorator_path))
+sys.path.insert(0, typedecorator_path)
+import typedecorator
+typedecorator.setup_typecheck()
+
 
 class CommandsSingleton:
     """
@@ -74,7 +85,6 @@ info('All standard plugins are loaded.')
 
 # Load user script if existent
 from os.path import expanduser
-import sys
 from importlib import find_loader, import_module
 
 path_to_user = expanduser('~') + '/.fate/'
@@ -103,4 +113,3 @@ def run():
         doc.ui.touch()
         userinput = doc.ui.getinput()
         doc.processinput(userinput)
-

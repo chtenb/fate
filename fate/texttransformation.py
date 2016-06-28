@@ -166,10 +166,13 @@ screen) for performance reasons. This is closely related to implementing a faste
 datastructure for large texts.
 """
 
-from typing import List
+from typing import List, Any
 from copy import copy
 
+from typedecorator import typed
+
 from .selection import Interval, Selection
+from .text import Text
 
 
 class IntervalSubstitution:
@@ -360,7 +363,7 @@ class TextTransformation:
 
     """Transforms a text and maps positions accross this transformation."""
 
-    def __init__(self, selection: Selection, replacements: List[str], text):
+    def __init__(self: 'TextTransformation', selection: Selection, replacements: List[str], text: Text):
         """
         :selection: selection for which the intervals get new content.
         :replacements: sorted (ascending by interval) list of strings representing the new
@@ -369,6 +372,7 @@ class TextTransformation:
         Interval are not allowed to overlap. Intervals are allowed to be adjacent. It is
         allowed to have multiple insertions at the same position.
         """
+        assert isinstance(text, Text)
         self.selection = selection
         self.replacements = replacements
 
@@ -384,10 +388,11 @@ class TextTransformation:
         """The selection containing the potential result of the operation."""
         return Selection([self.intervalmapping[interval] for interval in self.selection])
 
-    def validate(self, text):
+    def validate(self: 'TextTransformation', text: 'Text'):
         """
         Make sure the application of this operation is valid at this moment
         """
+        assert isinstance(text, Text)
         self.selection.validate(text)
         newselection = self.compute_newselection()
         content = self.selection.content(text)
@@ -414,6 +419,7 @@ class PartialTextTransformation(TextTransformation):
     """
 
     def __init__(self, original_transformation: TextTransformation, beg: int, end: int, text):
+        assert isinstance(text, Text)
         self.origin = original_transformation
         self.beg = beg
         self.end = end
