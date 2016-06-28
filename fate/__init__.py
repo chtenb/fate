@@ -3,8 +3,6 @@ This module loads fate by loading all standard plugins and the user script.
 This makes sure that all code that depends on these won't have to import them manually.
 """
 
-# Initialize logger
-from . import log
 from logging import info, debug
 
 info('Starting fate.')
