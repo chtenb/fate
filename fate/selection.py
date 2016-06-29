@@ -77,9 +77,8 @@ class Interval(tuple):
 class Selection:
 
     """
-    Sorted list of disjoint non-adjacent intervals.
+    Sorted list of disjoint intervals.
 
-    TODO: allow adjacentness in selections?
     What about empty intervals?
     For users this stuff doesn't make sense, but for arbitrary substitutions used by
     e.g. plugins this may make sense.
@@ -162,7 +161,7 @@ class Selection:
     def add(self, item):
         """
         Add one or more intervals to the selection. If interval is overlapping
-        with or adjacent to some existing interval, they are merged.
+        with some existing interval, they are merged.
         item must be an interval or a sequence of intervals.
         """
         if not isinstance(item, Interval):
@@ -173,15 +172,15 @@ class Selection:
         nbeg, nend = item
         assert nbeg <= nend
 
-        # First merge overlapping or adjacent existing intervals into the new interval
+        # First merge overlapping existing intervals into the new interval
         for beg, end in self._intervals:
             # [  ]  existing interval
             #  (    new interval
-            if beg < nbeg <= end:
+            if beg < nbeg < end:
                 nbeg = beg
             # [  ]
             #   )
-            if beg <= nend < end:
+            if beg < nend < end:
                 nend = end
 
         # Then insert the new interval at the right index

@@ -8,6 +8,7 @@ import argparse
 from unittest import defaultTestLoader, TextTestRunner
 
 import fate
+import fate_logger
 from fate.test import cmdargs
 
 parser = argparse.ArgumentParser()
@@ -31,7 +32,7 @@ parser.add_argument('-d', '--debug', help='run the test suite without collecting
                     action='store_true')
 args = parser.parse_args()
 cmdargs.args = args
-fate.log.LOG_TO_STDOUT = args.print_logs
+fate_logger.LOG_TO_STDOUT = args.print_logs
 
 # Dump locals on exception
 def excepthook(type, value, tb):

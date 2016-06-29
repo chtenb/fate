@@ -305,10 +305,6 @@ class TextView:
         if required_length == beg_last_line:
             required_length = len(vtext)
 
-        # Assert that we do not have to snap no more then half,
-        # otherwise we did too much work
-        assert required_length > len(vtext) // 2
-
     def _compute_text_from_orig_interval(self, obeg, o_sample_length):
         """
         Compute the concealed text and the corresponding position mapping from an interval
@@ -317,7 +313,6 @@ class TextView:
         Side effect: sets
         self.partial_user_operation_transformation, self.text_after_user_operation,
         self.partial_conceal_transformation, self.text_after_conceal
-
         """
         beg = obeg
         end = obeg + o_sample_length

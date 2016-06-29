@@ -70,6 +70,7 @@ class StringText(Text):
         for match in regex.finditer(self, beg, end):
             yield Interval(match.start(), match.end())
 
+
 class PartialText(StringText):
 
     """
@@ -129,8 +130,8 @@ class PartialText(StringText):
         for interval in transformation.selection:
             if interval not in self:
                 beg, end = interval
-                raise IndexError('item ({},{}) is out of range ({},{})'.format(beg, end, self.beg,
-                                                                               self.end))
+                raise IndexError('item ({},{}) is out of our active range ({},{})'.format(
+                    beg, end, self.beg, self.end))
 
         new_inner_text = StringText.transform(self, transformation)
         new_len = len(self) - str.__len__(self) + str.__len__(new_inner_text)
@@ -144,4 +145,3 @@ class PartialText(StringText):
 
         for match in regex.finditer(self, beg, end):
             yield Interval(match.start() + beg, match.end() + beg)
-
