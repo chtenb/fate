@@ -1,6 +1,6 @@
 """A document represents the state of an editing document."""
 from .selection import Selection, Interval
-from .text import StringText
+from .text import StringText, Text
 from .event import Event
 from . import commands
 from .userinterface import UserInterfaceAPI
@@ -33,6 +33,7 @@ class Document:
     create_userinterface = None
 
     _mode = None
+    _text = None
 
     expandtab = False
     tabwidth = 4
@@ -42,7 +43,7 @@ class Document:
     saved = True
 
     def __init__(self, filename=''):
-        _text = StringText('')
+        self._text = StringText('')
 
         documentlist.append(self)
         self.OnTextChanged = Event('OnTextChanged')
@@ -121,6 +122,7 @@ class Document:
 
     @text.setter
     def text(self, value):
+        assert isinstance(value, Text)
         self._text = value
 
         self.saved = False

@@ -229,8 +229,8 @@ class TextView:
         self = TextView(doc, width, height, offset)
 
         self._compute_text_from_view_interval()
-        self.selection = self._compute_selection()
-        self.highlighting = self._compute_highlighting()
+        self._compute_selection()
+        self._compute_highlighting()
 
         return self
 
@@ -242,8 +242,8 @@ class TextView:
         self = TextView(doc, width, None, 0)
 
         self._compute_text_from_orig_interval(0, len(doc.text))
-        self.selection = self._compute_selection()
-        self.highlighting = self._compute_highlighting()
+        self._compute_selection()
+        self._compute_highlighting()
 
         return self
 

@@ -18,7 +18,8 @@ def init_conceal(doc):
     doc.OnGenerateGlobalConceal = Event('OnGenerateGlobalConceal')
     doc.OnGenerateLocalConceal = Event('OnGenerateLocalConceal')
 
-    doc.OnTextChanged.add(doc.conceal.generate_global_substitutions)
+    # FIXME: find a moment for global generations to be generated, or do it async
+    # doc.OnTextChanged.add(doc.conceal.generate_global_substitutions)
 
     # Example concealment that does not need any context
     doc.OnGenerateLocalConceal.add(conceal_tabs)
@@ -64,8 +65,8 @@ class Conceal:
         self.global_substitutions.sort()
 
 
-def conceal_tabs(doc, start_pos, max_length):
-    for i in range(start_pos, start_pos + max_length):
+def conceal_tabs(doc, partial_text):
+    for i in range(partial_text.beg, partial_text.end):
         if i >= len(doc.text):
             break
         if doc.text[i] == '\t':

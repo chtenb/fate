@@ -1,4 +1,5 @@
 import re
+from logging import debug
 from ..selection import Selection, Interval
 from .decorators import intervalselector_withmode, partial
 from .. import commands
