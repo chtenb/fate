@@ -154,9 +154,6 @@ from math import ceil
 from bisect import bisect_left
 from logging import debug
 
-# from typedecorator import typed
-from typedecorator import typed
-
 from .selection import Interval, Selection
 from .operation import Operation
 from .insertoperations import InsertMode

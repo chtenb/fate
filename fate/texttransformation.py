@@ -169,8 +169,6 @@ datastructure for large texts.
 from typing import List, Any
 from copy import copy
 
-from typedecorator import typed
-
 from .selection import Interval, Selection
 from .text import Text
 

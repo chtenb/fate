@@ -10,14 +10,6 @@ info('Starting fate.')
 import os
 import sys
 
-# Make sure packages from submodules can be imported
-typedecorator_path = (os.path.dirname(os.path.abspath(__file__))
-                      + os.sep + '..' + os.sep + 'typedecorator')
-debug('Adding {} to path'.format(typedecorator_path))
-sys.path.insert(0, typedecorator_path)
-import typedecorator
-typedecorator.setup_typecheck()
-
 
 class CommandsSingleton:
     """
