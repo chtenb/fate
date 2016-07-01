@@ -337,11 +337,13 @@ class TextView:
         self.text_after_user_operation = partial_text.transform(
             self.partial_user_operation_transformation)
 
+        self._compute_selection_after_user_operation()
+
         end_after_user_operation = self.partial_user_operation_transformation.intervalmapping[
             end]
 
         conceal = self.doc.conceal
-        conceal.generate_local_substitutions(self.text_after_user_operation)
+        conceal.generate_local_substitutions(self)
         substitutions = conceal.local_substitutions
 
         selection = Selection([interval for interval, _ in substitutions])
@@ -378,6 +380,18 @@ class TextView:
                 self.highlighting.append('')
 
         return self.highlighting
+
+    def _compute_selection_after_user_operation(self, old=None, new=None):
+        """
+        Return: None
+        Side effect: set self.selection_after_user_operation
+        """
+        mapping = self.partial_user_operation_transformation.intervalmapping
+        result = Selection()
+        for beg, end in self.doc.selection:
+            result.add(mapping[Interval(beg, end)])
+
+        self.selection_after_user_operation = result
 
     def _compute_selection(self, old=None, new=None):
         """

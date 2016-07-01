@@ -23,9 +23,7 @@ def init_conceal(doc):
 
     # Example concealment that does not need any context
     doc.OnGenerateLocalConceal.add(conceal_tabs)
-
-    # Examples
-    # doc.OnGenerateGlobalConceal.add(conceal_eol)
+    doc.OnGenerateLocalConceal.add(conceal_eol)
 
 Document.OnDocumentInit.add(init_conceal)
 
@@ -47,37 +45,60 @@ class Conceal:
     def global_substitute(self, interval, newcontent):
         self.global_substitutions.append((interval, newcontent))
 
-    def generate_local_substitutions(self, partial_text):
+    def generate_local_substitutions(self, textview):
         """
         This method is executed on-the-fly when the textview is generated, so it should
         never have to be called from any other place.
         """
         self.local_substitutions = []
-        self.doc.OnGenerateLocalConceal.fire(self.doc, partial_text)
+        self.doc.OnGenerateLocalConceal.fire(self.doc, textview)
         self.local_substitutions.sort()
 
-    def generate_global_substitutions(self, doc):
+    def generate_global_substitutions(self, textview):
         """
         This method is by default only executed OnTextChanged.
         """
         self.global_substitutions = []
-        self.doc.OnGenerateGlobalConceal.fire(self.doc)
+        self.doc.OnGenerateGlobalConceal.fire(self.doc, textview)
         self.global_substitutions.sort()
 
 
-def conceal_tabs(doc, partial_text):
+def conceal_tabs(doc, textview):
+    partial_text = textview.text_after_user_operation
     for i in range(partial_text.beg, partial_text.end):
-        if i >= len(doc.text):
-            break
-        if doc.text[i] == '\t':
+        if partial_text[i] == '\t':
             # viewstring = ' ' * (doc.tabwidth - 1) + '\u21E5'
             viewstring = ' ' * doc.tabwidth
             doc.conceal.local_substitute(Interval(i, i + 1), viewstring)
 
 
-def conceal_eol(doc):
-    for i in range(len(doc.text)):
-        if i >= len(doc.text):
-            break
-        if doc.text[i] == '\n':
-            doc.conceal.global_substitute(Interval(i, i + 1), '$\n')
+def conceal_eol(doc, textview):
+    partial_text = textview.text_after_user_operation
+    for i in range(partial_text.beg, partial_text.end):
+        if partial_text[i] == '\n':
+            doc.conceal.local_substitute(Interval(i, i + 1), '$\n')
+
+
+# TODO: different highlighting for empty interval selections?
+# TODO: Also show between adjacent non-empty intervals
+def show_empty_interval_selections(doc, textview):
+    partial_text = textview.text_after_user_operation
+    for beg, end in textview.selection_after_user_operation:
+        if beg == end and partial_text.beg <= beg <= partial_text.end:
+            doc.conceal.local_substitute(Interval(beg, end), '|')
+
+
+def show_selected_newlines(doc, textview):
+    partial_text = textview.text_after_user_operation
+    for beg, end in textview.selection_after_user_operation:
+        if beg == end and partial_text.beg <= beg <= partial_text.end:
+            for pos, char in enumerate(partial_text[Interval(beg, end)]):
+                if char == '\n':
+                    doc.conceal.local_substitute(Interval(beg + pos, beg + pos + 1), ' \n')
+
+
+def show_eof(doc, textview):
+    partial_text = textview.text_after_user_operation
+    textlength = len(doc.text)
+    if partial_text.end == textlength:
+        doc.conceal.local_substitute(Interval(textlength, textlength), 'EOF')

@@ -395,9 +395,10 @@ class TextTransformation:
         assert isinstance(text, Text)
         self.selection.validate(text)
         newselection = self.compute_newselection()
-        content = self.selection.content(text)
         assert len(newselection) == len(self.selection)
-        assert len(self.replacements) == len(content)
+        # This is not true in case of multiple insertions at the same position
+        # content = self.selection.content(text)
+        # assert len(self.replacements) == len(content)
 
     def inverse(self, text):
         """

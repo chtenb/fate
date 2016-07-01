@@ -5,23 +5,12 @@ from ..insertoperations import changeinplace
 
 from ..textview import TextView
 from ..text import StringText
+from ..conceal import show_empty_interval_selections, show_selected_newlines
 
 
 def init_concealers(doc):
     doc.OnGenerateLocalConceal.add(show_empty_interval_selections)
     doc.OnGenerateLocalConceal.add(show_selected_newlines)
-
-def show_empty_interval_selections(doc, partial_text):
-    for beg, end in doc.selection:
-        if beg == end and partial_text.beg <= beg <= partial_text.end:
-            doc.conceal.local_substitute(Interval(beg, end), '|')
-
-def show_selected_newlines(doc, partial_text):
-    for beg, end in doc.selection:
-        if beg == end and partial_text.beg <= beg <= partial_text.end:
-            for pos, char in enumerate(doc.text[beg:end]):
-                if char == '\n':
-                    doc.conceal.local_substitute(Interval(beg + pos, beg + pos + 1), ' \n')
 
 
 class TestTextView(BaseTestCase):
