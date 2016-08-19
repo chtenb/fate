@@ -7,9 +7,24 @@ Fate
 ====
 F.A.T.E. is a highly programmable text editor, mainly intended for programming purposes.
 
-How to install
---------------
-Available [here][fate-tui]
+Purpose
+-------
+The most important values for fate are the following.
+1. Fate must be a convenient text editor to work with.
+2. Fate must be able to act as a text processing language.
+3. Fate must be highly programmable.
+
+Combining these targets in one application has several advantages.
+If you use fate as your text editor that makes it easy to write text processing scripts as you
+very well know its concepts and commands. You don't need to learn a new language and google
+around to find the commands you need, as may be the case with tools like awk, sed etcetera.
+Conversely, having an interactive mode in your text processing language allows you to test your
+programs interactively and even record your programs as macros.
+The programmability is needed, if not required, by both values 1 and 2.
+It namely gives the resulting text processing language arbitrary power. And looking at other
+editors, it is readily observed that a text editor must be easily extendable in order to be
+successful.
+
 
 What you should know
 --------------------
@@ -79,6 +94,10 @@ If we pull this off really well, fate might even be used as glue for many editor
 feature implementations, such as completers, snippet expanders, syntax highlighters, error
 checkers, code formatters, etc.
 
+
+How to install
+--------------
+Available [here][fate-tui]
 
 Documentation
 -------------
