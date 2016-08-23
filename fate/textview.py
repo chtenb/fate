@@ -34,13 +34,11 @@ text the corresponding string in the original text. This is necessary for instan
 determining the highlighting of characters and whether characters are selected or not.
 Obviously there is no one-to-one correspondence between characters in either text, so what
 is the best way to define such a mapping? Some thoughts.
-- Any interval can be mapped to any string, even empty intervals (see application 3 and 5).
+- Any interval can be mapped to any string, even empty intervals (see application 3, 5 and 6).
 - When an empty interval is mapped, and a empty interval selections happens to be at the
   same place, it is not necessarily be in that empty selection. How to distinct between
   this? It means we can't just map positions to positions, since an empty inteval mapping to a
   non empty interval would cause one position to be mapped to two positions.
-  Cheap workaround: also keep a dictionary to map the intervals, if someone requests an exact
-  interval, use the dict, otherwise construct something from individual positions.
 - How do we deal with overlapping substitutions? A seemingly all right way to deal with this
   is to let larger replacements have precedence over shorter ones. This implies that
   replacements of super intervals have precedence over sub intervals.
@@ -75,43 +73,23 @@ is the best way to define such a mapping? Some thoughts.
   Option 4 seems to be the most straightforward solution here, and should be easy to
   implement.
 
-When mapping an empty interval to a non empty interval, how to know
-whether a replacement is in the image of the mapping?
+### Things to be transformed by the mapping
+- The user selection
+- User input like clicking the mouse or dragging an interval or selection has to be transformed
+  inversely. Can be an arbitrary selection.
+- Syntax highlighting (this is on character level only, no intervals have to be mapped)
 
-The following are interval positions
-0 1   2 3 4
-0 1 2 3 4 5
-    ^
-    Not in the image
+This can all be modelled as mapping an arbitrary selection. This makes sense, as a selection
+is powerful enough to contains arbitrary positional information, except that it cannot contain
+overlapping intervals. From the perspective of the mapping this is not an unnecessary
+restriction. It is very unclear how one should map overlapping intervals.
 
-
-Does it help if we go one level of indirection higher w.r.t. the positions?
-I.e. the interval positions of interval positions.
-
-Meta interval | 0 1 2 3 4 5 6 7 8 9
-interval      |  0   1   2   3   4
-Text          |    0   1   2   3
-
-This works in the sense that you can now fully control what to map. Not only text, but
-also the interval positions in the text, i.e. the user selections.
-It enables you to insert things into the text that do not actually belong to the text, and
-thus should not be selectable. You can do this by mapping an empty meta interval.
-Generally speaking, you can specify whether or not an interval bound should be mapped.
-
-Intervals must sometimes be mapped to multiple intervals, for instance if there
-are line numbers and some selected interval spans over multiple lines.
-
-You can also encode a meta interval position by an interval position and a left/right
-flag. When translating intervals to meta intervals it is a good default to make the bounds
-exclusive. This way, empty intervals touching a replacement are not considered inside the
-replacement.
-
-Are meta intervals relevant when doing a replacement/deletion instead of an insertion?
-
+### Choices to be made when mapping intervals
 Insertion
   When something adjacent is selected, should the insertion also look selected? (No,
   but in case of application 3 and 5, Yes)
   On which side do empty intervals appear? (After)
+  So when inserting, an additional flag has to be provided for this.
 Deletion
   Doesn't matter, something selected inside a deletion will always be an empty interval.
 Replacement
@@ -122,33 +100,22 @@ Replacement
 
 It seems that for all of these questions a very sane default answer can be given from
 which it is very unlikely that one would want to deviate from.
-For the difference between application 3 and 5 and the rest in case of insertions, we should
+For the difference between application 3, 5 and 6 and the rest in case of insertions, we should
 provide a distinguishing flag or seperate method.
 
-Multiple Stages
-
-What if we would have different phases/stages of replacements? I.e. insertions would come later
-than substitutions. Ideally we wouldn't have to do any work to add a new phase, since we would
-just apply the same code with different substitutions.
-
-How would you define and hook into these layers? Currently there are conceal events, and the
-remaining applications were done on the fly in the userinterface.
-Some possibilities.
-1. Define a ordering space of doubles, such that some function can hook into a number.
-All functions are then executed in the order of their numbers.
-2. Predefine a set of events. For each new application a patch would be needed.
-3. Create a list of "events". This list could be modified by plugins.
+###Multiple Stages
+We need different phases/stages of replacements. I.e. several of the applications listed
+above require a specific order in which they should be applied. Moreover, things like syntax
+highlighting should take place after application 3, but before application 1.
 
 
-Abstraction
------------
-
+### Abstraction
 We can view all these replacements as text operations/transformations.
 The only addition here is that we have to be able to specify more information as to how
 intervals are mapped across the transformations.
-
 The other enhancement we need is that we can do proper transformations on just a part of
 the text, for performance reasons.
+The implementation of these transformations is found in the module texttransformation.
 """
 from math import ceil
 from bisect import bisect_left

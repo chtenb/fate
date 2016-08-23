@@ -5,12 +5,23 @@ away information about the transformation and it is a waste of space. We only wa
 the difference between two texts as a transformation. This reduces a transformation to a set of
 substitutions within a text.
 
-We want to be able to carry over intervals from the original text to the image of the
-transformation. So a text transformation must also define a mapping of intervals across the
-transformation. When we need to map individual positions, we can derive this from the interval
-mapping by mapping an empty interval at the position and then take the lower position of the
-output interval. In general, however, we can not just map positions and derive from that how
-intervals should be mapped, as we will see later on.
+We want to be able to carry over selections from the original text to the image of the
+transformation. So a text transformation must also define some sort of mapping of intervals
+across the transformation. When we need to map individual positions, we can derive this from
+the interval mapping by mapping an empty interval at the position and then take the lower
+position of the output interval. In the implementation, however, we can not just map positions
+and derive from that how intervals should be mapped, as we will see later on.
+
+
+### Mathematical properties
+Suppose M is a function that maps positions, intervals and selections accross a texttransformation.
+The following should hold.
+Let a,b be positions.
+1. a <= b  ==>  M(a) <= M(b) (order preserving)
+
+Let (a,b) and (c,d) be intervals.
+2. b <= c  ==>  M(b) <= M(c) (order preserving, disjointness preserving)
+
 
 
 ### Substitutions of length 1
@@ -26,18 +37,16 @@ mapped and evident that out approach is exhaustive.
     [a,x+1] => [a,x]
     [x,a] => [x,a-1]
     [x+1,a] => [x,a-1]
-    and so [x,x+1] => [x,x]
-    For the remaining intervals the positions should just compensate for the difference in
-    size.
+    [x,x+1] => [x,x]
+    [a,b] => [a,b-1], for a < x < x+1 < b
 
 2. Insertion of a character.
     Suppose a character is inserted at position x. Then affected intervals should be
     mapped as follows.
     [a,x] => [a,x] or [a,x+1]
     [x,a] => [x,a+1] or [x+1,a+1]
-    and so [x,x] => [x,x] or [x,x+1] or [x+1,x+1]
-    For the remaining intervals the positions should just compensate for the difference in
-    size.
+    [x,x] => [x,x] or [x,x+1] or [x+1,x+1]
+    [a,b] => { [a,x], [x+1,b+1] } or [a,b+1], for a < x < x+1 < b
 
 3. Substitution of a character with another character.
     Suppose a character is substituted between position x and x+1.
@@ -46,13 +55,8 @@ mapped and evident that out approach is exhaustive.
     [a,x+1] => [a,x+1]
     [x,a] => [x,a]
     [x+1,a] => [x+1,a]
-    and so [x,x+1] => [x,x+1]
-
-IMPORTANT:
-In case 2, for some applications we might want to map
-    [a,b] => { [a,x], [x+1,b] }
-But since this is quite a specific use case and complicates everything even more, we want to
-leave this for now, and implement it in a dedicated type of transformation.
+    [x,x+1] => [x,x+1]
+    [a,b] =>  [a,b], for a < x < x+1 < b
 
 For case 2, a choice must be made for all kind of affected intervals.  Note that for the
 inverse, the deletion becomes an insertion, and as such, again a choice must be made.  This
@@ -67,18 +71,16 @@ We can distinguish three cases here.
     Then affected intervals should be mapped as follows.
     [a,x+y] => [a,x], for all 0 <= y <= s
     [x+y,a] => [x,max(x,a-s)], for all 0 <= y <= s
-    and so [x,x+s] => [x,x]
-    For the remaining intervals the positions should just compensate for the difference in
-    size.
+    [x,x+s] => [x,x]
+    [a,b] => [a,b-s], for a < x < x+s < b
 
 2. Insertion of a character.
     Suppose a range of characters of length s is inserted at position x. Then affected
     intervals should be mapped as follows.
     [a,x] => [a,x] or [a,x+s]
     [x,a] => [x,a+s] or [x+s,a+s]
-    and so [x,x] => [x,x] or [x,x+s] or [x+s,x+s]
-    For the remaining intervals the positions should just compensate for the difference in
-    size.
+    [x,x] => [x,x] or [x,x+s] or [x+s,x+s]
+    [a,b] => { [a,x], [x+s,b+s] } or [a,b+s], for a < x < x+s < b
 
 3. Substitution of a character with another character.
     Suppose the characters between position x and x+s are replaced with t characters,
@@ -87,9 +89,8 @@ We can distinguish three cases here.
     [a,x+s] => [a,x+t]
     [a,x+y] => [a,x] or [a,x+t], for all 1 <= y <= s-1
     [x+y,a] => [x,a-s+t] or [x+t,a-s+t], for all 1 <= y <= s-1
-    and so [x,x+s] => [x,x+t]
-    For the remaining intervals the positions should just compensate for the difference in
-    size.
+    [x,x+s] => [x,x+t]
+    [a,b] => { [a,x], [x+s,b] } or [a,b], for a < x < x+s < b
 
 Why do we only allow ambiguous interval end points to be mapped to endpoints of the
 substitution? Because we cannot know of any relation between characters inside the
